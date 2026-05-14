@@ -3,7 +3,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { headerStyles } from './HeaderStyles';
 import TuneIcon from '@mui/icons-material/Tune';
 import LogoSrc from '../assets/logo.png';
-
+import PersonIcon from '@mui/icons-material/Person';
 export default function Header() {
   const theme = useTheme();
 
@@ -41,7 +41,7 @@ export default function Header() {
               ),
               endAdornment: (
                 <Button>
-                  <TuneIcon sx={headerStyles.filterButton(theme)} />
+                  <PersonIcon sx={headerStyles.filterButton(theme)} />
                 </Button>
               ),
             },

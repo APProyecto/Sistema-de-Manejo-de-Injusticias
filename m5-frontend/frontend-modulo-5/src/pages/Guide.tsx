@@ -72,7 +72,7 @@ export default function Guide() {
   ];
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', overflow: 'scroll', width: '100%' }}>
 
       {/* ── AppBar ── */}
       <AppBar position="static">
