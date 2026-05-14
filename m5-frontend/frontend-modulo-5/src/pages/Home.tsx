@@ -3,7 +3,7 @@ import { Container, Typography, Card, CardContent, Button, Box } from '@mui/mate
 
 export default function Home() {
   return (
-    <Container sx={{backgroundColor: '#ff0000'}}>
+    <Container sx={{backgroundColor: '#491741'}}>
       
     </Container>
   );
