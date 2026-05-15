@@ -8,7 +8,6 @@ export const PostCardStyles = {
         width: '70%',
         borderRadius: '45px',
         padding: '45px',
-        marginY: '45px',
     }),
     topContainer: (theme:Theme): SxProps<Theme> => ({
         display: 'flex',
@@ -20,29 +19,6 @@ export const PostCardStyles = {
     profilePicture: (theme:Theme): SxProps<Theme> => ({
         width: '45px',
         height: '45px',
-    }),
-    optionsButton: (theme:Theme): SxProps<Theme> => ({
-        marginLeft: 'auto',
-        backgroundColor: 'transparent',
-        borderRadius: '24px',
-        height: '48px',
-        minWidth: '48px',
-        padding: '0px',
-        color: theme.palette.secondary.main,
-        fontSize: theme.typography.body2.fontSize,
-        fontWeight: theme.typography.body2.fontWeight,
-        border: 'hidden',
-        '&:hover': {
-            backgroundColor: theme.palette.action.hover,
-            color: theme.palette.secondary.main,
-        },
-        '&.Mui-selected': {
-            backgroundColor: theme.palette.secondary.main,
-            color: theme.palette.background.default,
-        }
-    }),
-    optionsIcon: (theme:Theme): SxProps<Theme> => ({ 
-        fontSize: '28px',
     }),
     usernameButton: (theme:Theme): SxProps<Theme> => ({
         marginX: '10px',

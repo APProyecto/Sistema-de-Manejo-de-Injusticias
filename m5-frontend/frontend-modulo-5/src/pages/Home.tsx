@@ -2,6 +2,7 @@ import { Container, Typography, Card, CardContent, Button, Box, useTheme } from 
 import { homeStyles } from './HomeStyles';
 import type { PostCardData } from '../types';
 import PostCard from '../components/PostCard';
+import OptionMenuFeed from '../components/OptionMenuFeed';
 
 export default function Home() {
 
@@ -72,6 +73,7 @@ export default function Home() {
           onPostClick={onPostClick}
           onIndictedClick={onIndictedClick}
           onUsernameClick={onUsernameClick}
+          inFeed={true}
           >
         </PostCard>
       )
