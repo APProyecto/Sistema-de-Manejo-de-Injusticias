@@ -1,4 +1,4 @@
-import { Avatar, Button, Container, ToggleButton, Typography } from "@mui/material";
+import { Avatar, Button, Container, Menu, ToggleButton, Typography } from "@mui/material";
 import { PostCardStyles } from "./PostCardStyles";
 import { useTheme } from "@mui/material";
 import type { PostCardData, User } from "../types";
@@ -11,6 +11,9 @@ import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import CircleIcon from '@mui/icons-material/Circle';
 import { Circle } from "@mui/icons-material";
+import OptionMenu from "./OptionMenuFeed";
+import OptionMenuFeed from "./OptionMenuFeed";
+import OptionMenuMyPosts from "./OptionMenuMyPosts";
 
 interface PostCardProps {
     data: PostCardData,
@@ -18,11 +21,12 @@ interface PostCardProps {
     onPostClick?: (id: number) => void;
     onIndictedClick: (id: number) => void;
     onCaseClick: (id: number) => void;
+    inFeed: boolean;
 }
 
-export default function PostCard({ data, onUsernameClick, onPostClick, onIndictedClick, onCaseClick }: PostCardProps){
+export default function PostCard({ data, onUsernameClick, onPostClick, onIndictedClick, onCaseClick, inFeed}: PostCardProps){
     const theme = useTheme();
-    const [isOptionsSelected, setIsOptionsSelected] = useState(false);
+
     const handleStateColor = (state: string) => {
         if(state === 'Active'){
             return theme.palette.success.main;
@@ -52,15 +56,12 @@ export default function PostCard({ data, onUsernameClick, onPostClick, onIndicte
                 {/* Creation Date */}
                 <Typography variant="caption" align="left" >{data.creation_date}</Typography>
 
+                <Container sx={{display: 'flex', flex: 1}}></Container>
+
                 {/* Options */}
-                <ToggleButton 
-                    value={"checked"} 
-                    selected={isOptionsSelected}
-                    onChange={() => setIsOptionsSelected(!isOptionsSelected)}
-                    sx={PostCardStyles.optionsButton(theme)}
-                >
-                    <MoreHorizIcon sx={PostCardStyles.optionsIcon(theme)}></MoreHorizIcon>
-                </ToggleButton>
+                {inFeed ?
+                <OptionMenuFeed favorite={data.is_favorite? true : false}></OptionMenuFeed>:
+                <OptionMenuMyPosts></OptionMenuMyPosts>}
 
             </Container>
             <Container sx={PostCardStyles.descriptionContainer(theme)}>

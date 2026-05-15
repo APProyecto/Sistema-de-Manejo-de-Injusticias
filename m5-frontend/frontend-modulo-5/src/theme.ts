@@ -37,7 +37,7 @@ export const darkTheme = createTheme({
   palette: {
     primary: { main: '#eeca3c' },
     secondary: {main: '#d5dcdc'},
-    background: { default: '#292924', paper: '#292924'},
+    background: { default: '#292924', paper: '#d5dcdc'},
     text: {primary: '#ffffff'},
     action: {hover: '#ffffff3b'},
     grey: {"100": '#3e3e3a', "200": '#848787'},
