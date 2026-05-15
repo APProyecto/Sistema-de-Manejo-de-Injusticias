@@ -14,7 +14,7 @@ export const lightTheme = createTheme({
     h3: { fontWeight: 600, fontSize: '24px', color: '#ffffff'},
     body1: { fontWeight: 400, fontSize: '17px', color: '#ffffff'},
     body2: { fontWeight: 700, fontSize: '18px', color: '#ffffff'},
-    caption: { fontWeight: 300, fontSize: '16px', color: '#ffffff'},
+    caption: { fontWeight: 300, fontSize: '12px', color: '#ffffff'},
     button: { textTransform: 'none' },  // Botones sin mayúsculas automáticas
   },
   components: {
@@ -39,7 +39,10 @@ export const darkTheme = createTheme({
     secondary: {main: '#d5dcdc'},
     background: { default: '#292924', paper: '#292924'},
     text: {primary: '#ffffff'},
-    action: {hover: '#ffffff3b'}
+    action: {hover: '#ffffff3b'},
+    grey: {"100": '#3e3e3a', "200": '#848787'},
+    success: {main: '#eeca3c'},
+    error: {main: '#640d0d'}
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -48,7 +51,7 @@ export const darkTheme = createTheme({
     h3: { fontWeight: 600, fontSize: '24px', color: '#ffffff'},
     body1: { fontWeight: 400, fontSize: '17px', color: '#ffffff'},
     body2: { fontWeight: 700, fontSize: '18px', color: '#ffffff'},
-    caption: { fontWeight: 300, fontSize: '16px', color: '#ffffff'},
+    caption: { fontWeight: 300, fontSize: '12px', color: '#ffffff'},
     button: { textTransform: 'none' },  // Botones sin mayúsculas automáticas
   },
   components: {

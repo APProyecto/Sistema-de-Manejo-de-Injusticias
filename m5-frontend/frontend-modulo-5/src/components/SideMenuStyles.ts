@@ -1,5 +1,4 @@
 import type { SxProps, Theme } from '@mui/material';
-import { flex, palette } from '@mui/system';
 
 export const sideMenuStyles = {
 
