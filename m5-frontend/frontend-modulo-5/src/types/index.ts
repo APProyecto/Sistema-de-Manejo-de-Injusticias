@@ -7,21 +7,23 @@ export interface User {
   rol: 'sin_cuenta' | 'registrado' | 'administrador';
 }
 
-export interface Boycott {
+export interface PostCardData {
   id: number;
-  nombre_entidad: string;
-  categoria: string;
-  industria: string;
-  pais: string;
-  tipo_injusticia: string;
-  descripcion: string;
-  estado: string;
-  usuario_creador_id: number;
-  fecha_creacion: string;
-  votos_positivos: number;
-  votos_negativos: number;
-  es_favorito?: boolean;
-  voto_usuario?: boolean | null;
+  username: string;
+  user_picture: string;
+  indicted: string;
+  indicted_picture: string;
+  case: string;
+  case_picture: string;
+  title: string;
+  description: string;
+  creation_date: string;
+  is_favorite?: boolean;
+  votes: string;
+  voted_by_user?: boolean | null;
+  coments: string;
+  evidences: string;
+  state: string;
 }
 
 export interface Comentario {
