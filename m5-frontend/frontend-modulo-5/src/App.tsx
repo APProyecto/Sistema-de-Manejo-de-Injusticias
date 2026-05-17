@@ -10,8 +10,11 @@ import { darkTheme, lightTheme } from './theme';
 import { useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import CerateBoycott from './pages/CreateBoycott';
+import SideMenuUnsigned from './components/SideMenuUnsigned';
 
 const theme = darkTheme;
+const singedIn = false;
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -23,7 +26,10 @@ function App() {
           height: 'calc(100vh - 90px)',
           overflow: 'hidden'
           }}>
-          <SideMenu />
+          {singedIn?
+            <SideMenu />:
+            <SideMenuUnsigned />
+          }
           <Routes>
             <Route path="/" element={<Guide />} />
             <Route path="/home" element={<Home />} />
