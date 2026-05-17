@@ -7,7 +7,7 @@ import CreateIcon from '@mui/icons-material/Create';
 import MarkunreadOutlinedIcon from '@mui/icons-material/MarkunreadOutlined';
 import { useNavigate } from 'react-router-dom';
 
-export default function Header() {
+export default function SideMenu() {
   const theme = useTheme();
   const navigate = useNavigate();
 
@@ -23,7 +23,7 @@ export default function Header() {
             onClick={() => handleNavigation('/create')}
         >
             <AddCircleOutlineOutlinedIcon sx={sideMenuStyles.buttonIcon(theme)}></AddCircleOutlineOutlinedIcon>
-            <Typography sx={sideMenuStyles.createButtonText(theme)}>Create</Typography>
+            <Typography sx={sideMenuStyles.primaryButtonText(theme)}>Create</Typography>
         </Button>
 
         {/* Home */}
