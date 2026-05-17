@@ -1,6 +1,6 @@
 // src/services/boycottService.ts
 import type { ApiResponse, Boycott, CreateBoycottData } from '../types';
-import { boycottApi } from './api';
+import { authApi, boycottApi } from './api';
 
 // Obtener todos los boycotts (con filtros)
 export const getBoycotts = async (filters?: {
@@ -52,4 +52,18 @@ export const toggleFavorite = async (id: number): Promise<void> => {
 export const getFavorites = async (): Promise<Boycott[]> => {
   const response = await boycottApi.get<ApiResponse<Boycott[]>>('/api/boycotts/favoritos');
   return response.data.data;
+};
+
+// Prueba temporal: obtener cantidad de usuarios desde M1
+export const testGetUserCount = async (): Promise<{ totalUsers: number }> => {
+  const response = await authApi.get<{ totalUsers: number }>('/api/users/count');
+
+  return response.data;
+};
+
+// Prueba temporal: obtener lista de usuarios desde M1
+export const testGetUsers = async (): Promise<any[]> => {
+  const response = await authApi.get<any[]>('/api/users/listUsers');
+
+  return response.data;
 };
