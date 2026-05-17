@@ -1,0 +1,675 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/mysql"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("MYSQL_DATABASE_URL")
+}
+
+model AccountState {
+  AccountStateID                               Int       @id @default(autoincrement())
+  StateName                                    String    @db.VarChar(100)
+  CreatedAt                                    DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                    Int?
+  ModifiedAt                                   DateTime? @db.DateTime(0)
+  ModifiedBy                                   Int?
+  AppUser_AccountState_CreatedByToAppUser      AppUser?  @relation("AccountState_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_AccountState_CreatedBy")
+  AppUser_AccountState_ModifiedByToAppUser     AppUser?  @relation("AccountState_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_AccountState_ModifiedBy")
+  AppUser_AppUser_AccountStateIDToAccountState AppUser[] @relation("AppUser_AccountStateIDToAccountState")
+
+  @@index([CreatedBy], map: "FK_AccountState_CreatedBy")
+  @@index([ModifiedBy], map: "FK_AccountState_ModifiedBy")
+}
+
+model Admin {
+  AdminID                           Int       @id
+  IsSuperAdmin                      Boolean   @default(false)
+  CreatedAt                         DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                         Int?
+  ModifiedAt                        DateTime? @db.DateTime(0)
+  ModifiedBy                        Int?
+  AppUser_Admin_AdminIDToAppUser    AppUser   @relation("Admin_AdminIDToAppUser", fields: [AdminID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Admin_AppUser")
+  AppUser_Admin_CreatedByToAppUser  AppUser?  @relation("Admin_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_Admin_CreatedBy")
+  AppUser_Admin_ModifiedByToAppUser AppUser?  @relation("Admin_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_Admin_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_Admin_CreatedBy")
+  @@index([ModifiedBy], map: "FK_Admin_ModifiedBy")
+}
+
+model AppUser {
+  UserID                                                            Int                      @id @default(autoincrement())
+  FirstName                                                         String                   @db.VarChar(100)
+  LastName                                                          String                   @db.VarChar(100)
+  UserName                                                          String                   @unique(map: "UserName") @db.VarChar(100)
+  Email                                                             String                   @unique(map: "Email") @db.VarChar(150)
+  Password                                                          String                   @db.VarChar(255)
+  RegisteredAt                                                      DateTime                 @default(now()) @db.DateTime(0)
+  IsAdmin                                                           Boolean                  @default(false)
+  NumberPublications                                                Int                      @default(0)
+  MongoDocumentID                                                   String?                  @db.VarChar(255)
+  CreatedAt                                                         DateTime                 @default(now()) @db.DateTime(0)
+  CreatedBy                                                         Int?
+  ModifiedAt                                                        DateTime?                @db.DateTime(0)
+  ModifiedBy                                                        Int?
+  GenderID                                                          Int
+  CountryID                                                         Int
+  AccountStateID                                                    Int
+  AccountState_AccountState_CreatedByToAppUser                      AccountState[]           @relation("AccountState_CreatedByToAppUser")
+  AccountState_AccountState_ModifiedByToAppUser                     AccountState[]           @relation("AccountState_ModifiedByToAppUser")
+  Admin_Admin_AdminIDToAppUser                                      Admin?                   @relation("Admin_AdminIDToAppUser")
+  Admin_Admin_CreatedByToAppUser                                    Admin[]                  @relation("Admin_CreatedByToAppUser")
+  Admin_Admin_ModifiedByToAppUser                                   Admin[]                  @relation("Admin_ModifiedByToAppUser")
+  AccountState_AppUser_AccountStateIDToAccountState                 AccountState             @relation("AppUser_AccountStateIDToAccountState", fields: [AccountStateID], references: [AccountStateID], onDelete: NoAction, onUpdate: NoAction, map: "FK_AppUser_AccountState")
+  Country_AppUser_CountryIDToCountry                                Country                  @relation("AppUser_CountryIDToCountry", fields: [CountryID], references: [CountryID], onDelete: NoAction, onUpdate: NoAction, map: "FK_AppUser_Country")
+  AppUser_AppUser_CreatedByToAppUser                                AppUser?                 @relation("AppUser_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_AppUser_CreatedBy")
+  other_AppUser_AppUser_CreatedByToAppUser                          AppUser[]                @relation("AppUser_CreatedByToAppUser")
+  Gender_AppUser_GenderIDToGender                                   Gender                   @relation("AppUser_GenderIDToGender", fields: [GenderID], references: [GenderID], onDelete: NoAction, onUpdate: NoAction, map: "FK_AppUser_Gender")
+  AppUser_AppUser_ModifiedByToAppUser                               AppUser?                 @relation("AppUser_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_AppUser_ModifiedBy")
+  other_AppUser_AppUser_ModifiedByToAppUser                         AppUser[]                @relation("AppUser_ModifiedByToAppUser")
+  Boycott_Boycott_CheckedByToAppUser                                Boycott[]                @relation("Boycott_CheckedByToAppUser")
+  Boycott_Boycott_CreatedByToAppUser                                Boycott[]                @relation("Boycott_CreatedByToAppUser")
+  Boycott_Boycott_CreatorIDToAppUser                                Boycott[]                @relation("Boycott_CreatorIDToAppUser")
+  Boycott_Boycott_ModifiedByToAppUser                               Boycott[]                @relation("Boycott_ModifiedByToAppUser")
+  BoycottState_BoycottState_CreatedByToAppUser                      BoycottState[]           @relation("BoycottState_CreatedByToAppUser")
+  BoycottState_BoycottState_ModifiedByToAppUser                     BoycottState[]           @relation("BoycottState_ModifiedByToAppUser")
+  CategoryEntity_CategoryEntity_CreatedByToAppUser                  CategoryEntity[]         @relation("CategoryEntity_CreatedByToAppUser")
+  CategoryEntity_CategoryEntity_ModifiedByToAppUser                 CategoryEntity[]         @relation("CategoryEntity_ModifiedByToAppUser")
+  CommentBoycott_CommentBoycott_CreatedByToAppUser                  CommentBoycott[]         @relation("CommentBoycott_CreatedByToAppUser")
+  CommentBoycott_CommentBoycott_CreatorIDToAppUser                  CommentBoycott[]         @relation("CommentBoycott_CreatorIDToAppUser")
+  CommentBoycott_CommentBoycott_ModifiedByToAppUser                 CommentBoycott[]         @relation("CommentBoycott_ModifiedByToAppUser")
+  CommentState_CommentState_CreatedByToAppUser                      CommentState[]           @relation("CommentState_CreatedByToAppUser")
+  CommentState_CommentState_ModifiedByToAppUser                     CommentState[]           @relation("CommentState_ModifiedByToAppUser")
+  Continent_Continent_CreatedByToAppUser                            Continent[]              @relation("Continent_CreatedByToAppUser")
+  Continent_Continent_ModifiedByToAppUser                           Continent[]              @relation("Continent_ModifiedByToAppUser")
+  Country_Country_CreatedByToAppUser                                Country[]                @relation("Country_CreatedByToAppUser")
+  Country_Country_ModifiedByToAppUser                               Country[]                @relation("Country_ModifiedByToAppUser")
+  Entity_Entity_CreatedByToAppUser                                  Entity[]                 @relation("Entity_CreatedByToAppUser")
+  Entity_Entity_ModifiedByToAppUser                                 Entity[]                 @relation("Entity_ModifiedByToAppUser")
+  Gender_Gender_CreatedByToAppUser                                  Gender[]                 @relation("Gender_CreatedByToAppUser")
+  Gender_Gender_ModifiedByToAppUser                                 Gender[]                 @relation("Gender_ModifiedByToAppUser")
+  IndustryType_IndustryType_CreatedByToAppUser                      IndustryType[]           @relation("IndustryType_CreatedByToAppUser")
+  IndustryType_IndustryType_ModifiedByToAppUser                     IndustryType[]           @relation("IndustryType_ModifiedByToAppUser")
+  InjusticeType_InjusticeType_CreatedByToAppUser                    InjusticeType[]          @relation("InjusticeType_CreatedByToAppUser")
+  InjusticeType_InjusticeType_ModifiedByToAppUser                   InjusticeType[]          @relation("InjusticeType_ModifiedByToAppUser")
+  Logbook                                                           Logbook[]
+  MotiveReport_MotiveReport_CreatedByToAppUser                      MotiveReport[]           @relation("MotiveReport_CreatedByToAppUser")
+  MotiveReport_MotiveReport_ModifiedByToAppUser                     MotiveReport[]           @relation("MotiveReport_ModifiedByToAppUser")
+  NormalUser_NormalUser_NormalUserIDToAppUser                       NormalUser?              @relation("NormalUser_NormalUserIDToAppUser")
+  NormalUser_NormalUser_CreatedByToAppUser                          NormalUser[]             @relation("NormalUser_CreatedByToAppUser")
+  NormalUser_NormalUser_ModifiedByToAppUser                         NormalUser[]             @relation("NormalUser_ModifiedByToAppUser")
+  NotificationSuggestion_NotificationSuggestion_CreatedByToAppUser  NotificationSuggestion[] @relation("NotificationSuggestion_CreatedByToAppUser")
+  NotificationSuggestion_NotificationSuggestion_ModifiedByToAppUser NotificationSuggestion[] @relation("NotificationSuggestion_ModifiedByToAppUser")
+  Parameter_Parameter_CreatedByToAppUser                            Parameter[]              @relation("Parameter_CreatedByToAppUser")
+  Parameter_Parameter_ModifiedByToAppUser                           Parameter[]              @relation("Parameter_ModifiedByToAppUser")
+  ParameterType_ParameterType_CreatedByToAppUser                    ParameterType[]          @relation("ParameterType_CreatedByToAppUser")
+  ParameterType_ParameterType_ModifiedByToAppUser                   ParameterType[]          @relation("ParameterType_ModifiedByToAppUser")
+  Report_Report_CheckedByToAppUser                                  Report[]                 @relation("Report_CheckedByToAppUser")
+  Report_Report_CreatedByToAppUser                                  Report[]                 @relation("Report_CreatedByToAppUser")
+  Report_Report_ModifiedByToAppUser                                 Report[]                 @relation("Report_ModifiedByToAppUser")
+  Report_Report_ReportedByToAppUser                                 Report[]                 @relation("Report_ReportedByToAppUser")
+  ReportState_ReportState_CreatedByToAppUser                        ReportState[]            @relation("ReportState_CreatedByToAppUser")
+  ReportState_ReportState_ModifiedByToAppUser                       ReportState[]            @relation("ReportState_ModifiedByToAppUser")
+  Sector_Sector_CreatedByToAppUser                                  Sector[]                 @relation("Sector_CreatedByToAppUser")
+  Sector_Sector_ModifiedByToAppUser                                 Sector[]                 @relation("Sector_ModifiedByToAppUser")
+  SuggestionBox_SuggestionBox_CheckedByToAppUser                    SuggestionBox[]          @relation("SuggestionBox_CheckedByToAppUser")
+  SuggestionBox_SuggestionBox_CreatedByToAppUser                    SuggestionBox[]          @relation("SuggestionBox_CreatedByToAppUser")
+  SuggestionBox_SuggestionBox_ModifiedByToAppUser                   SuggestionBox[]          @relation("SuggestionBox_ModifiedByToAppUser")
+  SuggestionBox_SuggestionBox_SuggestedByToAppUser                  SuggestionBox[]          @relation("SuggestionBox_SuggestedByToAppUser")
+  SuggestionState_SuggestionState_CreatedByToAppUser                SuggestionState[]        @relation("SuggestionState_CreatedByToAppUser")
+  SuggestionState_SuggestionState_ModifiedByToAppUser               SuggestionState[]        @relation("SuggestionState_ModifiedByToAppUser")
+  UrgentReport_UrgentReport_CreatedByToAppUser                      UrgentReport[]           @relation("UrgentReport_CreatedByToAppUser")
+  UrgentReport_UrgentReport_ModifiedByToAppUser                     UrgentReport[]           @relation("UrgentReport_ModifiedByToAppUser")
+  UserFavoriteBoycott_UserFavoriteBoycott_UserIDToAppUser           UserFavoriteBoycott[]    @relation("UserFavoriteBoycott_UserIDToAppUser")
+  UserFavoriteBoycott_UserFavoriteBoycott_CreatedByToAppUser        UserFavoriteBoycott[]    @relation("UserFavoriteBoycott_CreatedByToAppUser")
+  UserFavoriteBoycott_UserFavoriteBoycott_ModifiedByToAppUser       UserFavoriteBoycott[]    @relation("UserFavoriteBoycott_ModifiedByToAppUser")
+  UserVotesBoycott_UserVotesBoycott_UserIDToAppUser                 UserVotesBoycott[]       @relation("UserVotesBoycott_UserIDToAppUser")
+  UserVotesBoycott_UserVotesBoycott_CreatedByToAppUser              UserVotesBoycott[]       @relation("UserVotesBoycott_CreatedByToAppUser")
+  UserVotesBoycott_UserVotesBoycott_ModifiedByToAppUser             UserVotesBoycott[]       @relation("UserVotesBoycott_ModifiedByToAppUser")
+  UserVotesComment_UserVotesComment_UserIDToAppUser                 UserVotesComment[]       @relation("UserVotesComment_UserIDToAppUser")
+  UserVotesComment_UserVotesComment_CreatedByToAppUser              UserVotesComment[]       @relation("UserVotesComment_CreatedByToAppUser")
+  UserVotesComment_UserVotesComment_ModifiedByToAppUser             UserVotesComment[]       @relation("UserVotesComment_ModifiedByToAppUser")
+
+  @@index([AccountStateID], map: "FK_AppUser_AccountState")
+  @@index([CountryID], map: "FK_AppUser_Country")
+  @@index([CreatedBy], map: "FK_AppUser_CreatedBy")
+  @@index([GenderID], map: "FK_AppUser_Gender")
+  @@index([ModifiedBy], map: "FK_AppUser_ModifiedBy")
+}
+
+model Boycott {
+  BoycottID                           Int                   @id @default(autoincrement())
+  Title                               String                @db.VarChar(200)
+  CaseNumber                          Int?
+  PublicationDate                     DateTime              @default(now()) @db.DateTime(0)
+  LastUpdateDate                      DateTime?             @db.DateTime(0)
+  LastCheckDate                       DateTime?             @db.DateTime(0)
+  VotesInFavor                        Int                   @default(0)
+  VotesAgainst                        Int                   @default(0)
+  NumberFavorites                     Int                   @default(0)
+  NumberComments                      Int                   @default(0)
+  NumberReports                       Int                   @default(0)
+  MongoDocumentId                     String?               @db.VarChar(100)
+  DeletedByUser                       Boolean               @default(false)
+  DeletedAt                           DateTime?             @db.DateTime(0)
+  CreatedAt                           DateTime              @default(now()) @db.DateTime(0)
+  CreatedBy                           Int?
+  ModifiedAt                          DateTime?             @db.DateTime(0)
+  ModifiedBy                          Int?
+  CheckedBy                           Int?
+  CreatorID                           Int
+  BoycottStateID                      Int
+  CountryID                           Int
+  InjusticeTypeID                     Int
+  EntityID                            Int
+  BoycottState                        BoycottState          @relation(fields: [BoycottStateID], references: [BoycottStateID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Boycott_BoycottState")
+  AppUser_Boycott_CheckedByToAppUser  AppUser?              @relation("Boycott_CheckedByToAppUser", fields: [CheckedBy], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Boycott_CheckedBy")
+  Country                             Country               @relation(fields: [CountryID], references: [CountryID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Boycott_Country")
+  AppUser_Boycott_CreatedByToAppUser  AppUser?              @relation("Boycott_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_Boycott_CreatedBy")
+  AppUser_Boycott_CreatorIDToAppUser  AppUser               @relation("Boycott_CreatorIDToAppUser", fields: [CreatorID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Boycott_Creator")
+  Entity                              Entity                @relation(fields: [EntityID], references: [EntityID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Boycott_Entity")
+  InjusticeType                       InjusticeType         @relation(fields: [InjusticeTypeID], references: [InjusticeTypeID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Boycott_InjusticeType")
+  AppUser_Boycott_ModifiedByToAppUser AppUser?              @relation("Boycott_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_Boycott_ModifiedBy")
+  CommentBoycott                      CommentBoycott[]
+  ReportBoycott                       ReportBoycott[]
+  UrgentReport                        UrgentReport[]
+  UserFavoriteBoycott                 UserFavoriteBoycott[]
+  UserVotesBoycott                    UserVotesBoycott[]
+
+  @@index([BoycottStateID], map: "FK_Boycott_BoycottState")
+  @@index([CheckedBy], map: "FK_Boycott_CheckedBy")
+  @@index([CountryID], map: "FK_Boycott_Country")
+  @@index([CreatedBy], map: "FK_Boycott_CreatedBy")
+  @@index([CreatorID], map: "FK_Boycott_Creator")
+  @@index([EntityID], map: "FK_Boycott_Entity")
+  @@index([InjusticeTypeID], map: "FK_Boycott_InjusticeType")
+  @@index([ModifiedBy], map: "FK_Boycott_ModifiedBy")
+}
+
+model BoycottState {
+  BoycottStateID                           Int       @id @default(autoincrement())
+  StateName                                String    @unique(map: "StateName") @db.VarChar(100)
+  CreatedAt                                DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                Int?
+  ModifiedAt                               DateTime? @db.DateTime(0)
+  ModifiedBy                               Int?
+  Boycott                                  Boycott[]
+  AppUser_BoycottState_CreatedByToAppUser  AppUser?  @relation("BoycottState_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_BoycottState_CreatedBy")
+  AppUser_BoycottState_ModifiedByToAppUser AppUser?  @relation("BoycottState_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_BoycottState_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_BoycottState_CreatedBy")
+  @@index([ModifiedBy], map: "FK_BoycottState_ModifiedBy")
+}
+
+model CategoryEntity {
+  CategoryEntityID                           Int       @id @default(autoincrement())
+  CategoryName                               String    @unique(map: "CategoryName") @db.VarChar(100)
+  CreatedAt                                  DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                  Int?
+  ModifiedAt                                 DateTime? @db.DateTime(0)
+  ModifiedBy                                 Int?
+  AppUser_CategoryEntity_CreatedByToAppUser  AppUser?  @relation("CategoryEntity_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_CategoryEntity_CreatedBy")
+  AppUser_CategoryEntity_ModifiedByToAppUser AppUser?  @relation("CategoryEntity_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_CategoryEntity_ModifiedBy")
+  Entity                                     Entity[]
+
+  @@index([CreatedBy], map: "FK_CategoryEntity_CreatedBy")
+  @@index([ModifiedBy], map: "FK_CategoryEntity_ModifiedBy")
+}
+
+model CommentBoycott {
+  CommentBoycottID                           Int                @id @default(autoincrement())
+  Description                                String             @db.Text
+  VotesInFavor                               Int                @default(0)
+  VotesAgainst                               Int                @default(0)
+  CommentDate                                DateTime           @default(now()) @db.DateTime(0)
+  DeletedByUser                              Boolean            @default(false)
+  DeletedAt                                  DateTime?          @db.DateTime(0)
+  CreatedAt                                  DateTime           @default(now()) @db.DateTime(0)
+  CreatedBy                                  Int?
+  ModifiedAt                                 DateTime?          @db.DateTime(0)
+  ModifiedBy                                 Int?
+  CreatorID                                  Int
+  BoycottID                                  Int
+  CommentStateID                             Int
+  Boycott                                    Boycott            @relation(fields: [BoycottID], references: [BoycottID], onDelete: NoAction, onUpdate: NoAction, map: "FK_CommentBoycott_Boycott")
+  CommentState                               CommentState       @relation(fields: [CommentStateID], references: [CommentStateID], onDelete: NoAction, onUpdate: NoAction, map: "FK_CommentBoycott_CommentState")
+  AppUser_CommentBoycott_CreatedByToAppUser  AppUser?           @relation("CommentBoycott_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_CommentBoycott_CreatedBy")
+  AppUser_CommentBoycott_CreatorIDToAppUser  AppUser            @relation("CommentBoycott_CreatorIDToAppUser", fields: [CreatorID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_CommentBoycott_Creator")
+  AppUser_CommentBoycott_ModifiedByToAppUser AppUser?           @relation("CommentBoycott_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_CommentBoycott_ModifiedBy")
+  ReportComment                              ReportComment[]
+  UserVotesComment                           UserVotesComment[]
+
+  @@index([BoycottID], map: "FK_CommentBoycott_Boycott")
+  @@index([CommentStateID], map: "FK_CommentBoycott_CommentState")
+  @@index([CreatedBy], map: "FK_CommentBoycott_CreatedBy")
+  @@index([CreatorID], map: "FK_CommentBoycott_Creator")
+  @@index([ModifiedBy], map: "FK_CommentBoycott_ModifiedBy")
+}
+
+model CommentState {
+  CommentStateID                           Int              @id @default(autoincrement())
+  StateName                                String           @unique(map: "StateName") @db.VarChar(50)
+  CreatedAt                                DateTime         @default(now()) @db.DateTime(0)
+  CreatedBy                                Int?
+  ModifiedAt                               DateTime?        @db.DateTime(0)
+  ModifiedBy                               Int?
+  CommentBoycott                           CommentBoycott[]
+  AppUser_CommentState_CreatedByToAppUser  AppUser?         @relation("CommentState_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_CommentState_CreatedBy")
+  AppUser_CommentState_ModifiedByToAppUser AppUser?         @relation("CommentState_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_CommentState_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_CommentState_CreatedBy")
+  @@index([ModifiedBy], map: "FK_CommentState_ModifiedBy")
+}
+
+model Continent {
+  ContinentID                           Int       @id @default(autoincrement())
+  ContinentName                         String    @db.VarChar(100)
+  CreatedAt                             DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                             Int?
+  ModifiedAt                            DateTime? @db.DateTime(0)
+  ModifiedBy                            Int?
+  AppUser_Continent_CreatedByToAppUser  AppUser?  @relation("Continent_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_Continent_CreatedBy")
+  AppUser_Continent_ModifiedByToAppUser AppUser?  @relation("Continent_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_Continent_ModifiedBy")
+  Country                               Country[]
+
+  @@index([CreatedBy], map: "FK_Continent_CreatedBy")
+  @@index([ModifiedBy], map: "FK_Continent_ModifiedBy")
+}
+
+model Country {
+  CountryID                           Int       @id @default(autoincrement())
+  CountryName                         String    @unique(map: "CountryName") @db.VarChar(100)
+  CreatedAt                           DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                           Int?
+  ModifiedAt                          DateTime? @db.DateTime(0)
+  ModifiedBy                          Int?
+  ContinentID                         Int
+  AppUser_AppUser_CountryIDToCountry  AppUser[] @relation("AppUser_CountryIDToCountry")
+  Boycott                             Boycott[]
+  Continent                           Continent @relation(fields: [ContinentID], references: [ContinentID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Country_Continent")
+  AppUser_Country_CreatedByToAppUser  AppUser?  @relation("Country_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_Country_CreatedBy")
+  AppUser_Country_ModifiedByToAppUser AppUser?  @relation("Country_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_Country_ModifiedBy")
+
+  @@index([ContinentID], map: "FK_Country_Continent")
+  @@index([CreatedBy], map: "FK_Country_CreatedBy")
+  @@index([ModifiedBy], map: "FK_Country_ModifiedBy")
+}
+
+model Entity {
+  EntityID                           Int            @id @default(autoincrement())
+  EntityName                         String         @db.VarChar(150)
+  MongoDocumentID                    String?        @db.VarChar(255)
+  Description                        String?        @db.Text
+  NumberBoycotts                     Int            @default(0)
+  CreatedAt                          DateTime       @default(now()) @db.DateTime(0)
+  CreatedBy                          Int?
+  ModifiedAt                         DateTime?      @db.DateTime(0)
+  ModifiedBy                         Int?
+  CategoryEntityID                   Int
+  IndustryTypeID                     Int?
+  SectorID                           Int?
+  Boycott                            Boycott[]
+  CategoryEntity                     CategoryEntity @relation(fields: [CategoryEntityID], references: [CategoryEntityID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Entity_CategoryEntity")
+  AppUser_Entity_CreatedByToAppUser  AppUser?       @relation("Entity_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_Entity_CreatedBy")
+  IndustryType                       IndustryType?  @relation(fields: [IndustryTypeID], references: [IndustryTypeID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Entity_IndustryType")
+  AppUser_Entity_ModifiedByToAppUser AppUser?       @relation("Entity_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_Entity_ModifiedBy")
+  Sector                             Sector?        @relation(fields: [SectorID], references: [SectorID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Entity_Sector")
+
+  @@unique([EntityName, CategoryEntityID], map: "UQ_Entity_Name_Category")
+  @@index([CategoryEntityID], map: "FK_Entity_CategoryEntity")
+  @@index([CreatedBy], map: "FK_Entity_CreatedBy")
+  @@index([IndustryTypeID], map: "FK_Entity_IndustryType")
+  @@index([ModifiedBy], map: "FK_Entity_ModifiedBy")
+  @@index([SectorID], map: "FK_Entity_Sector")
+}
+
+model Gender {
+  GenderID                           Int       @id @default(autoincrement())
+  GenderName                         String    @unique(map: "GenderName") @db.VarChar(50)
+  CreatedAt                          DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                          Int?
+  ModifiedAt                         DateTime? @db.DateTime(0)
+  ModifiedBy                         Int?
+  AppUser_AppUser_GenderIDToGender   AppUser[] @relation("AppUser_GenderIDToGender")
+  AppUser_Gender_CreatedByToAppUser  AppUser?  @relation("Gender_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_Gender_CreatedBy")
+  AppUser_Gender_ModifiedByToAppUser AppUser?  @relation("Gender_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_Gender_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_Gender_CreatedBy")
+  @@index([ModifiedBy], map: "FK_Gender_ModifiedBy")
+}
+
+model IndustryType {
+  IndustryTypeID                           Int       @id @default(autoincrement())
+  IndustryName                             String    @unique(map: "IndustryName") @db.VarChar(100)
+  CreatedAt                                DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                Int?
+  ModifiedAt                               DateTime? @db.DateTime(0)
+  ModifiedBy                               Int?
+  Entity                                   Entity[]
+  AppUser_IndustryType_CreatedByToAppUser  AppUser?  @relation("IndustryType_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_IndustryType_CreatedBy")
+  AppUser_IndustryType_ModifiedByToAppUser AppUser?  @relation("IndustryType_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_IndustryType_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_IndustryType_CreatedBy")
+  @@index([ModifiedBy], map: "FK_IndustryType_ModifiedBy")
+}
+
+model InjusticeType {
+  InjusticeTypeID                           Int       @id @default(autoincrement())
+  InjusticeName                             String    @unique(map: "InjusticeName") @db.VarChar(100)
+  MongoDocumentID                           String?   @db.VarChar(255)
+  NumberBoycotts                            Int       @default(0)
+  CreatedAt                                 DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                 Int?
+  ModifiedAt                                DateTime? @db.DateTime(0)
+  ModifiedBy                                Int?
+  Boycott                                   Boycott[]
+  AppUser_InjusticeType_CreatedByToAppUser  AppUser?  @relation("InjusticeType_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_InjusticeType_CreatedBy")
+  AppUser_InjusticeType_ModifiedByToAppUser AppUser?  @relation("InjusticeType_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_InjusticeType_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_InjusticeType_CreatedBy")
+  @@index([ModifiedBy], map: "FK_InjusticeType_ModifiedBy")
+}
+
+model Logbook {
+  LogBookID  Int      @id @default(autoincrement())
+  UserID     Int?
+  EntityName String   @db.VarChar(100)
+  EntityID   Int?
+  ActionType String   @db.VarChar(50)
+  OldValue   Json?
+  NewValue   Json?
+  ActionDate DateTime @default(now()) @db.DateTime(0)
+  AppUser    AppUser? @relation(fields: [UserID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Logbook_AppUser")
+
+  @@index([UserID], map: "FK_Logbook_AppUser")
+}
+
+model MotiveReport {
+  MotiveReportID                           Int       @id @default(autoincrement())
+  MotiveName                               String    @unique(map: "MotiveName") @db.VarChar(100)
+  CreatedAt                                DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                Int?
+  ModifiedAt                               DateTime? @db.DateTime(0)
+  ModifiedBy                               Int?
+  AppUser_MotiveReport_CreatedByToAppUser  AppUser?  @relation("MotiveReport_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_MotiveReport_CreatedBy")
+  AppUser_MotiveReport_ModifiedByToAppUser AppUser?  @relation("MotiveReport_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_MotiveReport_ModifiedBy")
+  Report                                   Report[]
+
+  @@index([CreatedBy], map: "FK_MotiveReport_CreatedBy")
+  @@index([ModifiedBy], map: "FK_MotiveReport_ModifiedBy")
+}
+
+model NormalUser {
+  NormalUserID                             Int       @id
+  CreatedAt                                DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                Int?
+  ModifiedAt                               DateTime? @db.DateTime(0)
+  ModifiedBy                               Int?
+  AppUser_NormalUser_NormalUserIDToAppUser AppUser   @relation("NormalUser_NormalUserIDToAppUser", fields: [NormalUserID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_NormalUser_AppUser")
+  AppUser_NormalUser_CreatedByToAppUser    AppUser?  @relation("NormalUser_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_NormalUser_CreatedBy")
+  AppUser_NormalUser_ModifiedByToAppUser   AppUser?  @relation("NormalUser_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_NormalUser_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_NormalUser_CreatedBy")
+  @@index([ModifiedBy], map: "FK_NormalUser_ModifiedBy")
+}
+
+model NotificationSuggestion {
+  NotificationID                                     Int           @id @default(autoincrement())
+  NotificationDate                                   DateTime      @default(now()) @db.DateTime(0)
+  IsChecked                                          Boolean       @default(false)
+  CreatedAt                                          DateTime      @default(now()) @db.DateTime(0)
+  CreatedBy                                          Int?
+  ModifiedAt                                         DateTime?     @db.DateTime(0)
+  ModifiedBy                                         Int?
+  SuggestionID                                       Int
+  AppUser_NotificationSuggestion_CreatedByToAppUser  AppUser?      @relation("NotificationSuggestion_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_NotificationSuggestion_CreatedBy")
+  AppUser_NotificationSuggestion_ModifiedByToAppUser AppUser?      @relation("NotificationSuggestion_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_NotificationSuggestion_ModifiedBy")
+  SuggestionBox                                      SuggestionBox @relation(fields: [SuggestionID], references: [SuggestionID], onDelete: NoAction, onUpdate: NoAction, map: "FK_NotificationSuggestion_SuggestionBox")
+
+  @@index([CreatedBy], map: "FK_NotificationSuggestion_CreatedBy")
+  @@index([ModifiedBy], map: "FK_NotificationSuggestion_ModifiedBy")
+  @@index([SuggestionID], map: "FK_NotificationSuggestion_SuggestionBox")
+}
+
+model Parameter {
+  ParameterID                           Int           @id @default(autoincrement())
+  ParameterName                         String        @unique(map: "ParameterName") @db.VarChar(100)
+  ParameterValue                        String        @db.VarChar(255)
+  CreatedAt                             DateTime      @default(now()) @db.DateTime(0)
+  CreatedBy                             Int?
+  ModifiedAt                            DateTime?     @db.DateTime(0)
+  ModifiedBy                            Int?
+  ParameterTypeID                       Int
+  AppUser_Parameter_CreatedByToAppUser  AppUser?      @relation("Parameter_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_Parameter_CreatedBy")
+  AppUser_Parameter_ModifiedByToAppUser AppUser?      @relation("Parameter_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_Parameter_ModifiedBy")
+  ParameterType                         ParameterType @relation(fields: [ParameterTypeID], references: [ParameterTypeID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Parameter_ParameterType")
+
+  @@index([CreatedBy], map: "FK_Parameter_CreatedBy")
+  @@index([ModifiedBy], map: "FK_Parameter_ModifiedBy")
+  @@index([ParameterTypeID], map: "FK_Parameter_ParameterType")
+}
+
+model ParameterType {
+  ParameterTypeID                           Int         @id @default(autoincrement())
+  ParameterName                             String      @unique(map: "ParameterName") @db.VarChar(50)
+  CreatedAt                                 DateTime    @default(now()) @db.DateTime(0)
+  CreatedBy                                 Int?
+  ModifiedAt                                DateTime?   @db.DateTime(0)
+  ModifiedBy                                Int?
+  Parameter                                 Parameter[]
+  AppUser_ParameterType_CreatedByToAppUser  AppUser?    @relation("ParameterType_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_ParameterType_CreatedBy")
+  AppUser_ParameterType_ModifiedByToAppUser AppUser?    @relation("ParameterType_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_ParameterType_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_ParameterType_CreatedBy")
+  @@index([ModifiedBy], map: "FK_ParameterType_ModifiedBy")
+}
+
+model Report {
+  ReportID                           Int            @id @default(autoincrement())
+  Subject                            String         @db.VarChar(150)
+  UserDescription                    String         @db.Text
+  AdminAnswer                        String?        @db.Text
+  ReportedAt                         DateTime       @default(now()) @db.DateTime(0)
+  CheckedAt                          DateTime?      @db.DateTime(0)
+  CreatedAt                          DateTime       @default(now()) @db.DateTime(0)
+  CreatedBy                          Int?
+  ModifiedAt                         DateTime?      @db.DateTime(0)
+  ModifiedBy                         Int?
+  ReportedBy                         Int
+  CheckedBy                          Int?
+  ReportStateID                      Int
+  MotiveReportID                     Int
+  AppUser_Report_CheckedByToAppUser  AppUser?       @relation("Report_CheckedByToAppUser", fields: [CheckedBy], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Report_CheckedBy")
+  AppUser_Report_CreatedByToAppUser  AppUser?       @relation("Report_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_Report_CreatedBy")
+  AppUser_Report_ModifiedByToAppUser AppUser?       @relation("Report_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_Report_ModifiedBy")
+  MotiveReport                       MotiveReport   @relation(fields: [MotiveReportID], references: [MotiveReportID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Report_MotiveReport")
+  ReportState                        ReportState    @relation(fields: [ReportStateID], references: [ReportStateID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Report_ReportState")
+  AppUser_Report_ReportedByToAppUser AppUser        @relation("Report_ReportedByToAppUser", fields: [ReportedBy], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Report_ReportedBy")
+  ReportBoycott                      ReportBoycott?
+  ReportComment                      ReportComment?
+
+  @@index([CheckedBy], map: "FK_Report_CheckedBy")
+  @@index([CreatedBy], map: "FK_Report_CreatedBy")
+  @@index([ModifiedBy], map: "FK_Report_ModifiedBy")
+  @@index([MotiveReportID], map: "FK_Report_MotiveReport")
+  @@index([ReportStateID], map: "FK_Report_ReportState")
+  @@index([ReportedBy], map: "FK_Report_ReportedBy")
+}
+
+model ReportBoycott {
+  ReportBoycottID Int     @id
+  BoycottID       Int
+  Boycott         Boycott @relation(fields: [BoycottID], references: [BoycottID], onDelete: NoAction, onUpdate: NoAction, map: "FK_ReportBoycott_Boycott")
+  Report          Report  @relation(fields: [ReportBoycottID], references: [ReportID], onDelete: NoAction, onUpdate: NoAction, map: "FK_ReportBoycott_Report")
+
+  @@index([BoycottID], map: "FK_ReportBoycott_Boycott")
+}
+
+model ReportComment {
+  ReportCommentID Int            @id
+  CommentID       Int
+  CommentBoycott  CommentBoycott @relation(fields: [CommentID], references: [CommentBoycottID], onDelete: NoAction, onUpdate: NoAction, map: "FK_ReportComment_CommentBoycott")
+  Report          Report         @relation(fields: [ReportCommentID], references: [ReportID], onDelete: NoAction, onUpdate: NoAction, map: "FK_ReportComment_Report")
+
+  @@index([CommentID], map: "FK_ReportComment_CommentBoycott")
+}
+
+model ReportState {
+  ReportStateID                           Int       @id @default(autoincrement())
+  StateName                               String    @unique(map: "StateName") @db.VarChar(50)
+  CreatedAt                               DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                               Int?
+  ModifiedAt                              DateTime? @db.DateTime(0)
+  ModifiedBy                              Int?
+  Report                                  Report[]
+  AppUser_ReportState_CreatedByToAppUser  AppUser?  @relation("ReportState_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_ReportState_CreatedBy")
+  AppUser_ReportState_ModifiedByToAppUser AppUser?  @relation("ReportState_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_ReportState_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_ReportState_CreatedBy")
+  @@index([ModifiedBy], map: "FK_ReportState_ModifiedBy")
+}
+
+model Sector {
+  SectorID                           Int       @id @default(autoincrement())
+  SectorName                         String    @unique(map: "SectorName") @db.VarChar(100)
+  CreatedAt                          DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                          Int?
+  ModifiedAt                         DateTime? @db.DateTime(0)
+  ModifiedBy                         Int?
+  Entity                             Entity[]
+  AppUser_Sector_CreatedByToAppUser  AppUser?  @relation("Sector_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_Sector_CreatedBy")
+  AppUser_Sector_ModifiedByToAppUser AppUser?  @relation("Sector_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_Sector_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_Sector_CreatedBy")
+  @@index([ModifiedBy], map: "FK_Sector_ModifiedBy")
+}
+
+model SuggestionBox {
+  SuggestionID                               Int                      @id @default(autoincrement())
+  Subject                                    String                   @db.VarChar(150)
+  Description                                String                   @db.Text
+  AdminAnswer                                String?                  @db.Text
+  SuggestedAt                                DateTime                 @default(now()) @db.DateTime(0)
+  CheckedAt                                  DateTime?                @db.DateTime(0)
+  AnsweredAt                                 DateTime?                @db.DateTime(0)
+  CreatedAt                                  DateTime                 @default(now()) @db.DateTime(0)
+  CreatedBy                                  Int?
+  ModifiedAt                                 DateTime?                @db.DateTime(0)
+  ModifiedBy                                 Int?
+  SuggestedBy                                Int
+  CheckedBy                                  Int?
+  SuggestionStateID                          Int
+  NotificationSuggestion                     NotificationSuggestion[]
+  AppUser_SuggestionBox_CheckedByToAppUser   AppUser?                 @relation("SuggestionBox_CheckedByToAppUser", fields: [CheckedBy], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_SuggestionBox_CheckedBy")
+  AppUser_SuggestionBox_CreatedByToAppUser   AppUser?                 @relation("SuggestionBox_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_SuggestionBox_CreatedBy")
+  AppUser_SuggestionBox_ModifiedByToAppUser  AppUser?                 @relation("SuggestionBox_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_SuggestionBox_ModifiedBy")
+  AppUser_SuggestionBox_SuggestedByToAppUser AppUser                  @relation("SuggestionBox_SuggestedByToAppUser", fields: [SuggestedBy], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_SuggestionBox_SuggestedBy")
+  SuggestionState                            SuggestionState          @relation(fields: [SuggestionStateID], references: [SuggestionStateID], onDelete: NoAction, onUpdate: NoAction, map: "FK_SuggestionBox_SuggestionState")
+
+  @@index([CheckedBy], map: "FK_SuggestionBox_CheckedBy")
+  @@index([CreatedBy], map: "FK_SuggestionBox_CreatedBy")
+  @@index([ModifiedBy], map: "FK_SuggestionBox_ModifiedBy")
+  @@index([SuggestedBy], map: "FK_SuggestionBox_SuggestedBy")
+  @@index([SuggestionStateID], map: "FK_SuggestionBox_SuggestionState")
+}
+
+model SuggestionState {
+  SuggestionStateID                           Int             @id @default(autoincrement())
+  StateName                                   String          @unique(map: "StateName") @db.VarChar(50)
+  CreatedAt                                   DateTime        @default(now()) @db.DateTime(0)
+  CreatedBy                                   Int?
+  ModifiedAt                                  DateTime?       @db.DateTime(0)
+  ModifiedBy                                  Int?
+  SuggestionBox                               SuggestionBox[]
+  AppUser_SuggestionState_CreatedByToAppUser  AppUser?        @relation("SuggestionState_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_SuggestionState_CreatedBy")
+  AppUser_SuggestionState_ModifiedByToAppUser AppUser?        @relation("SuggestionState_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_SuggestionState_ModifiedBy")
+
+  @@index([CreatedBy], map: "FK_SuggestionState_CreatedBy")
+  @@index([ModifiedBy], map: "FK_SuggestionState_ModifiedBy")
+}
+
+model UrgentReport {
+  UrgentReportID                           Int       @id @default(autoincrement())
+  UrgencyDate                              DateTime  @default(now()) @db.DateTime(0)
+  IsChecked                                Boolean   @default(false)
+  CreatedAt                                DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                Int?
+  ModifiedAt                               DateTime? @db.DateTime(0)
+  ModifiedBy                               Int?
+  BoycottID                                Int
+  Boycott                                  Boycott   @relation(fields: [BoycottID], references: [BoycottID], onDelete: NoAction, onUpdate: NoAction, map: "FK_UrgentReport_Boycott")
+  AppUser_UrgentReport_CreatedByToAppUser  AppUser?  @relation("UrgentReport_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_UrgentReport_CreatedBy")
+  AppUser_UrgentReport_ModifiedByToAppUser AppUser?  @relation("UrgentReport_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_UrgentReport_ModifiedBy")
+
+  @@index([BoycottID], map: "FK_UrgentReport_Boycott")
+  @@index([CreatedBy], map: "FK_UrgentReport_CreatedBy")
+  @@index([ModifiedBy], map: "FK_UrgentReport_ModifiedBy")
+}
+
+model UserFavoriteBoycott {
+  UserID                                          Int
+  BoycottID                                       Int
+  FavoriteDate                                    DateTime  @default(now()) @db.DateTime(0)
+  CreatedAt                                       DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                       Int?
+  ModifiedAt                                      DateTime? @db.DateTime(0)
+  ModifiedBy                                      Int?
+  AppUser_UserFavoriteBoycott_UserIDToAppUser     AppUser   @relation("UserFavoriteBoycott_UserIDToAppUser", fields: [UserID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_UserFavoriteBoycott_AppUser")
+  Boycott                                         Boycott   @relation(fields: [BoycottID], references: [BoycottID], onDelete: NoAction, onUpdate: NoAction, map: "FK_UserFavoriteBoycott_Boycott")
+  AppUser_UserFavoriteBoycott_CreatedByToAppUser  AppUser?  @relation("UserFavoriteBoycott_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_UserFavoriteBoycott_CreatedBy")
+  AppUser_UserFavoriteBoycott_ModifiedByToAppUser AppUser?  @relation("UserFavoriteBoycott_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_UserFavoriteBoycott_ModifiedBy")
+
+  @@id([UserID, BoycottID])
+  @@index([BoycottID], map: "FK_UserFavoriteBoycott_Boycott")
+  @@index([CreatedBy], map: "FK_UserFavoriteBoycott_CreatedBy")
+  @@index([ModifiedBy], map: "FK_UserFavoriteBoycott_ModifiedBy")
+}
+
+model UserVotesBoycott {
+  UserID                                       Int
+  BoycottID                                    Int
+  IsInFavor                                    Boolean
+  VoteDate                                     DateTime  @default(now()) @db.DateTime(0)
+  CreatedAt                                    DateTime  @default(now()) @db.DateTime(0)
+  CreatedBy                                    Int?
+  ModifiedAt                                   DateTime? @db.DateTime(0)
+  ModifiedBy                                   Int?
+  AppUser_UserVotesBoycott_UserIDToAppUser     AppUser   @relation("UserVotesBoycott_UserIDToAppUser", fields: [UserID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_UserVotesBoycott_AppUser")
+  Boycott                                      Boycott   @relation(fields: [BoycottID], references: [BoycottID], onDelete: NoAction, onUpdate: NoAction, map: "FK_UserVotesBoycott_Boycott")
+  AppUser_UserVotesBoycott_CreatedByToAppUser  AppUser?  @relation("UserVotesBoycott_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_UserVotesBoycott_CreatedBy")
+  AppUser_UserVotesBoycott_ModifiedByToAppUser AppUser?  @relation("UserVotesBoycott_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_UserVotesBoycott_ModifiedBy")
+
+  @@id([UserID, BoycottID])
+  @@index([BoycottID], map: "FK_UserVotesBoycott_Boycott")
+  @@index([CreatedBy], map: "FK_UserVotesBoycott_CreatedBy")
+  @@index([ModifiedBy], map: "FK_UserVotesBoycott_ModifiedBy")
+}
+
+model UserVotesComment {
+  UserID                                       Int
+  CommentID                                    Int
+  IsInFavor                                    Boolean
+  VoteDate                                     DateTime       @default(now()) @db.DateTime(0)
+  CreatedAt                                    DateTime       @default(now()) @db.DateTime(0)
+  CreatedBy                                    Int?
+  ModifiedAt                                   DateTime?      @db.DateTime(0)
+  ModifiedBy                                   Int?
+  AppUser_UserVotesComment_UserIDToAppUser     AppUser        @relation("UserVotesComment_UserIDToAppUser", fields: [UserID], references: [UserID], onDelete: NoAction, onUpdate: NoAction, map: "FK_UserVotesComment_AppUser")
+  CommentBoycott                               CommentBoycott @relation(fields: [CommentID], references: [CommentBoycottID], onDelete: NoAction, onUpdate: NoAction, map: "FK_UserVotesComment_CommentBoycott")
+  AppUser_UserVotesComment_CreatedByToAppUser  AppUser?       @relation("UserVotesComment_CreatedByToAppUser", fields: [CreatedBy], references: [UserID], map: "FK_UserVotesComment_CreatedBy")
+  AppUser_UserVotesComment_ModifiedByToAppUser AppUser?       @relation("UserVotesComment_ModifiedByToAppUser", fields: [ModifiedBy], references: [UserID], map: "FK_UserVotesComment_ModifiedBy")
+
+  @@id([UserID, CommentID])
+  @@index([CommentID], map: "FK_UserVotesComment_CommentBoycott")
+  @@index([CreatedBy], map: "FK_UserVotesComment_CreatedBy")
+  @@index([ModifiedBy], map: "FK_UserVotesComment_ModifiedBy")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model WeekTop {
+  WeekTopID     Int      @id @default(autoincrement())
+  WeekStartDate DateTime @db.Date
+  WeekEndDate   DateTime @db.Date
+  CreatedAt     DateTime @default(now()) @db.DateTime(0)
+}
