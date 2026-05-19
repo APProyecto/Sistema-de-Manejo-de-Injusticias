@@ -10,10 +10,12 @@
     "mongo:generate": "prisma generate --schema=prisma/mongodb/schema.prisma",
     "mongo:studio": "prisma studio --schema=prisma/mongodb/schema.prisma",
     "mysql:test": "tsx src/testMysql.ts",
+    "mongo:test" : "tsx src/testMongo.ts",
     "generate": "npm run mysql:generate && npm run mongo:generate"
   },
   "dependencies": {
-    "@prisma/client": "6.19.0"
+    "@prisma/client": "6.19.0",
+    "mongodb": "^7.2.0"
   },
   "devDependencies": {
     "@types/node": "^25.8.0",
