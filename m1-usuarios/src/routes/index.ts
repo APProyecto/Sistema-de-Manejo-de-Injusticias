@@ -1,6 +1,6 @@
 import { Router } from "express";
 import usersRoutes from "../modules/users/users.routes";
-
+import fileRoutes from "../modules/files/files.routes";
 const router = Router();
 
 router.get("/", (_req, res) => {
@@ -12,4 +12,5 @@ router.get("/", (_req, res) => {
 
 router.use("/users", usersRoutes);
 
+router.use("/files", fileRoutes);
 export default router;
