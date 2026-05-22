@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import CerateBoycott from './pages/CreateBoycott';
 import SideMenuUnsigned from './components/SideMenuUnsigned';
+import Register from './pages/Register';
 
 const theme = darkTheme;
 const singedIn = false;
@@ -33,6 +34,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Guide />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/create" element={<CerateBoycott />} />
             <Route path="/my-posts" element={<MyPosts />} />

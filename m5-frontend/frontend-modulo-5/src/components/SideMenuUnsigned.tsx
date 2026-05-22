@@ -28,7 +28,7 @@ export default function SideMenuUnsigned() {
             {/* Register */}
             <Button 
                 sx={sideMenuStyles.primaryButton(theme)}
-                onClick={() => handleNavigation('/create')}
+                onClick={() => handleNavigation('/register')}
             >
                 <Typography sx={sideMenuStyles.primaryButtonText(theme)}>Register</Typography>
             </Button>
