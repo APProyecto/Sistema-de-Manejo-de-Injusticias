@@ -78,6 +78,21 @@ export const sideMenuStyles = {
       backgroundColor: theme.palette.action.hover,
     }
   }),
+  searchFileButton: (theme: Theme): SxProps<Theme> => ({
+    justifyContent: 'left',
+    backgroundColor: theme.palette.background.default,
+    height: '52px',
+    font: theme.typography.body2,
+    color: theme.palette.secondary.main,
+    width: 'auto',
+    paddingX: '25px',
+    '&:hover':{
+      backgroundColor: theme.palette.action.hover,
+    },
+    borderRadius:2,
+    ml:'auto',
+    mr:'auto'
+  }),
   buttonText: (theme: Theme): SxProps<Theme> => ({
     marginLeft: '10px',
     font: theme.typography.body2,
