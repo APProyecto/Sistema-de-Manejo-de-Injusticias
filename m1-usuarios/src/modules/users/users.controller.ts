@@ -23,6 +23,112 @@ export async function countUsers(_req: Request, res: Response) {
   }
 }
 
+export async function checkRol(req: Request, res: Response) {
+  try {
+    const {email} = req.body;
+    const ID = await prisma.appUser.findUnique({
+      where : {Email : email},
+      select : {UserID : true}
+    });
+    const rol = await prisma.admin.findUnique({
+      where : {AdminID : ID?.UserID},
+    });
+    if(rol){
+      return res.json({
+        result : '1',
+      });
+    }
+    return res.json({
+      result : '0',
+    });
+  } catch (error) {
+    console.error("Rol error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+export async function convertAdminToUser(req: Request, res: Response) {
+  try {
+    const {email} = req.body;
+    const ID = await prisma.appUser.findUnique({
+      where : {Email : email},
+      select : {UserID : true}
+    });
+    
+    if (!Number.isInteger(ID?.UserID)) {
+      return res.status(400).json({
+        error: "Invalid or missing genderId",
+      });
+    }
+    const Id = Number(ID?.UserID);
+    
+    const Deleterol = await prisma.admin.delete({
+      where : {AdminID : Id},
+    })
+
+    const rol = await prisma.normalUser.create({
+      data : {NormalUserID : Id},
+    });
+    if(rol){
+      return res.json({
+        result : '1',
+      });
+    }
+    return res.json({
+      result : '0',
+    });
+  } catch (error) {
+    console.error("Rol error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function convertUserToAdmin(req: Request, res: Response) {
+  try {
+    const {email} = req.body;
+    const ID = await prisma.appUser.findUnique({
+      where : {Email : email},
+      select : {UserID : true}
+    });
+    
+    if (!Number.isInteger(ID?.UserID)) {
+      return res.status(400).json({
+        error: "Invalid or missing genderId",
+      });
+    }
+    const Id = Number(ID?.UserID);
+    
+    const Deleterol = await prisma.normalUser.delete({
+      where : {NormalUserID : Id},
+    })
+
+    const rol = await prisma.admin.create({
+      data : {AdminID : Id,
+              IsSuperAdmin: false,
+    },
+    });
+    if(rol){
+      return res.json({
+        result : '1',
+      });
+    }
+    return res.json({
+      result : '0',
+    });
+  } catch (error) {
+    console.error("Rol error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
 /*
   Function: listUsers.
   Inputs: None.
