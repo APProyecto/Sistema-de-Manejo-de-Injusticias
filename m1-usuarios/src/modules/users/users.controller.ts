@@ -157,6 +157,8 @@ export async function registerUser(req: Request, res: Response) {
   }
 }
 
+
+
 /**
  * Function: loginUser
  * Inputs:
@@ -242,5 +244,78 @@ export async function loginUser(req: Request, res: Response) {
     return res.status(500).json({
       error: "Internal server error",
     });
+  }
+}
+
+type Publication = {
+  BoycottID: number;
+  Title: string;
+  CaseNumber?: number;
+  PublicationDate: Date;
+  MongoDocumentId: string;
+  CreatorID: number;
+  BoycottStateID: number;
+  InjusticeTypeID: number;
+  EntityID: number;
+}
+
+type commentBoycott = {
+  CommentBoycottID: Number;
+  Description: string;
+  CommentDate: Date;
+  BoycottID: Number;
+  CommentStateID: Number;
+}
+
+type Entity = {
+  EntityID: Number;
+  EntityName: string;
+  MongoDocumentID: string;
+}
+
+type history = {
+  Publication : Publication[];
+  Comments : commentBoycott[];
+  Entities : Entity[];
+}
+
+
+function userHistoryByUsername(username: string) : {Publication[], }
+export async function userHistory(req: Request, res: Response) {
+  try {
+    const {email, username} = req.body;
+
+    if ((!email) && (!username)) {
+      return res.status(400).json({
+        error: "Missing email or username",
+      });
+    }
+
+    if(typeof email !== "string" || typeof username !== "string") {
+      return res.status(400).json({
+        error: "Invalid email or username",
+      });
+    }
+
+    if(email.trim() == "" && username.trim() == "") {
+      return res.status(400).json({
+        error: "Invalid email or username",
+      });
+    }
+
+    if(email.trim() == "") {
+
+    }
+
+
+
+
+
+  }catch(error) {
+    console.log("userHistory error:", error);
+    
+    return res.status(500).json({
+      error: "Internal server error",
+    })
   }
 }
