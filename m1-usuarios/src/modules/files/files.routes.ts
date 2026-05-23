@@ -5,6 +5,7 @@ import {
     getInjusticeTypePicture,
     syncInjusticeTypesToMongo,
     uploadInjusticeTypePicture,
+    uploadUserAppPicture,
 } from "./files.controller"
 
 const router = Router();
@@ -22,6 +23,11 @@ router.put("/injustice-types/:injusticeTypeId/picture",
     upload.single("file"),
     uploadInjusticeTypePicture
 );
+
+router.put("/appUser/:appUserId/picture",
+    upload.single("file"),
+    uploadUserAppPicture
+)
 
 router.get(
     "/injustice-types/:injusticeTypeId/picture",
