@@ -8,9 +8,10 @@ import Suggestions from './pages/Suggestions';
 import { Container, ThemeProvider } from '@mui/system';
 import { darkTheme, lightTheme } from './theme';
 import { useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Outlet, Route, Routes } from 'react-router-dom';
 import CerateBoycott from './pages/CreateBoycott';
 import SideMenuUnsigned from './components/SideMenuUnsigned';
+import Register from './pages/Register';
 
 const theme = darkTheme;
 const singedIn = false;
@@ -18,28 +19,44 @@ const singedIn = false;
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <Container>
-        <Header />
-        <Container sx={
-          {display:'flex', 
-          flexDirection:'row', 
-          height: 'calc(100vh - 90px)',
-          overflow: 'hidden'
-          }}>
-          {singedIn?
-            <SideMenu />:
-            <SideMenuUnsigned />
+      <Routes>
+        <Route
+          element={
+            <Container>
+              <Header />
+              <Container sx={
+                {display:'flex', 
+                flexDirection:'row', 
+                height: 'calc(100vh - 90px)',
+                overflow: 'hidden'
+                }}>
+                {singedIn?
+                  <SideMenu />:
+                  <SideMenuUnsigned />
+                }
+                <Outlet/>
+              </Container>
+            </Container>
           }
-          <Routes>
-            <Route path="/" element={<Guide />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/create" element={<CerateBoycott />} />
-            <Route path="/my-posts" element={<MyPosts />} />
-            <Route path="/suggestions" element={<Suggestions />} />
-          </Routes>
-        </Container>
-      </Container>
+        >
+      
+      {/*ESTAS SON LAS RUTAS QUE CONTIENEN SIDEBARS */}
+      
+          <Route path="/" element={<Guide />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/create" element={<CerateBoycott />} />
+          <Route path="/my-posts" element={<MyPosts />} />
+          <Route path="/suggestions" element={<Suggestions />} />
+        
+        </Route>
+      
+      {/*ESTAS SON LAS RUTAS QUE NO CONTIENEN SIDEBARS */}
+      
+        <Route path="/register" element={<Register />} />
+  
+      </Routes>
+
     </ThemeProvider>
   );
 }
