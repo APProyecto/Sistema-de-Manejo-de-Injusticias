@@ -26,9 +26,25 @@ export const loginWindowStyles = {
         borderRadius: '15px',
         color: theme.palette.grey[100]
     }),
-    textField : (theme: Theme): SxProps<Theme> => ({
-        backgroundColor: '#1E1E1E',
-        '& input': { color: 'white' },
-        '& .MuiInputLabel-root': { color: theme.palette.grey[200] },
-    })
+
+    secundaryButton : (theme: Theme): SxProps<Theme> => ({
+        width: '81%',
+        backgroundColor: 'white',
+        borderRadius: '15px',
+        color: theme.palette.grey[100]
+    }),
+
+    textField: (theme: Theme): SxProps<Theme> => ({
+    backgroundColor: '#1E1E1E',
+    width: '81%',
+    borderRadius: '10px',
+    '& .MuiFilledInput-root': {
+        borderRadius: '10px',                          
+        '&:before': { borderBottom: 'none' },          
+        '&:after': { borderBottom: 'none' },           
+        '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
+    },
+    '& input': { color: 'white' },
+    '& .MuiInputLabel-root': { color: theme.palette.grey[200] },
+})
 }

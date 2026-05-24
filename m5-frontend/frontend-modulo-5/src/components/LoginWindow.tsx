@@ -30,12 +30,12 @@ export default function LoginWindow({ open, onClose }: LoginWindowProps) {
                 <Divider sx={loginWindowStyles.divider(theme)}>
                     <Typography>OR</Typography>
                 </Divider>
-                <TextField sx={loginWindowStyles.textField(theme)} label="Email or username" variant="filled" size="small" />
-                <TextField sx={loginWindowStyles.textField(theme)} label="Password" variant="filled" size="small" />
+                <TextField sx={loginWindowStyles.textField(theme)} required label="Email or username" variant="filled" size="small" />
+                <TextField sx={loginWindowStyles.textField(theme)} required label="Password" variant="filled" size="small" />
                 <Typography variant='body1'>Forgot password?</Typography>
                 <Typography>Don't have an account? Sign Up</Typography>
-                <Button>
-                    <Typography>Log In</Typography>
+                <Button sx={loginWindowStyles.secundaryButton(theme)}>
+                    Log In
                 </Button>
             </DialogContent>
         </Dialog>
