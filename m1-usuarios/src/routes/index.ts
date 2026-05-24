@@ -1,6 +1,9 @@
+import { prisma } from "../lib/prisma";
+import { checkJwt } from "../middlewares/auth.middleware";
 import { Router } from "express";
 import usersRoutes from "../modules/users/users.routes";
 import fileRoutes from "../modules/files/files.routes";
+import crypto from "crypto";
 const router = Router();
 
 router.get("/", (_req, res) => {
@@ -13,4 +16,72 @@ router.get("/", (_req, res) => {
 router.use("/users", usersRoutes);
 
 router.use("/files", fileRoutes);
+
+router.get(
+  "/protected",
+  checkJwt,
+  (_req, res) => {
+    res.json({
+      message: "JWT valido",
+    });
+  }
+);
+
+router.get("/me", checkJwt, async (req: any, res) => {
+
+  try {
+
+    const payload = req.auth?.payload;
+
+    const auth0Id = payload.sub;
+    const email = payload.email || "";
+    const name = payload.name || "User";
+
+    let user = await prisma.appUser.findFirst({
+      where: {
+        Email: email,
+      },
+    });
+
+    if (!user) {
+
+      user = await prisma.appUser.create({
+        data: {
+
+          FirstName: name,
+          LastName: "",
+          UserName: email.split("@")[0],
+          Email: email,
+
+          Password: "",
+
+          RegisteredAt: new Date(),
+
+          IsAdmin: false,
+
+          NumberPublications: 0,
+
+          MongoDocumentID: crypto.randomUUID(),
+
+          CreatedAt: new Date(),
+
+          GenderID: 3,
+          CountryID: 40,
+          AccountStateID: 1,
+        },
+      });
+    }
+
+    res.json(user);
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      error: "Error syncing user",
+    });
+  }
+});
+
 export default router;

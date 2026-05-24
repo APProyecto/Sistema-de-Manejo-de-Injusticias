@@ -3,9 +3,15 @@ import SearchIcon from '@mui/icons-material/Search';
 import { headerStyles } from './HeaderStyles';
 import TuneIcon from '@mui/icons-material/Tune';
 import LogoSrc from '../assets/logo.png';
+import { useAuth0 } from "@auth0/auth0-react";
 export default function Header() {
   const theme = useTheme();
-
+  const {
+    loginWithRedirect,
+    logout,
+    isAuthenticated,
+    user,
+  } = useAuth0();
   return (
     <AppBar sx={headerStyles.appBar(theme)}>
       <Toolbar sx={headerStyles.toolbar(theme)}>
@@ -48,9 +54,31 @@ export default function Header() {
         />
 
         <Box>
-          <Button color="inherit" href="/login" variant="outlined" sx={headerStyles.loginButton(theme)}>
-            Login
-          </Button>
+          {!isAuthenticated ? (
+            <Button
+              color="inherit"
+              variant="outlined"
+              sx={headerStyles.loginButton(theme)}
+              onClick={() => loginWithRedirect()}
+            >
+              Login
+            </Button>
+          ) : (
+            <Button
+              color="inherit"
+              variant="outlined"
+              sx={headerStyles.loginButton(theme)}
+              onClick={() =>
+                logout({
+                  logoutParams: {
+                    returnTo: window.location.origin,
+                  },
+                })
+              }
+            >
+              Logout
+            </Button>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

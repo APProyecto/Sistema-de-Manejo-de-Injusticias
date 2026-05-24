@@ -1,3 +1,4 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import Guide from './pages/Guide';
 import Header from './components/Header';
 import SideMenu from './components/SideMenu'
@@ -12,11 +13,34 @@ import { Outlet, Route, Routes } from 'react-router-dom';
 import CerateBoycott from './pages/CreateBoycott';
 import SideMenuUnsigned from './components/SideMenuUnsigned';
 import Register from './pages/Register';
+import { useEffect } from 'react';
+import { syncUser } from './services/authService';
 
 const theme = darkTheme;
-const singedIn = false;
+//const singedIn = false;
 
 function App() {
+  const {
+  isAuthenticated,
+  getAccessTokenSilently,
+  } = useAuth0();
+
+  useEffect(() => {
+  async function syncAuthUser() {
+    try {
+        if (!isAuthenticated) return;
+        const token = await getAccessTokenSilently();
+        const user = await syncUser(token);
+        console.log("Usuario sincronizado:", user);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    syncAuthUser();
+
+  }, [isAuthenticated]);
+
   return (
     <ThemeProvider theme={theme}>
       <Routes>
@@ -30,7 +54,7 @@ function App() {
                 height: 'calc(100vh - 90px)',
                 overflow: 'hidden'
                 }}>
-                {singedIn?
+                {isAuthenticated?
                   <SideMenu />:
                   <SideMenuUnsigned />
                 }
