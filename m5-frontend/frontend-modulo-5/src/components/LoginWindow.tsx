@@ -12,28 +12,34 @@ interface LoginWindowProps {
 export default function LoginWindow({ open, onClose }: LoginWindowProps) {
     const theme = useTheme();
     return (
-        <Dialog open={open} onClose={onClose} >
+        <Dialog sx={loginWindowStyles.dialog(theme)} open={open} onClose={onClose} >
             <DialogContent sx={loginWindowStyles.dialogContent(theme)}>
 
-                <IconButton onClick={onClose} sx={{ position: 'absolute', top: 8, right: 8 }}>
+                <IconButton onClick={onClose} sx={loginWindowStyles.closeButton(theme)}>
                 <CloseIcon />
                 </IconButton>
 
                 <Typography variant='h2'>Log In</Typography>
-                <Typography variant='body1'>By continuing, you agree to our <Typography sx={loginWindowStyles.highlighted(theme)}>User Agreement</Typography> and acknowledge that you understand the Privacy Policy</Typography>
-                <Button startIcon={<img src={AuthLogo} width={30} height={30} />} sx={loginWindowStyles.primaryButton(theme)}>
-                    Continue with Auth0
+                <Typography variant='body1' sx={loginWindowStyles.typography(theme)}>By continuing, you agree to our <Typography sx={loginWindowStyles.highlighted(theme)}>User Agreement</Typography> and acknowledge that you understand the Privacy Policy</Typography>
+                <Button sx={loginWindowStyles.primaryButton(theme)}>
+                    <img src={AuthLogo} width={30} height={30} />
+                    <Typography sx={loginWindowStyles.textButton(theme)}>
+                        Continue with Auth0
+                    </Typography>
                 </Button>
-                <Button startIcon={<img src={googleLogo} width={30} height={30} />} sx={loginWindowStyles.primaryButton(theme)}>
-                    Continue with Google
+                <Button sx={loginWindowStyles.primaryButton(theme)}>
+                    <img src={googleLogo} width={30} height={30} />
+                    <Typography sx={loginWindowStyles.textButton(theme)}>
+                        Continue with Auth0
+                    </Typography>
                 </Button>
                 <Divider sx={loginWindowStyles.divider(theme)}>
                     <Typography>OR</Typography>
                 </Divider>
                 <TextField sx={loginWindowStyles.textField(theme)} required label="Email or username" variant="filled" size="small" />
                 <TextField sx={loginWindowStyles.textField(theme)} required label="Password" variant="filled" size="small" />
-                <Typography variant='body1'>Forgot password?</Typography>
-                <Typography>Don't have an account? Sign Up</Typography>
+                <Typography sx={loginWindowStyles.typography(theme)} variant='body1'>Forgot password?</Typography>
+                <Typography sx={loginWindowStyles.typography(theme)} variant='body1'>Don't have an account? Sign Up</Typography>
                 <Button sx={loginWindowStyles.secundaryButton(theme)}>
                     Log In
                 </Button>
