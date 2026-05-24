@@ -6,6 +6,9 @@ import {
   createOrUpdateAppUserDocument
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
+import { OAuth2Client } from "google-auth-library";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 /*
   Function: countUsers.
@@ -242,5 +245,84 @@ export async function loginUser(req: Request, res: Response) {
     return res.status(500).json({
       error: "Internal server error",
     });
+  }
+}
+
+/**
+ * Function: googleLogin
+ * Inputs: token (Google).
+ * Description: Authenticates the user via Google and registers them if they do not exist.
+ * Outputs: JSON response including the system's JWT and user data.
+**/
+export async function googleLogin(req: Request, res: Response) {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ error: "Google token is required" });
+  }
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      return res.status(401).json({ error: "Invalid Google token" });
+    }
+
+    const { email, given_name, family_name, name } = payload;
+    const genderRecord = await prisma.gender.findFirst({
+      where: {
+        GenderName: { contains: 'Other' } 
+      }
+    });
+    const defaultGenderId = genderRecord?.GenderID|| 3;
+    let appUser = await prisma.appUser.findFirst({
+      where: { Email: email.toLowerCase() },
+    });
+
+    if (!appUser) {
+      appUser = await prisma.appUser.create({
+        data: {
+          FirstName: given_name || "",
+          LastName: family_name || "",
+          UserName: name || email.split("@")[0],
+          Email: email.toLowerCase(),
+          Password: "", 
+          IsAdmin: false, 
+          AccountStateID: 1,
+          CountryID: 196,           
+          GenderID: defaultGenderId,
+        },
+      });
+
+      await createOrUpdateAppUserDocument(
+        appUser.UserID,
+        appUser.UserName,
+      );
+    }
+
+    if (appUser.AccountStateID !== 1) {
+      return res.status(403).json({ error: "Account is not active" });
+    }
+    
+    return res.status(200).json({
+      message: "Login successful with Google",
+      user: {
+        userId: appUser.UserID,
+        firstName: appUser.FirstName,
+        lastName: appUser.LastName,
+        username: appUser.UserName,
+        email: appUser.Email,
+        isAdmin: appUser.IsAdmin,
+        mongoDocumentId: appUser.MongoDocumentID,
+      },
+    });
+
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    return res.status(401).json({ error: "Authentication failed" });
   }
 }
