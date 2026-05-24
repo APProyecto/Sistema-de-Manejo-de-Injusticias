@@ -14,7 +14,7 @@ import SideMenuUnsigned from './components/SideMenuUnsigned';
 import Register from './pages/Register';
 
 const theme = darkTheme;
-const singedIn = true;
+const singedIn = false;
 
 function App() {
   return (
