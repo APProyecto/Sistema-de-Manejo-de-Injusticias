@@ -9,7 +9,7 @@ import { prisma } from "../../config/prisma";
         2 = Publication date ascending
         3 = Total interactions (VotesInFavor + VotesAgainst) descending
         4 = Total interactions (VotesInFavor + VotesAgainst) ascending
-        For each comment, fetches the creator's username and profile picture from MongoDB.
+        For each comment, fetches the creator's username.
     Outputs: JSON response with an array of comments or an error message.
 */
 type SortOrder = "asc" | "desc";
