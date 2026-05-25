@@ -1,15 +1,18 @@
 import { AppBar, Toolbar, Typography, Button, Box, Container, useTheme, TextField, InputAdornment } from '@mui/material';
 import { sideMenuStyles } from './SideMenuStyles';
+import LoginWindow from './LoginWindow';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import StarBorderPurple500OutlinedIcon from '@mui/icons-material/StarBorderPurple500Outlined';
 import CreateIcon from '@mui/icons-material/Create';
 import MarkunreadOutlinedIcon from '@mui/icons-material/MarkunreadOutlined';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function SideMenuUnsigned() {
   const theme = useTheme();
   const navigate = useNavigate();
+  const [loginOpen, setLoginOpen] = useState (false);
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -17,6 +20,7 @@ export default function SideMenuUnsigned() {
 
   return (
     <Container sx={sideMenuStyles.unsignedContainer(theme)}>
+        <LoginWindow open = {loginOpen} onClose={() => setLoginOpen(false)}/>
 
         <Container sx={sideMenuStyles.messageContainer(theme)}>
             <Typography variant='h2'>
@@ -28,7 +32,7 @@ export default function SideMenuUnsigned() {
             {/* Register */}
             <Button 
                 sx={sideMenuStyles.primaryButton(theme)}
-                onClick={() => handleNavigation('/create')}
+                onClick={() => handleNavigation('/register')}
             >
                 <Typography sx={sideMenuStyles.primaryButtonText(theme)}>Register</Typography>
             </Button>
@@ -42,7 +46,7 @@ export default function SideMenuUnsigned() {
             {/* Login */}
             <Button 
                 sx={sideMenuStyles.secondaryButton(theme)}
-                onClick={() => handleNavigation('/create')}
+                onClick={() => setLoginOpen(true)}
             >
                 <Typography sx={sideMenuStyles.secondaryButtonText(theme)}>Login</Typography>
             </Button>

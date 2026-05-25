@@ -3,8 +3,10 @@ import { Router } from "express";
 import multer from "multer";
 import {
     getInjusticeTypePicture,
+    getUserAppPicture,
     syncInjusticeTypesToMongo,
     uploadInjusticeTypePicture,
+    uploadUserAppPicture,
 } from "./files.controller"
 
 const router = Router();
@@ -23,9 +25,21 @@ router.put("/injustice-types/:injusticeTypeId/picture",
     uploadInjusticeTypePicture
 );
 
+router.put("/appUser/:appUserId/picture",
+    upload.single("file"),
+    uploadUserAppPicture
+)
+
 router.get(
     "/injustice-types/:injusticeTypeId/picture",
     getInjusticeTypePicture
 );
+
+router.get(
+    "/appUser/:appUserId/picture",
+    getUserAppPicture
+);
+
+
 
 export default router;

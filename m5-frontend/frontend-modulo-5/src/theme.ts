@@ -42,7 +42,7 @@ export const darkTheme = createTheme({
     action: {hover: '#ffffff3b'},
     grey: {"100": '#3e3e3a', "200": '#848787'},
     success: {main: '#eeca3c'},
-    error: {main: '#640d0d'}
+    error: {main: '#640d0d'},
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',

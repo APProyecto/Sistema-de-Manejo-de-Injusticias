@@ -5,17 +5,124 @@ import { prisma } from "../../config/prisma";
 import {
     downloadFileFromGridFS,
     uploadFileToGridFS,
+    deleteFileFromGridFS,
 } from "../../../../m0-base-datos/src/services/gridfs.service";
 
 import {
     createFileMetadata,
     createOrUpdateInjusticeTypeDocument,
     getInjusticeTypeDocumentById,
+    getAppUserDocumentByUserId,
     updateInjusticeTypePicture,
+    updateAppUserPicture,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
 import { buildFileMetadata } from "../../../../m0-base-datos/src/utils/fileMetadata";
 
+
+/**
+ * Function: uploadUserAppPicture
+ * Inputs:
+ *     appUserId: Number from url params
+ *     file: Picuture file
+ * Description: Uploads the UserApp picture to GridFS, creates/updates its mongo document and stores the Mongo document ID in MySQL.
+ * Outputs:  JSON response with Mongo document ID and file information.
+ */
+export async function uploadUserAppPicture(req: Request, res: Response) {
+    try{
+        const appUserId = Number(req.params.appUserId);
+
+        if(!Number.isInteger(appUserId) || appUserId <= 0) {
+            return res.status(400).json({
+                error: "Invalid appUserId",
+            });
+        }
+        
+        if(!req.file) {
+            return res.status(400).json({
+                error: "No file uploaded. Use form-data with key 'file' ",
+            });
+        }
+
+        const appUser = await prisma.appUser.findUnique({
+            where : {
+                UserID: appUserId,
+            },
+            select : {
+                UserID : true,
+                UserName :true,
+            },
+        });
+
+        if(!appUser) {
+            return res.status(400).json({
+                error: "appUser not found"
+            });
+        }
+
+        const currentMongoDocument = await getAppUserDocumentByUserId(appUserId);
+
+        if (currentMongoDocument?.picture?.mongoFileId) {
+            await deleteFileFromGridFS(
+                currentMongoDocument.picture.mongoFileId.toString()
+            );
+        }
+
+        const mongoFileId = await uploadFileToGridFS(
+            req.file.originalname,
+            req.file.buffer,
+            req.file.mimetype
+        );
+
+        const picture = buildFileMetadata (
+            req.file.originalname,
+            req.file.size,
+            req.file.mimetype,
+            mongoFileId
+        );
+
+        const fileMetadataResult = await createFileMetadata(picture);
+
+        const mongoDocument = await updateAppUserPicture(
+            appUser.UserID,
+            appUser.UserName,
+            picture 
+        );
+
+        if(!mongoDocument?._id) {
+            return res.status(500).json({
+                error: "Mongo document was not created or updated",
+            });
+        }
+
+        await prisma.appUser.update({
+            where : {
+                UserID : appUser.UserID,
+            },
+            data : {
+                MongoDocumentID : mongoDocument._id.toString(),
+            }
+        });
+
+        return res.status(201).json({
+            message: "appUser picture uploaded succesfully",
+            appUserId: appUser.UserID,
+            appUserName: appUser.UserName,
+            mongoDocumentId: mongoDocument._id.toString(),
+            mongoFileId: mongoFileId.toString(),
+            fileMetadataId: fileMetadataResult.insertedId.toString(),
+            picture,
+        });
+
+
+    }catch(error) {
+        console.error("uploadUserAppPicture error:", error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+}
 /**
  * Function: uploadInjusticePicture
  * Inputs:
@@ -221,5 +328,85 @@ export async function syncInjusticeTypesToMongo(_req: Request , res: Response) {
         return res.status(500).json({
             error: "Internal server error"
         })
+    }
+}
+
+/**
+ 
+Function: getUserAppPicture,
+Inputs: appUserId from request params,
+Description: Retrieves the user picture metadata from MongoDB,
+and downloads the image stored in GridFS.,
+Outputs: Image buffer or error message.*/
+
+export async function getUserAppPicture(
+    req: Request,
+    res: Response
+) {
+    try {
+        const appUserId = Number(
+            req.params.appUserId
+        );
+
+        const appUser =
+            await prisma.appUser.findUnique({
+                where: {
+                    UserID: appUserId,
+                },
+            });
+
+        if (!appUser) {
+            return res.status(404).json({
+                error: "appUser not found",
+            });
+        }
+
+        const currentMongoDocument =
+            await getAppUserDocumentByUserId(
+                appUser.UserID
+            );
+
+        if (
+            !currentMongoDocument
+                ?.picture
+                ?.mongoFileId
+        ) {
+            return res.status(404).json({
+                error:
+                    "appUser picture not found",
+            });
+        }
+
+        const fileBuffer =
+            await downloadFileFromGridFS(
+                currentMongoDocument
+                    .picture
+                    .mongoFileId
+                    .toString()
+            );
+
+        res.setHeader(
+            "Content-Type",
+            currentMongoDocument.picture.contentType ?? "application/octet-stream"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `inline; filename="${currentMongoDocument.picture.fileName}`
+        );
+
+
+        return res.send(fileBuffer);
+
+    } catch (error) {
+        console.error(
+            "getUserAppPicture error:",
+            error
+        );
+
+        return res.status(500).json({
+            error:
+                "Internal server error",
+        });
     }
 }
