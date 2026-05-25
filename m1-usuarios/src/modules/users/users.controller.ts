@@ -22,32 +22,7 @@ export async function countUsers(_req: Request, res: Response) {
     });
   }
 }
-export async function isUser(req: Request, res: Response) {
-  try {
-    const {email} = req.body;
-    const ID = await prisma.appUser.findUnique({
-      where : {Email : email},
-      select : {UserID : true}
-    });
-    const rol = await prisma.admin.findUnique({
-      where : {AdminID : ID?.UserID},
-    });
-    if(rol){
-      return res.json({
-        result : '1',
-      });
-    }
-    return res.json({
-      result : '0',
-    });
-  } catch (error) {
-    console.error("Rol error:", error);
 
-    return res.status(500).json({
-      error: "Internal server error",
-    });
-  }
-}
 
 export async function checkRol(req: Request, res: Response) {
   try {
