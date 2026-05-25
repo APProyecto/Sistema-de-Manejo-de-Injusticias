@@ -3,13 +3,32 @@ import { prisma } from "../../config/prisma";
 
 /*
     Function: getComments.
-    Inputs: Request object containing BoycottID in the body.
-    Description: Retrieves comments for a specific boycott, ordered by votes in favor.
+    Inputs: Request object containing BoycottID in the query.
+    Description: Retrieves comments for a specific boycott, ordered by:
+        1 = Publication date descending
+        2 = Publication date ascending
+        3 = Total interactions (VotesInFavor + VotesAgainst) descending
+        4 = Total interactions (VotesInFavor + VotesAgainst) ascending
+        For each comment, fetches the creator's username and profile picture from MongoDB.
     Outputs: JSON response with an array of comments or an error message.
 */
+type SortOrder = "asc" | "desc";
+
+const SORT_OPTIONS: Record<number, { field: string; order: SortOrder }> = {
+    1: { field: "CommentDate", order: "desc" },
+    2: { field: "CommentDate", order: "asc"  },
+    3: { field: "interactions", order: "desc" },
+    4: { field: "interactions", order: "asc"  },
+};
+
 export async function getComments(req: Request, res: Response) {
     try {
-        const { BoycottID } = req.query;
+        const { BoycottID, SortBy } = req.query;
+
+        const sortCode = parseInt(SortBy as string) || 1;
+        const sortOption = SORT_OPTIONS[sortCode] ?? SORT_OPTIONS[1];
+        const isInteractionSort = sortOption.field === "interactions";
+
         const comments = await prisma.commentBoycott.findMany({
             where: {
                 BoycottID: parseInt(BoycottID as string),
@@ -22,23 +41,69 @@ export async function getComments(req: Request, res: Response) {
                 VotesInFavor: true,
                 VotesAgainst: true,
                 CommentState: true,
-            }, orderBy: {
-                VotesInFavor: "desc",
             },
+            orderBy: !isInteractionSort
+                ? { [sortOption.field]: sortOption.order }
+                : undefined,
         });
+
+        if (isInteractionSort) {
+            comments.sort((a, b) => {
+                const interactionsA = a.VotesInFavor + a.VotesAgainst;
+                const interactionsB = b.VotesInFavor + b.VotesAgainst;
+                return sortOption.order === "desc"
+                    ? interactionsB - interactionsA
+                    : interactionsA - interactionsB;
+            });
+        }
+
+        const uniqueCreatorIDs = [...new Set(comments.map((c) => c.CreatorID))];
+
+        const userProfiles = await Promise.all(
+            uniqueCreatorIDs.map(async (creatorId) => {
+                const appUser = await prisma.appUser.findUnique({
+                    where: { UserID: creatorId },
+                    select: {
+                        UserID: true,
+                        UserName: true
+                    },
+                });
+
+                if (!appUser) return { creatorId, userName: null};
+
+                return {
+                    creatorId,
+                    userName: appUser.UserName,
+                };
+            })
+        );
+
+        const userProfileMap = new Map(
+            userProfiles.map((profile) => [profile.creatorId, profile])
+        );
+
+        const enrichedComments = comments.map((comment) => {
+            const profile = userProfileMap.get(comment.CreatorID);
+            return {
+                ...comment,
+                interactions: comment.VotesInFavor + comment.VotesAgainst,
+                userName: profile?.userName ?? null,
+            };
+        });
+
         res.json({
             ok: true,
-            comments,
+            comments: enrichedComments,
         });
     } catch (error) {
         console.error("getComments error:", error);
-
         res.status(500).json({
             ok: false,
             error: "Internal server error",
         });
     }
-};
+}
+
 
 /*
     Function: createComment.
