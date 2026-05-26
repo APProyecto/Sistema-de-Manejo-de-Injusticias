@@ -3,18 +3,18 @@ import { loginWindowStyles } from './LoginWindowStyles';
 import CloseIcon from '@mui/icons-material/Close';
 import googleLogo from '../assets/google.svg';
 import AuthLogo from '../assets/auth0.svg';
-import { useGoogleLogin } from '@react-oauth/google';
+//import { useGoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 
 interface LoginWindowProps {
   open: boolean;
   onClose: () => void;
+  onLoginSuccess: (userData: any) => void;
 }
 
 
 
-export default function LoginWindow({ open, onClose }: LoginWindowProps) {
-
+export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWindowProps) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -25,7 +25,12 @@ export default function LoginWindow({ open, onClose }: LoginWindowProps) {
             body: JSON.stringify({ email, password })
         });
         const data = await result.json();
-        console.log(data);
+        if (result.ok) {
+            onLoginSuccess(data.user);
+            onClose();   
+        } else {
+            console.log(data.error);
+        }
     };
 /*
     const handleGoogleLogin = useGoogleLogin({
