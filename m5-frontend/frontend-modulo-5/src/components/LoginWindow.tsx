@@ -1,9 +1,9 @@
-import {useTheme, Dialog, DialogContent, IconButton, Typography, Divider, TextField, Button} from '@mui/material';
+import {useTheme, Dialog, DialogContent, IconButton, Typography, Divider, TextField, Button, Box} from '@mui/material';
 import { loginWindowStyles } from './LoginWindowStyles';
 import CloseIcon from '@mui/icons-material/Close';
 import googleLogo from '../assets/google.svg';
 import AuthLogo from '../assets/auth0.svg';
-import { useGoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 
 interface LoginWindowProps {
@@ -33,22 +33,7 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
         }
     };
 
-    const handleGoogleLogin = useGoogleLogin({
-        
-        onSuccess: async (response) => {
-            console.log("Hola");
-            const result = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/users/google`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: response.access_token })
-            });
-            const data = await result.json();
-            console.log(data);
-        },
-        onError: () => {
-            console.log('Google login failed');
-        }
-    });
+    
 
     const theme = useTheme();
     return (
@@ -61,18 +46,51 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
 
                 <Typography variant='h2'>Log In</Typography>
                 <Typography variant='body1' sx={loginWindowStyles.typography(theme)}>By continuing, you agree to our <Typography component='span' sx={loginWindowStyles.highlighted(theme)}>User Agreement</Typography> and acknowledge that you understand the Privacy Policy</Typography>
-                <Button sx={loginWindowStyles.primaryButton(theme)}>
+                <Button sx={loginWindowStyles.auth0Button(theme)}>
                     <img src={AuthLogo} width={30} height={30} />
                     <Typography sx={loginWindowStyles.textButton(theme)}>
                         Continue with Auth0
                     </Typography>
                 </Button>
-                <Button sx={loginWindowStyles.primaryButton(theme)} onClick={() => handleGoogleLogin()}>
+                
+                <Box sx={{ position: 'relative', width: '81%' }}>
+                
+                <Box sx={{ 
+                    opacity: 0, 
+                    position: 'absolute', 
+                    top: 0, 
+                    left: 0,   
+                    width: '100%', 
+                    height: '100%', 
+                    zIndex: 1 
+                }}>
+                    <GoogleLogin
+                        onSuccess={async (credentialResponse) => {
+                            const result = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/users/google`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ token: credentialResponse.credential }),
+                            });
+                            const data = await result.json();
+                            if (result.ok) {
+                                onLoginSuccess(data.user);
+                                onClose();
+                            } else {
+                                console.log(data.error);
+                            }
+                        }}
+                        onError={() => console.log('Google login failed')}
+                        
+                    />
+                </Box>
+                
+                <Button sx={loginWindowStyles.googleButton(theme)}>
                     <img src={googleLogo} width={30} height={30} />
                     <Typography sx={loginWindowStyles.textButton(theme)}>
                         Continue with Google
                     </Typography>
                 </Button>
+            </Box>
                 <Divider sx={loginWindowStyles.divider(theme)}>
                     <Typography>OR</Typography>
                 </Divider>
