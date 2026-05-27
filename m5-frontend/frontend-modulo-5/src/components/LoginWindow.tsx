@@ -3,7 +3,7 @@ import { loginWindowStyles } from './LoginWindowStyles';
 import CloseIcon from '@mui/icons-material/Close';
 import googleLogo from '../assets/google.svg';
 import AuthLogo from '../assets/auth0.svg';
-//import { useGoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 
 interface LoginWindowProps {
@@ -32,7 +32,7 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
             console.log(data.error);
         }
     };
-/*
+
     const handleGoogleLogin = useGoogleLogin({
         
         onSuccess: async (response) => {
@@ -49,7 +49,7 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
             console.log('Google login failed');
         }
     });
-*/
+
     const theme = useTheme();
     return (
         <Dialog sx={loginWindowStyles.dialog(theme)} open={open} onClose={onClose} >
@@ -67,7 +67,7 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
                         Continue with Auth0
                     </Typography>
                 </Button>
-                <Button sx={loginWindowStyles.primaryButton(theme)}>
+                <Button sx={loginWindowStyles.primaryButton(theme)} onClick={() => handleGoogleLogin()}>
                     <img src={googleLogo} width={30} height={30} />
                     <Typography sx={loginWindowStyles.textButton(theme)}>
                         Continue with Google
