@@ -1,0 +1,164 @@
+import {Request, Response} from "express";
+import { prisma } from "../../config/prisma";
+
+
+/*
+    Function: getMostFollowedCases.
+    Inputs: Request object containing indictedFilter and injusticeFilter in the body.
+    Description: get the most followed cases in the app.
+    Outputs: JSON response with a list of cases or an error message.
+*/
+export async function getMostFollowedCases(req:Request, res:Response){
+    try {
+        
+        const {indictedFilter , injusticeFilter} = req.body;
+        const injusticeId = parseInt(injusticeFilter as string);
+
+        const followersCount = await prisma.userFavoriteBoycott.groupBy({
+            by:['BoycottID'],
+            _count:{
+                _all:true
+            }
+
+        });
+
+        const FindCases = await prisma.boycott.findMany({
+            distinct:['BoycottID'],
+            where:{
+                ...(injusticeId > 0 ? {InjusticeTypeID: injusticeId} : {}),
+            },
+            select:{
+                BoycottID:true,
+                InjusticeType:{
+                    select:{
+                        InjusticeName:true,
+                    }
+                },
+                Entity:{
+                    select:{
+                        EntityName:true,
+                    },
+                },
+            },
+            
+        });
+
+        const summary = [];
+        for (let i = 0; i < followersCount.length; i++) {
+            for (let j = 0; j < FindCases.length; j++) {
+                if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
+                    let element = {
+                        ...FindCases[j],
+                        followers: followersCount[i]._count,
+                    }
+                    summary.push(element);
+                }
+            }
+        }
+
+        res.json({
+            ok: true,
+            mostFollowed: summary,
+        });
+
+
+    } catch (error) {
+        console.error("getMostFollowedCases error:", error);
+
+        res.status(500).json({
+            ok: false,
+            error: "Internal server error",
+        });
+    }
+}
+
+/*
+    Function: getUserPostAndComments.
+    Inputs: Request object containing the userName in the body.
+    Description: get the users post, comments in other users post and the entities it follows.
+    Outputs: JSON response with a list of post with title, description and state of the boycott; a list of comments with description, 
+    title and the user name creator of the boycott; and a list of entities or an error message.
+*/
+
+export async function getUserPostAndComments(req:Request, res:Response){
+    try {
+        const {userName} = req.body;
+        
+        const userId = await prisma.appUser.findFirst({
+            where:{
+                UserName:userName,
+            },
+            select:{
+                UserID:true
+            }
+        });
+
+        const UserPost = await prisma.boycott.findMany({
+            where:{
+                CreatorID: userId?.UserID,
+            },
+            select:{
+                Title:true,
+                MongoDocumentId:true,
+                BoycottState:{
+                    select:{
+                        StateName:true,
+                    }
+                }
+            }
+
+        });
+
+        const UserComments = await prisma.commentBoycott.findMany({
+            where:{
+                CreatorID:userId?.UserID,
+            },
+            select:{
+                Description:true,
+                Boycott:{
+                    select:{
+                        Title:true,
+                        AppUser_Boycott_CreatorIDToAppUser:{
+                            select:{
+                                UserName:true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const entityFollowing = await prisma.userFavoriteBoycott.findMany({
+            where:{
+                UserID: userId?.UserID,
+            },
+            select:{
+                Boycott:{
+                    select:{
+                        Entity:{
+                            select:{
+                                EntityName:true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        res.json({
+            ok: true,
+            posts: UserPost,
+            Comments: UserComments,
+            Follows: entityFollowing
+        });
+
+
+    } catch (error) {
+        console.error("getMostFollowedCases error:", error);
+
+        res.status(500).json({
+            ok: false,
+            error: "Internal server error",
+        });
+    }
+}
