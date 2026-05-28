@@ -1,26 +1,56 @@
 
-import { Avatar, TextField, useTheme, IconButton } from '@mui/material';
+import { Avatar, TextField, useTheme} from '@mui/material';
 import { Container, Typography, Card, CardContent, Button, Box, Grid, Divider } from '@mui/material';
 import { sideMenuStyles } from '../components/SideMenuStyles';
 import pfpSrc from '../assets/pfpDefaultImage.png';
 import CreateIcon from '@mui/icons-material/Create';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
+import React,{ useState } from 'react';
+import { RegisterStyles } from './RegisterStyles';
+
+const Countries = [
+    {
+      name: 'Costa Rica',
+    },
+    {
+      name: 'United States',
+    },
+    {
+      name: 'China',
+    },
+  ];
+
+const Genders = [
+    {
+      name: 'Female',
+    },
+    {
+      name: 'Male',
+    },
+    {
+      name: 'Other',
+    },
+  ];
 
 export default function Register() {
   const theme = useTheme();
   const navigate = useNavigate();
 
+  const [txt,setTxt] = useState<string>('');
+  const inputChangeHandler=(e:React.ChangeEvent<HTMLSelectElement>):void=>{
+  setTxt(e.target.value)
+  }
+
   const handleNavigation = (path: string) => {
     navigate(path);
   };
 
-  
   return (
     <Container sx={(theme=>({
       background: theme.palette.background.default,
-      height:'100vh',
-      width:'100vw'
+      height:'110vh',
+      width:'95vw'
     }))}>
       <Box sx={(theme)=>({
         background: theme.palette.background.default,
@@ -28,16 +58,13 @@ export default function Register() {
         width:'90%',
         display:'flex',
         pl:'5%',
-        pr:'5%',
-        pt:5,
+        pr:'2%',
+        pt:3,
+        mt:0,
+        mb:0
       })}>
 
-        <Divider orientation='vertical' flexItem sx={(theme)=>({
-          background: theme.palette.secondary.main,
-          mr:'auto',
-          border:2,
-          borderRadius:5
-        })}/>
+        <Divider orientation='vertical' flexItem sx={RegisterStyles.DivisorContent(theme)}/>
 
         <Box sx={(theme)=>({
           background: theme.palette.background.default,
@@ -143,21 +170,12 @@ export default function Register() {
                 width:'100%',
                 p:1,
                 mt:1,
-                mb:1
+                mb:0
               }}>
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   First name
                 </Typography>
-                <TextField placeholder="First name" sx={{
-                  width:'95%',
-                  color: theme.palette.background.default,
-                  '& .MuiOutlinedInput-root': {
-                    background: theme.palette.background.paper,
-                    color: theme.palette.background.default,
-                    borderRadius: 5},
-                  borderRadius:5,
-                  m:0
-                  }}/>
+                <TextField placeholder="First name" sx={RegisterStyles.TextFieldContent2(theme)}/>
               </Box>
             </Grid>
 
@@ -167,21 +185,12 @@ export default function Register() {
                 width:'100%',
                 p:1,
                 mt:1,
-                mb:1
+                mb:0
               }}>
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Last name
                 </Typography>
-                <TextField placeholder="Last name" sx={{
-                  width:'95%',
-                  color: theme.palette.background.default,
-                  '& .MuiOutlinedInput-root': {
-                    background: theme.palette.background.paper,
-                    color: theme.palette.background.default,
-                    borderRadius: 5},
-                  borderRadius:5,
-                  m:0
-                  }}/>
+                <TextField placeholder="Last name" sx={RegisterStyles.TextFieldContent2(theme)}/>
               </Box>
             </Grid>
 
@@ -190,22 +199,25 @@ export default function Register() {
                 height:'100%',
                 width:'100%',
                 p:1,
-                mt:1,
+                mt:0,
                 mb:1
               }}>
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Country
                 </Typography>
-                <TextField placeholder="Country" sx={{
-                  width:'95%',
-                  color: theme.palette.background.default,
-                  '& .MuiOutlinedInput-root': {
-                    background: theme.palette.background.paper,
-                    color: theme.palette.background.default,
-                    borderRadius: 5},
-                  borderRadius:5,
-                  m:0
-                  }}/>
+                <select onChange={inputChangeHandler} style={{
+                  borderRadius:15,
+                  width:"94%",
+                  height:"45%",
+                  backgroundColor:theme.palette.background.paper,
+                  color:theme.palette.background.default,
+                  fontSize:20,
+                  marginLeft:5}}>
+                  <option style={{color:"Gray"}}>Select a country</option>
+                  {Countries.map((country) => (
+                    <option style={{color:theme.palette.background.default}}>{country.name}</option>
+                  ))}
+                </select>
               </Box>
             </Grid>
 
@@ -214,22 +226,25 @@ export default function Register() {
                 height:'100%',
                 width:'100%',
                 p:1,
-                mt:1,
-                mb:1
+                mt:0,
+                mb:8
               }}>
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Gender
                 </Typography>
-                <TextField placeholder="Gender" sx={{
-                  width:'95%',
-                  color: theme.palette.background.default,
-                  '& .MuiOutlinedInput-root': {
-                    background: theme.palette.background.paper,
-                    color: theme.palette.background.default,
-                    borderRadius: 5},
-                  borderRadius:5,
-                  m:0
-                  }}/>
+                <select onChange={inputChangeHandler} style={{
+                  borderRadius:15,
+                  width:"94%",
+                  height:"45%",
+                  backgroundColor:theme.palette.background.paper,
+                  color:theme.palette.background.default,
+                  fontSize:20,
+                  marginLeft:5}}>
+                  <option style={{color:"Gray"}}>Select your gender</option>
+                  {Genders.map((gender) => (
+                    <option style={{color:theme.palette.background.default}}>{gender.name}</option>
+                  ))}
+                </select>
               </Box>
             </Grid>
 
@@ -244,29 +259,11 @@ export default function Register() {
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Email
                 </Typography>
-                <TextField placeholder="Email" sx={{
-                  width:'95%',
-                  color: theme.palette.background.default,
-                  '& .MuiOutlinedInput-root': {
-                    background: theme.palette.background.paper,
-                    color: theme.palette.background.default,
-                    borderRadius: 5},
-                  borderRadius:5,
-                  mb:7
-                }}/>
+                <TextField placeholder="Email" sx={RegisterStyles.TextFieldContent(theme)}/>
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Password
                 </Typography>
-                <TextField type='password' placeholder="Password" sx={{
-                  width:'95%',
-                  color: theme.palette.background.default,
-                  '& .MuiOutlinedInput-root': {
-                    background: theme.palette.background.paper,
-                    color: theme.palette.background.default,
-                    borderRadius: 5},
-                  borderRadius:5,
-                  m:0
-                  }}/>
+                <TextField type='password' placeholder="Password" sx={RegisterStyles.TextFieldContent(theme)}/>
               </Box>
             </Grid>
 
@@ -277,45 +274,22 @@ export default function Register() {
                 display:'flex',
                 justifyContent:'space-between'
               }}>
-                <Button sx={{
-                  background:'#00740E',
-                  height:'77%',
-                  width:'45%',
-                  mt:'8%',
-                  mb:'5%',
-                  borderRadius:5,
-                  ml:3
-                  }}>
+                <Button sx={RegisterStyles.ButtonContent(theme)}>
                   {/*WIP cick save */}
                   <Typography variant='h2'>Save</Typography>
                 </Button>
 
-                <Button sx={{
-                  background:'#740000',
-                  height:'77%',
-                  width:'45%',
-                  mt:'8%',
-                  mb:'5%',
-                  borderRadius:5,
-                  mr:1
-                  }}>
-                  {/*WIP cick cancel */}
+                <Button sx={RegisterStyles.ButtonContent(theme)}
+                  onClick={() => handleNavigation('../')}>
+                  
                   <Typography variant='h2'>Cancel</Typography>
                 </Button>
 
               </Box>
             </Grid>
-
           </Grid>
-
         </Box>
-      
-        <Divider orientation='vertical' flexItem sx={(theme)=>({
-          background: theme.palette.secondary.main,
-          ml:'auto',
-          border:2,
-          borderRadius:5,
-        })}/>
+        <Divider orientation='vertical' flexItem sx={RegisterStyles.DivisorContent(theme)}/>
       </Box>
 
     </Container>
