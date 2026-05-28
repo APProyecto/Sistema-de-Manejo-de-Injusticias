@@ -274,12 +274,12 @@ export default function Register() {
                 display:'flex',
                 justifyContent:'space-between'
               }}>
-                <Button sx={RegisterStyles.ButtonContent(theme)}>
+                <Button sx={{...RegisterStyles.ButtonContent(theme),background:'#00740E'}}>
                   {/*WIP cick save */}
                   <Typography variant='h2'>Save</Typography>
                 </Button>
 
-                <Button sx={RegisterStyles.ButtonContent(theme)}
+                <Button sx={{...RegisterStyles.ButtonContent(theme),background:'#740000'}}
                   onClick={() => handleNavigation('../')}>
                   
                   <Typography variant='h2'>Cancel</Typography>

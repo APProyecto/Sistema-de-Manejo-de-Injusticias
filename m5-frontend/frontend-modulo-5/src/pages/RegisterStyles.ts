@@ -38,7 +38,6 @@ export const RegisterStyles = {
         borderRadius:5,
     }),
     ButtonContent : (theme:Theme) : SxProps<Theme> => ({
-        background:'#740000',
         height:'67%',
         width:'45%',
         mt:'7%',
