@@ -895,3 +895,84 @@ export async function googleLogin(req: Request, res: Response) {
     return res.status(401).json({ error: "Authentication failed" });
   }
 }
+
+/**
+ * Function: updateAppUserProfile
+ * Inputs: appUserId from request params and
+ * optional profile fields from request body
+ * Description: Updates only the provided
+ * app user profile fields in Prisma.
+ * Outputs: JSON with updated app user
+ * information or an error message.
+ */
+export async function updateAppUserProfile(
+  req: Request,
+  res: Response
+) {
+  try {
+    const appUserId =
+      Number(req.params.appUserId);
+
+    const appUser =
+      await prisma.appUser.findUnique({
+        where: {
+          UserID: appUserId,
+        },
+      });
+
+    if (!appUser) {
+      return res.status(404).json({
+        error: "appUser not found",
+      });
+    }
+
+    const updatedAppUser =
+      await prisma.appUser.update({
+        where: {
+          UserID: appUserId,
+        },
+        data: {
+        FirstName: req.body.firstName
+            ? encryptText(req.body.firstName.trim())
+            : appUser.FirstName,
+
+          LastName: req.body.lastName
+            ? encryptText(req.body.lastName.trim())
+            : appUser.LastName,
+          UserName:
+            req.body.userName?.trim() ||
+            appUser.UserName,
+
+
+          GenderID:
+            req.body.genderId
+              ? Number(req.body.genderId)
+              : appUser.GenderID,
+
+          CountryID:
+            req.body.countryId
+              ? Number(req.body.countryId)
+              : appUser.CountryID,
+        },
+      });
+
+    return res.status(200).json({
+      message:
+        "appUser updated successfully",
+
+      appUser:
+        updatedAppUser,
+    });
+
+  } catch (error) {
+    console.error(
+      "updateAppUserProfile error:",
+      error
+    );
+
+    return res.status(500).json({
+      error:
+        "Internal server error",
+    });
+  }
+}
