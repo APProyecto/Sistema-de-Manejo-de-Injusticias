@@ -1,5 +1,6 @@
 
-import { Avatar, TextField, useTheme,Container, Typography, Card, CardContent, Button, Box, Grid, Divider } from '@mui/material';
+import { Avatar, TextField, useTheme} from '@mui/material';
+import { Container, Typography, Card, CardContent, Button, Box, Grid, Divider } from '@mui/material';
 import { sideMenuStyles } from '../components/SideMenuStyles';
 import pfpSrc from '../assets/pfpDefaultImage.png';
 import CreateIcon from '@mui/icons-material/Create';
