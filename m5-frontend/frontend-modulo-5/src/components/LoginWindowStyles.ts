@@ -42,8 +42,14 @@ export const loginWindowStyles = {
         color: theme.palette.primary.main,
         display: 'inline'
     }),
-    primaryButton : (theme: Theme): SxProps<Theme> => ({
+    auth0Button : (theme: Theme): SxProps<Theme> => ({
         width: '81%',
+        backgroundColor: 'white',
+        borderRadius: '15px',
+    }),
+
+    googleButton : (theme: Theme): SxProps<Theme> => ({
+        width: '100%',
         backgroundColor: 'white',
         borderRadius: '15px',
     }),

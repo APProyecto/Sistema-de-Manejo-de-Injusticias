@@ -14,9 +14,11 @@ import SideMenuUnsigned from './components/SideMenuUnsigned';
 import Register from './pages/Register';
 
 const theme = darkTheme;
-const singedIn = false;
 
 function App() {
+  const [signedIn, setSignedIn] = useState(false);
+  const [user, setUser] = useState(null);
+
   return (
     <ThemeProvider theme={theme}>
       <Routes>
@@ -30,9 +32,12 @@ function App() {
                 height: 'calc(100vh - 90px)',
                 overflow: 'hidden'
                 }}>
-                {singedIn?
+                {signedIn?
                   <SideMenu />:
-                  <SideMenuUnsigned />
+                  <SideMenuUnsigned onLoginSuccess={(userData) => {
+                    setUser(userData);
+                    setSignedIn(true);
+                  }} />
                 }
                 <Outlet/>
               </Container>

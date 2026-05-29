@@ -9,7 +9,12 @@ import MarkunreadOutlinedIcon from '@mui/icons-material/MarkunreadOutlined';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-export default function SideMenuUnsigned() {
+interface SideMenuUnsignedProps {
+  onLoginSuccess: (userData: any) => void;
+}
+
+export default function SideMenuUnsigned({ onLoginSuccess }: SideMenuUnsignedProps) {
+  console.log('onLoginSuccess en SideMenu:', onLoginSuccess);
   const theme = useTheme();
   const navigate = useNavigate();
   const [loginOpen, setLoginOpen] = useState (false);
@@ -20,7 +25,7 @@ export default function SideMenuUnsigned() {
 
   return (
     <Container sx={sideMenuStyles.unsignedContainer(theme)}>
-        <LoginWindow open = {loginOpen} onClose={() => setLoginOpen(false)}/>
+        <LoginWindow open = {loginOpen} onClose={() => setLoginOpen(false)} onLoginSuccess={(userData) => onLoginSuccess(userData)}/>
 
         <Container sx={sideMenuStyles.messageContainer(theme)}>
             <Typography variant='h2'>
@@ -47,6 +52,7 @@ export default function SideMenuUnsigned() {
             <Button 
                 sx={sideMenuStyles.secondaryButton(theme)}
                 onClick={() => setLoginOpen(true)}
+                
             >
                 <Typography sx={sideMenuStyles.secondaryButtonText(theme)}>Login</Typography>
             </Button>
