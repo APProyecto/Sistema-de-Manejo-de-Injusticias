@@ -6,12 +6,24 @@ import { OAuth2Client } from "google-auth-library";
 import {
   createOrUpdateAppUserDocument,
   getAppUserDocumentByUserId,
+  createFileMetadata,
+  updateAppUserPicture,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+
+import {
+  uploadFileToGridFS,
+} from "../../../../m0-base-datos/src/services/gridfs.service";
+
+
+import { buildFileMetadata } from "../../../../m0-base-datos/src/utils/fileMetadata";
 
 import {
   encryptText,
   safeDecryptText,
 } from "../../../../m0-base-datos/src/utils/encryption";
+
+
+
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -396,6 +408,12 @@ export async function registerUser(req: Request, res: Response) {
         MongoDocumentID : mongoDocument._id.toString(),
       }
     });
+
+    await prisma.normalUser.create({
+      data : {
+        NormalUserID : appUser.UserID,
+      }
+    })
 
       return res.status(201).json({
         message: "AppUser uploaded succesfully",
@@ -817,7 +835,7 @@ export async function googleLogin(req: Request, res: Response) {
       return res.status(401).json({ error: "Invalid Google token" });
     }
 
-    const { email, given_name, family_name, name } = payload;
+    const { email, given_name, family_name, name, picture } = payload;
     const cleanEmail = email.toLowerCase();
     
     const genderRecord = await prisma.gender.findFirst({
@@ -870,6 +888,45 @@ export async function googleLogin(req: Request, res: Response) {
             MongoDocumentID: mongoDocument._id.toString(),
           },
         });
+      }
+
+      await prisma.normalUser.create({
+        data : {
+          NormalUserID : appUser.UserID,
+        }
+      });
+
+      if (picture) {
+        const imageResponse = await fetch(picture);
+
+        if (imageResponse.ok) {
+          const arrayBuffer = await imageResponse.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+
+          const contentType =
+            imageResponse.headers.get("content-type") ?? "image/jpeg";
+
+          const mongoFileId = await uploadFileToGridFS(
+            `google-profile-${appUser.UserID}.jpg`,
+            buffer,
+            contentType
+          );
+
+          const fileMetadata = buildFileMetadata(
+            `google-profile-${appUser.UserID}.jpg`,
+            buffer.length,
+            contentType,
+            mongoFileId
+          );
+
+          await createFileMetadata(fileMetadata);
+
+          await updateAppUserPicture(
+            appUser.UserID,
+            appUser.UserName,
+            fileMetadata
+          );
+        }
       }
     }
 
