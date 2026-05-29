@@ -3,7 +3,7 @@ import { prisma } from "../../config/prisma";
 
 /*
   Function: getAuditPublications.
-  Inputs: injusticeTypeId, dateFrom, dateTo, countryId, continentId, orderByVotes (query params).
+  Inputs: injusticeTypeId, dateFrom, dateTo, countryId, orderByVotes (query params).
   Description: Returns a filtered and sortable list of boycott publications for content auditing.
   Outputs: JSON with total records and publication list.
 */
@@ -14,7 +14,6 @@ export async function getAuditPublications(req: Request, res: Response) {
       dateFrom,
       dateTo,
       countryId,
-      continentId,
       orderByVotes = "desc",
     } = req.query;
 
@@ -32,12 +31,6 @@ export async function getAuditPublications(req: Request, res: Response) {
 
     if (countryId) {
       where.CountryID = Number(countryId);
-    }
-
-    if (continentId) {
-      where.Country = {
-        ContinentID: Number(continentId),
-      };
     }
 
     const boycotts = await prisma.boycott.findMany({
@@ -72,6 +65,8 @@ export async function getAuditPublications(req: Request, res: Response) {
 
     // PENDIENTE: el conteo de archivos adjuntos por publicación se obtiene desde MongoDB
     // usando MongoDocumentId. Se implementa cuando MongoDB esté configurado en el proyecto.
+
+    // NOTA: CheckedBy (campo "check o equis") - Pendiente de aclaración
 
     return res.json({
       total: boycotts.length,
