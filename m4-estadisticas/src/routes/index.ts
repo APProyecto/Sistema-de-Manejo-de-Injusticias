@@ -1,13 +1,13 @@
 import { Router } from "express";
-import moduleRoutes from "../modules/example/example.routes";
+import auditsRoutes from "../modules/audits/audits.routes";
 const router = Router();
 
 router.get("/", (_req, res) => {
-    res.json({ 
-        ok: true, 
-        message: "API root" 
-    });
+  res.json({
+    ok: true,
+    message: "API root",
+  });
 });
 
-router.use("/example", moduleRoutes);
+router.use("/audits", auditsRoutes);
 export default router;
