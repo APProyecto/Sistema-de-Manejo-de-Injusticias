@@ -1,5 +1,5 @@
 
-import { Avatar, TextField, useTheme, IconButton, Autocomplete, Select, MenuItem } from '@mui/material';
+import { Avatar, TextField, useTheme, IconButton, Autocomplete, Select, MenuItem, Alert} from '@mui/material';
 import { Container, Typography, Card, CardContent, Button, Box, Grid, Divider } from '@mui/material';
 import { sideMenuStyles } from '../components/SideMenuStyles';
 import pfpSrc from '../assets/pfpDefaultImage.png';
@@ -22,6 +22,10 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -37,9 +41,12 @@ export default function Register() {
     const registerData = await registerResult.json();
 
     if (!registerResult.ok) {
-        console.log(registerData.error);
-        return;
+    setError(registerData.error);
+    return;
     }
+
+
+    setSuccess('User registered successfully!');
 
     
     if (profilePicture) {
@@ -52,10 +59,12 @@ export default function Register() {
         });
     }
 
-    navigate('/');
+    setTimeout(() => navigate('/'), 2000);
+    
 };
   
   return (
+    
     <Container sx={(theme=>({
       background: theme.palette.background.default,
       height:'100vh',
@@ -385,6 +394,33 @@ export default function Register() {
                 display:'flex',
                 justifyContent:'space-between'
               }}>
+                {success && (
+                    <Alert 
+                    severity="success" 
+                    onClose={() => setSuccess('')}
+                    sx={{ 
+                          position: 'fixed', 
+                          bottom: 20, 
+                          right: 20, 
+                          zIndex: 9999 
+                      }}  >
+                        {success}
+                    </Alert>
+                )}
+                {error && (
+                    <Alert 
+                      severity="error" 
+                      onClose={() => setError('')}
+                      sx={{ 
+                          position: 'fixed', 
+                          bottom: 20, 
+                          right: 20, 
+                          zIndex: 9999 
+                      }}
+                  >
+                      {error}
+                  </Alert>
+                )}
                 <Button sx={{
                     background:'#00740E',
                     height:'77%',
