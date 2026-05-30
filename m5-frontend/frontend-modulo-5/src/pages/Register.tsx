@@ -1,15 +1,26 @@
 
-import { Avatar, TextField, useTheme, IconButton } from '@mui/material';
+import { Avatar, TextField, useTheme, IconButton, Autocomplete, Select, MenuItem } from '@mui/material';
 import { Container, Typography, Card, CardContent, Button, Box, Grid, Divider } from '@mui/material';
 import { sideMenuStyles } from '../components/SideMenuStyles';
 import pfpSrc from '../assets/pfpDefaultImage.png';
 import CreateIcon from '@mui/icons-material/Create';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
+import { useState} from 'react';
+import { countries } from '../data/countries';
+import { genders } from '../data/genders';
 
 export default function Register() {
   const theme = useTheme();
   const navigate = useNavigate();
+
+  const [firstName, setFirstName] = useState('');
+  const [userName, setUserName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [country, setCountry] = useState(0);
+  const [gender, setGender] = useState(0);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -121,7 +132,9 @@ export default function Register() {
                   width:'65%',
                   alignContent:'center'
                   }}>
-                  <TextField placeholder="Username" sx={{
+                  <TextField placeholder="Username"
+                  onChange={(e) => setUserName(e.target.value)}
+                  sx={{
                     background:theme.palette.background.default,
                     width:'95%',
                     '& .MuiOutlinedInput-root': {
@@ -148,7 +161,9 @@ export default function Register() {
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   First name
                 </Typography>
-                <TextField placeholder="First name" sx={{
+                <TextField placeholder="First name"
+                onChange={(e) => setFirstName(e.target.value)}
+                sx={{
                   width:'95%',
                   color: theme.palette.background.default,
                   '& .MuiOutlinedInput-root': {
@@ -172,7 +187,9 @@ export default function Register() {
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Last name
                 </Typography>
-                <TextField placeholder="Last name" sx={{
+                <TextField placeholder="Last name"
+                onChange={(e) => setLastName(e.target.value)}
+                sx={{
                   width:'95%',
                   color: theme.palette.background.default,
                   '& .MuiOutlinedInput-root': {
@@ -196,16 +213,51 @@ export default function Register() {
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Country
                 </Typography>
-                <TextField placeholder="Country" sx={{
-                  width:'95%',
-                  color: theme.palette.background.default,
-                  '& .MuiOutlinedInput-root': {
-                    background: theme.palette.background.paper,
-                    color: theme.palette.background.default,
-                    borderRadius: 5},
-                  borderRadius:5,
-                  m:0
-                  }}/>
+                <Autocomplete
+                  sx={{
+                  width: '95%',
+                  borderRadius: 5,
+                  marginLeft:1.6,
+                  '& .MuiFilledInput-root': {
+                      background: theme.palette.background.paper,
+                      color: theme.palette.background.default,
+                      borderRadius: 5,
+                      '&:before': { borderBottom: 'none' },
+                      '&:after': { borderBottom: 'none' },
+                      '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
+                  },
+                  '& .MuiInputLabel-root': {
+                      color: theme.palette.text.secondary,
+                  },
+                  '& .MuiFilledInput-root:hover': {
+                      background: theme.palette.background.paper,
+                  },
+                  '& .MuiFilledInput-root.Mui-focused': {
+                      background: theme.palette.background.paper,
+                  },
+              }}
+                  options={countries}
+                  getOptionLabel={(option) => option.name}
+                  defaultValue={countries.find(c => c.id === 40)}
+                  onChange={(_, value) => setCountry(value?.id ?? 0)}
+                  renderInput={(params) => (
+                      <TextField {...params} variant="filled" hiddenLabel/>
+                  )}
+                  slotProps={{
+                    paper: {
+                        sx: {
+                            backgroundColor: theme.palette.background.paper,
+                            color: 'black',
+                            '& .MuiAutocomplete-option:hover': {
+                                backgroundColor: theme.palette.grey[200],
+                            },
+                            '& .MuiAutocomplete-option[aria-selected="true"]': {
+                                backgroundColor: theme.palette.grey[300],
+                            }
+                        }
+                    }
+                }}
+/>
               </Box>
             </Grid>
 
@@ -220,16 +272,42 @@ export default function Register() {
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Gender
                 </Typography>
-                <TextField placeholder="Gender" sx={{
-                  width:'95%',
-                  color: theme.palette.background.default,
-                  '& .MuiOutlinedInput-root': {
-                    background: theme.palette.background.paper,
-                    color: theme.palette.background.default,
-                    borderRadius: 5},
-                  borderRadius:5,
-                  m:0
-                  }}/>
+                <Select
+                  hiddenLabel
+                  value={gender}
+                  onChange={(e) => setGender(Number(e.target.value))}
+                  disableUnderline
+                  variant="filled"
+                  MenuProps={{
+                      sx: {
+                          '& .MuiMenuItem-root': {
+                              color: 'black !important',
+                          }
+                      }
+                  }}
+                  sx={{
+                      width: '95%',
+                      background: theme.palette.background.paper,
+                      color: 'black',
+                      borderRadius: 5,
+                      textAlign: 'left',
+                      '&:before': { borderBottom: 'none' },
+                      '&:after': { borderBottom: 'none' },
+                      '&.Mui-focused': { background: theme.palette.background.paper },
+                      '& .MuiSelect-select:hover': { background: theme.palette.background.paper,
+                        borderRadius: 5,
+                       },
+                       '& .MuiFilledInput-root': {
+                        transition: 'none',
+                        },
+                  }}
+                  >
+                      {genders.map((g) => (
+                          <MenuItem key={g.id} value={g.id}>
+                              {g.name}
+                          </MenuItem>
+                      ))}
+                  </Select>
               </Box>
             </Grid>
 
@@ -244,7 +322,9 @@ export default function Register() {
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Email
                 </Typography>
-                <TextField placeholder="Email" sx={{
+                <TextField placeholder="Email"
+                onChange={(e) => setEmail(e.target.value)}
+                sx={{
                   width:'95%',
                   color: theme.palette.background.default,
                   '& .MuiOutlinedInput-root': {
@@ -257,7 +337,8 @@ export default function Register() {
                 <Typography variant='h3' align='left' sx={{ml:3,mt:0}}>
                   Password
                 </Typography>
-                <TextField type='password' placeholder="Password" sx={{
+                <TextField type='password' placeholder="Password" 
+                onChange={(e) => setPassword(e.target.value)}sx={{
                   width:'95%',
                   color: theme.palette.background.default,
                   '& .MuiOutlinedInput-root': {
