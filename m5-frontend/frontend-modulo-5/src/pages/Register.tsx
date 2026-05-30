@@ -17,15 +17,43 @@ export default function Register() {
   const [firstName, setFirstName] = useState('');
   const [userName, setUserName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [country, setCountry] = useState(0);
-  const [gender, setGender] = useState(0);
+  const [country, setCountry] = useState(40);
+  const [gender, setGender] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
 
   const handleNavigation = (path: string) => {
     navigate(path);
   };
 
+  const handleRegister = async () => {
+    
+    const registerResult = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/users/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, username: userName, email, password, genderId: gender, countryId: country })
+    });
+    const registerData = await registerResult.json();
+
+    if (!registerResult.ok) {
+        console.log(registerData.error);
+        return;
+    }
+
+    
+    if (profilePicture) {
+        const formData = new FormData();
+        formData.append('file', profilePicture);
+
+        await fetch(`${import.meta.env.VITE_API_MODULE1}/api/files/appUser/${registerData.appUserId}/picture`, {
+            method: 'PUT',
+            body: formData
+        });
+    }
+
+    navigate('/');
+};
   
   return (
     <Container sx={(theme=>({
@@ -95,29 +123,28 @@ export default function Register() {
                   
                   
                   <Avatar
-                    src={pfpSrc} 
+                    src={profilePicture ? URL.createObjectURL(profilePicture) : pfpSrc}
                     alt="Logo" 
-                    style={{ 
-                        width:100,
-                        height:100
-                    }}
-                    sx={{
-                      ml:'auto',
-                      mr:'auto',
-                      mt:3,
-                      mb:3
-                    }}
-                  />
+                    style={{ width: 100, height: 100 }}
+                    sx={{ ml:'auto', mr:'auto', mt:3, mb:3 }}
+                />
 
-                  <Button 
-                    sx={sideMenuStyles.searchFileButton(theme)}
-                    onClick={() => {
-                      //WIP change PFP function
-                    }}
-                  >
-                    <CreateIcon/>
-                    <Typography sx={sideMenuStyles.buttonText(theme)}>Change profile picture</Typography>
-                  </Button>
+                <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={(e) => setProfilePicture(e.target.files?.[0] ?? null)}
+                    style={{ display: 'none' }}
+                    id="pfp-input"
+                />
+                <label htmlFor="pfp-input">
+                    <Button 
+                        component="span"
+                        sx={sideMenuStyles.searchFileButton(theme)}
+                    >
+                        <CreateIcon/>
+                        <Typography sx={sideMenuStyles.buttonText(theme)}>Change profile picture</Typography>
+                    </Button>
+                </label>
                 </Box>
                 
                 <Divider orientation='vertical' flexItem sx={(theme)=>({
@@ -359,16 +386,15 @@ export default function Register() {
                 justifyContent:'space-between'
               }}>
                 <Button sx={{
-                  background:'#00740E',
-                  height:'77%',
-                  width:'45%',
-                  mt:'8%',
-                  mb:'5%',
-                  borderRadius:5,
-                  ml:3
-                  }}>
-                  {/*WIP cick save */}
-                  <Typography variant='h2'>Save</Typography>
+                    background:'#00740E',
+                    height:'77%',
+                    width:'45%',
+                    mt:'8%',
+                    mb:'5%',
+                    borderRadius:5,
+                    ml:3
+                }} onClick={handleRegister}>
+                    <Typography variant='h2'>Save</Typography>
                 </Button>
 
                 <Button sx={{
