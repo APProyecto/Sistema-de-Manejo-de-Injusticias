@@ -26,10 +26,13 @@ import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
 import Logs from '../pages/admin/Logs';
 import ManageComments from '../pages/admin/ManageComments';
 import DynamicLayout from '../layouts/DynamicLayout';
+import Register from '../pages/public/Register';
 
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Rutas sin header ni side menu */}
+      <Route path='register' element={<Register />}/>
       {/* Rutas públicas (sin inciar sesión) */}
       <Route element={<DynamicLayout />}>
         <Route path="/" element={<Home />} />
