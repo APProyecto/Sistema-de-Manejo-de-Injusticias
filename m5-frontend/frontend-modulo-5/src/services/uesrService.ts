@@ -14,8 +14,12 @@ interface LoginResponse {
   };
 }
 
-export const login = async (email: string, password: string): Promise<LoginResponse> => {
-  const response = await authApi.post<LoginResponse>('/api/login', { email, password });
+export const login = async (identifier: string, password: string): Promise<LoginResponse> => {
+  const isEmail = identifier.includes('@');
+  const response = await authApi.post<LoginResponse>('/api/login', { 
+    ...(isEmail ? {email:identifier} : {nombreUsuario: identifier}), 
+    password 
+  });
   
   if (response.data.success) {
     // Guardar token y usuario

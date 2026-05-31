@@ -6,6 +6,7 @@ import AuthLogo from '../../assets/auth0.svg';
 import { GoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 import { useAuth } from '../../context/authContext';
+import {login as loginService} from '../../services/uesrService'
 
 interface LoginWindowProps {
   open: boolean;
@@ -19,15 +20,15 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const {login} = useAuth();
-    const {mockLogin} = useAuth();
     const [error, setError] = useState('');
 
     const handleLogin = async () => {
         setError('');
         try {
-            const user = await mockLogin(email, password);
+            const response = await loginService(email, password);// llamada al servicio
+            await login(response.data.token, response.data.user);// actualización del contexto
             if(onLoginSuccess){
-                onLoginSuccess(user);
+                onLoginSuccess(response.data.user);
             }
             onClose();
         } catch (err: any) {

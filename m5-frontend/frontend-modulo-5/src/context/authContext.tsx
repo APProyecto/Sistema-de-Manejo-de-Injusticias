@@ -18,40 +18,11 @@ interface AuthContextType {
   isLoading: boolean;
   userRole: UserRole | null;
   login: (token: string, userData: User) => Promise<User>;
-  mockLogin: (email: string, password: string) => Promise<User>;
   logout: () => void;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// ============================================
-// MOCK DATA - Para pruebas sin backend
-// ============================================
-const MOCK_USERS = {
-  user: {
-    id: 1,
-    nombreUsuario: "juan_perez",
-    email: "user@example.com",
-    rol: "user" as UserRole,
-    fotoPerfil: "https://i.pravatar.cc/150?img=1"
-  },
-  admin: {
-    id: 2,
-    nombreUsuario: "admin_user",
-    email: "admin@example.com",
-    rol: "admin" as UserRole,
-    fotoPerfil: "https://i.pravatar.cc/150?img=2"
-  },
-  master: {
-    id: 3,
-    nombreUsuario: "master_user",
-    email: "master@example.com",
-    rol: "master" as UserRole,
-    fotoPerfil: "https://i.pravatar.cc/150?img=3"
-  }
-};
-
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -82,39 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return userData;
   };
 
-  // para probar sin el backend
-  const mockLogin = async (email: string, password: string): Promise<User> => {
-    setIsLoading(true);
-    
-    // Simular delay de red
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Credenciales de prueba
-    if (email === 'user@example.com' && password === '123456') {
-      setUser(MOCK_USERS.user);
-      localStorage.setItem('mock_user', JSON.stringify(MOCK_USERS.user));
-      setIsLoading(false);
-      return MOCK_USERS.user;
-    }
-    
-    if (email === 'admin@example.com' && password === '123456') {
-      setUser(MOCK_USERS.admin);
-      localStorage.setItem('mock_user', JSON.stringify(MOCK_USERS.admin));
-      setIsLoading(false);
-      return MOCK_USERS.admin;
-    }
-    
-    if (email === 'master@example.com' && password === '123456') {
-      setUser(MOCK_USERS.master);
-      localStorage.setItem('mock_user', JSON.stringify(MOCK_USERS.master));
-      setIsLoading(false);
-      return MOCK_USERS.master;
-    }
-    
-    setIsLoading(false);
-    throw new Error('Invalid credentials. Try: user@example.com / 123456');
-  };
-
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -136,7 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       userRole: user?.rol || null,
       login,
-      mockLogin,
       logout,
       hasRole,
     }}>
