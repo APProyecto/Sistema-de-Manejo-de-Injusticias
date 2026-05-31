@@ -13,7 +13,7 @@ export default function UserLayout() {
             height: 'calc(100vh - 90px)',
             overflow: 'hidden'
             }}>
-            <SideMenu />:
+            <SideMenu />
             <Outlet/>
             </Container>
         </Container>

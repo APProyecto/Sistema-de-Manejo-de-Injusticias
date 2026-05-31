@@ -3,7 +3,8 @@ import { Container, Typography, Card, CardContent, Button, Box } from '@mui/mate
 
 export default function Dashboard() {
   return (
-    <Container sx={{backgroundColor: '#ffee00'}}>
+    <Container sx={{backgroundColor: '#125896'}}>
+      <Typography>Dashboard</Typography>
       
     </Container>
   );

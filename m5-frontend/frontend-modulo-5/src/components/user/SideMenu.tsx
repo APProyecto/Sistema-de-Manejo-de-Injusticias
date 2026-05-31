@@ -29,7 +29,7 @@ export default function SideMenu() {
         {/* Home */}
         <Button 
             sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('/home')}
+            onClick={() => handleNavigation('/')}
         >
             <HomeOutlinedIcon sx={sideMenuStyles.buttonIcon(theme)}></HomeOutlinedIcon>
             <Typography sx={sideMenuStyles.buttonText(theme)}>Home</Typography>

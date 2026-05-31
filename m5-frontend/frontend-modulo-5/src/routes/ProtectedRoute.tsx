@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ 
   children, 
   allowedRoles = ['user', 'admin', 'master'],  // Por defecto, cualquier usuario autenticado
-  redirectTo = '/login' 
+  redirectTo = '/' 
 }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, hasRole } = useAuth();
 

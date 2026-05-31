@@ -13,23 +13,29 @@ import Home from '../pages/public/Home';
 import Profile from '../pages/user/Profile';
 import CreateBoycott from '../pages/user/CreateBoycott';
 import Favorites from '../pages/user/Favorites';
+import MyPosts from '../pages/user/MyPosts';
 
 // Páginas de admin
+import AdminHome from '../pages/admin/AdminHome';
 import Dashboard from '../pages/admin/Dashboard';
-import PendingReports from '../pages/admin/PendingReports';
-import ActivityLog from '../pages/admin/ActivityLog';
+import ManageUsers from '../pages/admin/ManageUsers';
+import ManageReports from '../pages/admin/ManageReports';
 import Statistics from '../pages/admin/Statistics';
+import Quereis from '../pages/admin/Queries';
+import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
+import Logs from '../pages/admin/Logs';
+import ManageComments from '../pages/admin/ManageComments';
+import DynamicLayout from '../layouts/DynamicLayout';
 
 export default function AppRoutes() {
   return (
     <Routes>
       {/* Rutas públicas (sin inciar sesión) */}
-      <Route element={<PublicLayout />}>
+      <Route element={<DynamicLayout />}>
         <Route path="/" element={<Home />} />
-      </Route>
 
       {/* Rutas de usuario registrado */}
-      <Route element={<UserLayout />}>
+        
         <Route path="/profile" element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
             <Profile />
@@ -40,33 +46,63 @@ export default function AppRoutes() {
             <CreateBoycott />
           </ProtectedRoute>
         } />
+
         <Route path="/favorites" element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
             <Favorites />
           </ProtectedRoute>
         } />
-      </Route>
+
+        <Route path="/my-posts" element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
+            <MyPosts />
+          </ProtectedRoute>
+        } />
 
       {/* Rutas de administrador */}
-      <Route element={<AdminLayout />}>
+        <Route path="/admin/" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <AdminHome />
+          </ProtectedRoute>
+        } />
         <Route path="/admin/dashboard" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <Dashboard />
           </ProtectedRoute>
         } />
-        <Route path="/admin/reports" element={
+        <Route path="/admin/manage-users" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
-            <PendingReports />
+            <ManageUsers />
           </ProtectedRoute>
         } />
-        <Route path="/admin/logs" element={
-          <ProtectedRoute allowedRoles={['master']}>  {/* Solo máster */}
-            <ActivityLog />
+        <Route path="/admin/manage-reports" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <ManageReports />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/manage-comments" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <ManageComments />
           </ProtectedRoute>
         } />
         <Route path="/admin/statistics" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <Statistics />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/queries" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <Quereis />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/cases-of-injustice" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <CasesOfInjustice />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/logs" element={
+          <ProtectedRoute allowedRoles={['master']}>  {/* Solo máster */}
+            <Logs />
           </ProtectedRoute>
         } />
       </Route>
