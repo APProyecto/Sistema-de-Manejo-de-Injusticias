@@ -1,10 +1,10 @@
 import { Container, Typography, Card, CardContent, Button, Box, useTheme } from '@mui/material';
-import { homeStyles } from './HomeStyles';
-import type { PostCardData } from '../types';
-import PostCard from '../components/PostCard';
-import OptionMenuMyPosts from '../components/OptionMenuMyPosts';
+import { homeStyles } from '../public/HomeStyles';
+import type { PostCardData } from '../../types';
+import PostCard from '../../components/common/PostCard';
+import OptionMenuMyPosts from '../../components/user/OptionMenuMyPosts';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { myPostsStyles } from './MyPostsStyles';
+import { myPostsStyles } from '../styles/MyPostsStyles';
 
 export default function MyPosts() {
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {Button, Container, ListItemIcon, Menu, MenuItem, ToggleButton, useTheme } from "@mui/material";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import { OptionMenuStyles } from "./OptionMenuStyles";
+import { OptionMenuStyles } from "../styles/OptionMenuStyles";
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import StarOutlinedIcon from '@mui/icons-material/StarOutlined';

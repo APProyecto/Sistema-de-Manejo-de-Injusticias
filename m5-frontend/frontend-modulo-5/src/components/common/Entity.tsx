@@ -1,6 +1,6 @@
 import { Avatar, Button, Typography } from "@mui/material";
 import { useTheme } from "@mui/material";
-import { EntityStyles } from "./EntityStyles";
+import { EntityStyles } from "../styles/EntityStyles";
 import { Container } from "@mui/material";
 
 interface EntityPorps {

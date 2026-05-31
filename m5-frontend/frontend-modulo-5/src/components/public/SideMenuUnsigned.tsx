@@ -1,5 +1,5 @@
 import { AppBar, Toolbar, Typography, Button, Box, Container, useTheme, TextField, InputAdornment } from '@mui/material';
-import { sideMenuStyles } from './SideMenuStyles';
+import { sideMenuStyles } from '../styles/SideMenuStyles';
 import LoginWindow from './LoginWindow';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';

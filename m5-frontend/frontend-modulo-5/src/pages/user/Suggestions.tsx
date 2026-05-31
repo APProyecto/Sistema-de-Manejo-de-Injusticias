@@ -1,5 +1,5 @@
 import { Box, Button, Container, Divider, TextField, Typography, useTheme } from '@mui/material';
-import { suggestionsStyles } from './SuggestionsStyles';
+import { suggestionsStyles } from '../styles/SuggestionsStyles';
 
 
 export default function Suggestions() {

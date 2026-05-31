@@ -1,10 +1,9 @@
-import { Container, Typography, Card, CardContent, Button, Box, useTheme } from '@mui/material';
-import { homeStyles } from './HomeStyles';
-import type { PostCardData } from '../types';
-import PostCard from '../components/PostCard';
-import OptionMenuFeed from '../components/OptionMenuFeed';
+import { Container, Typography, useTheme } from '@mui/material';
+import type { PostCardData } from '../../types';
+import PostCard from '../../components/common/PostCard';
+import { myPostsStyles } from '../styles/MyPostsStyles';
 
-export default function Home() {
+export default function Favorites() {
 
   const theme = useTheme();
 
@@ -27,7 +26,7 @@ export default function Home() {
   let data: PostCardData[] = [
     {
       id: 1,
-      username: 'username_123',
+      username: 'myUsername',
       user_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781104/cool-profile-picture-87h46gcobjl5e4xu_bifpln.jpg',
       indicted: 'Starbucksssssssssssssssssssssssssssssssssss',
       indicted_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781215/images_11_objw2p.png',
@@ -36,7 +35,7 @@ export default function Home() {
       title: 'starbucks supports the genocide in gaza',
       description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempor.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempo',
       creation_date: '7h ago',
-      is_favorite: false,
+      is_favorite: true,
       votes: '23k',
       voted_by_user: true,
       coments: '25k',
@@ -45,7 +44,7 @@ export default function Home() {
     },
     {
       id: 2,
-      username: 'anotherUsername',
+      username: 'myUsername',
       user_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781104/cool-profile-picture-87h46gcobjl5e4xu_bifpln.jpg',
       indicted: 'Alice',
       indicted_picture: 'https://collection.cloudinary.com/dewscucnp/e12ce56707ce38351028cd0d62474fb0',
@@ -64,9 +63,13 @@ export default function Home() {
   ]
 
   return (
-    <Container sx={homeStyles.container(theme)}>
-      {data.map((data) => (
-        <PostCard 
+    <Container sx={myPostsStyles.mainContainer(theme)}>
+      <Container sx={myPostsStyles.topContainer(theme)}>
+        <Typography variant='h2'>Favorites</Typography>
+      </Container>
+      <Container sx={myPostsStyles.container(theme)}>
+        {data.map((data) => (
+          <PostCard 
           key={data.id}
           data={data}
           onCaseClick={onCaseClick}
@@ -75,9 +78,10 @@ export default function Home() {
           onUsernameClick={onUsernameClick}
           inFeed={true}
           >
-        </PostCard>
-      )
+          </PostCard>
+        )
       )}
+      </Container>
     </Container>
   );
 }

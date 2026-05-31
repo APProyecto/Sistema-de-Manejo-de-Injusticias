@@ -1,14 +1,14 @@
 
 import { Avatar, TextField, useTheme, IconButton, Autocomplete, Select, MenuItem, Alert} from '@mui/material';
 import { Container, Typography, Card, CardContent, Button, Box, Grid, Divider } from '@mui/material';
-import { sideMenuStyles } from '../components/SideMenuStyles';
-import pfpSrc from '../assets/pfpDefaultImage.png';
+import { sideMenuStyles } from '../../components/styles/SideMenuStyles';
+import pfpSrc from '../../assets/pfpDefaultImage.png';
 import CreateIcon from '@mui/icons-material/Create';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate } from 'react-router-dom';
 import { useState} from 'react';
-import { countries } from '../data/countries';
-import { genders } from '../data/genders';
+import { countries } from '../../data/countries';
+import { genders } from '../../data/genders';
 
 export default function Register() {
   const theme = useTheme();

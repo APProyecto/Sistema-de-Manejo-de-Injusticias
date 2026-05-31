@@ -1,8 +1,8 @@
 import { Container, IconButton, Typography, useTheme, type SvgIconTypeMap } from "@mui/material";
-import { VotesBoxStyles } from "./VotesBoxStyles";
+import { VotesBoxStyles } from "../styles/VotesBoxStyles";
 import { useState } from "react";
 import CancelIcon from '@mui/icons-material/Cancel';
-import { PostInteractionButtonStyles } from "./PostInteractionButtonStyles";
+import { PostInteractionButtonStyles } from "../styles/PostInteractionButtonStyles";
 import type { OverridableComponent } from "@mui/material/OverridableComponent";
 import { fontSize } from "@mui/system";
 

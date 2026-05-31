@@ -1,7 +1,7 @@
 import React from "react";
 import {Container, Menu, MenuItem, ToggleButton, useTheme } from "@mui/material";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import { OptionMenuStyles } from "./OptionMenuStyles";
+import { OptionMenuStyles } from "../styles/OptionMenuStyles";
 import ModeIcon from '@mui/icons-material/Mode';
 import DeleteIcon from '@mui/icons-material/Delete';
 

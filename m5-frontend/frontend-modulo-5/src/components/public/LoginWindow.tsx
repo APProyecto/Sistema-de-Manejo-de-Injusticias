@@ -1,8 +1,8 @@
 import {useTheme, Dialog, DialogContent, IconButton, Typography, Divider, TextField, Button, Box} from '@mui/material';
-import { loginWindowStyles } from './LoginWindowStyles';
+import { loginWindowStyles } from '../styles/LoginWindowStyles';
 import CloseIcon from '@mui/icons-material/Close';
-import googleLogo from '../assets/google.svg';
-import AuthLogo from '../assets/auth0.svg';
+import googleLogo from '../../assets/google.svg';
+import AuthLogo from '../../assets/auth0.svg';
 import { GoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 

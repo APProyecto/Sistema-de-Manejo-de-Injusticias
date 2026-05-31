@@ -1,5 +1,5 @@
 import { AppBar, Toolbar, Typography, Button, Box, Container, useTheme, TextField, InputAdornment } from '@mui/material';
-import { sideMenuStyles } from './SideMenuStyles';
+import { sideMenuStyles } from '../styles/SideMenuStyles';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import StarBorderPurple500OutlinedIcon from '@mui/icons-material/StarBorderPurple500Outlined';
