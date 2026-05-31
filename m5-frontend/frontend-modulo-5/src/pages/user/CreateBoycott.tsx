@@ -1,6 +1,6 @@
 import { Box, Button, Container, MenuItem, TextField, Typography, useTheme } from '@mui/material';
 import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
-import { createBoycottStyles } from './CreateBoycottStyles';
+import { createBoycottStyles } from '../styles/CreateBoycottStyles';
 
 type Step = 1 | 2;
 

@@ -1,9 +1,9 @@
 import { AppBar, Toolbar, Typography, Button, Box, useTheme, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { headerStyles } from './HeaderStyles';
+import { headerStyles } from '../styles/HeaderStyles';
 import TuneIcon from '@mui/icons-material/Tune';
-import LogoSrc from '../assets/logo.png';
-export default function Header() {
+import LogoSrc from '../../assets/logo.png';
+export default function UserHeader() {
   const theme = useTheme();
 
   return (

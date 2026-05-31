@@ -1,19 +1,19 @@
 import { Avatar, Button, Container, Menu, ToggleButton, Typography } from "@mui/material";
-import { PostCardStyles } from "./PostCardStyles";
+import { PostCardStyles } from "../styles/PostCardStyles";
 import { useTheme } from "@mui/material";
-import type { PostCardData, User } from "../types";
+import type { PostCardData, User } from "../../types";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { useState } from "react";
 import Entity from "./Entity";
-import VotesBox from "./VotesBox";
+import VotesBox from "../public/VotesBox";
 import PostInteracionButton from "./PostInteractionButton";
 import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import CircleIcon from '@mui/icons-material/Circle';
 import { Circle } from "@mui/icons-material";
-import OptionMenu from "./OptionMenuFeed";
-import OptionMenuFeed from "./OptionMenuFeed";
-import OptionMenuMyPosts from "./OptionMenuMyPosts";
+import OptionMenu from "../user/OptionMenuFeed";
+import OptionMenuFeed from "../user/OptionMenuFeed";
+import OptionMenuMyPosts from "../user/OptionMenuMyPosts";
 
 interface PostCardProps {
     data: PostCardData,

@@ -1,12 +1,10 @@
 import { Container, Typography, Card, CardContent, Button, Box, useTheme } from '@mui/material';
-import { homeStyles } from './HomeStyles';
-import type { PostCardData } from '../types';
-import PostCard from '../components/PostCard';
-import OptionMenuMyPosts from '../components/OptionMenuMyPosts';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { myPostsStyles } from './MyPostsStyles';
+import type { PostCardData } from '../../types';
+import PostCard from '../../components/common/PostCard';
+import OptionMenuFeed from '../../components/user/OptionMenuFeed';
+import { homeStyles } from '../public/HomeStyles';
 
-export default function MyPosts() {
+export default function AdminHome() {
 
   const theme = useTheme();
 
@@ -29,7 +27,7 @@ export default function MyPosts() {
   let data: PostCardData[] = [
     {
       id: 1,
-      username: 'myUsername',
+      username: 'username_123',
       user_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781104/cool-profile-picture-87h46gcobjl5e4xu_bifpln.jpg',
       indicted: 'Starbucksssssssssssssssssssssssssssssssssss',
       indicted_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781215/images_11_objw2p.png',
@@ -47,7 +45,7 @@ export default function MyPosts() {
     },
     {
       id: 2,
-      username: 'myUsername',
+      username: 'anotherUsername',
       user_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781104/cool-profile-picture-87h46gcobjl5e4xu_bifpln.jpg',
       indicted: 'Alice',
       indicted_picture: 'https://collection.cloudinary.com/dewscucnp/e12ce56707ce38351028cd0d62474fb0',
@@ -66,25 +64,20 @@ export default function MyPosts() {
   ]
 
   return (
-    <Container sx={myPostsStyles.mainContainer(theme)}>
-      <Container sx={myPostsStyles.topContainer(theme)}>
-        <Typography variant='h2'>My Posts</Typography>
-      </Container>
-      <Container sx={myPostsStyles.container(theme)}>
-        {data.map((data) => (
-          <PostCard 
+    <Container sx={homeStyles.container(theme)}>
+      {data.map((data) => (
+        <PostCard 
           key={data.id}
           data={data}
           onCaseClick={onCaseClick}
           onPostClick={onPostClick}
           onIndictedClick={onIndictedClick}
           onUsernameClick={onUsernameClick}
-          inFeed={false}
+          inFeed={true}
           >
-          </PostCard>
-        )
+        </PostCard>
+      )
       )}
-      </Container>
     </Container>
   );
 }
