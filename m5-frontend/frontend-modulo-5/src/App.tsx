@@ -11,6 +11,7 @@ import Favorites from './pages/user/Favorites';
 import MyPosts from './pages/user/MyPosts';
 import Suggestions from './pages/user/Suggestions';
 import AppRoutes from './routes/AppRoutes';
+import { AuthProvider } from './context/authContext';
 
 const theme = darkTheme;
 
@@ -18,7 +19,9 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <AppRoutes/>
+      <AuthProvider>
+        <AppRoutes/>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

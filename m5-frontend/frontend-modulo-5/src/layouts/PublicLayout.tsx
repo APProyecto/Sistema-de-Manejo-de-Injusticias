@@ -1,6 +1,6 @@
 import { Container } from "@mui/material";
 import PublicHeader from "../components/public/PublicHeader";
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import SideMenu from "../components/user/SideMenu";
 import SideMenuUnsigned from "../components/public/SideMenuUnsigned";
 import { useState } from "react";
@@ -8,6 +8,7 @@ import { useState } from "react";
 export default function PublicLayout() {
     const [user, setUser] = useState(null);
     const [signedIn, setSignedIn] = useState(false);
+    const navigate = useNavigate();
 
     return (
         <Container>
@@ -19,8 +20,13 @@ export default function PublicLayout() {
             overflow: 'hidden'
             }}>
                 <SideMenuUnsigned onLoginSuccess={(userData) => {
-                setUser(userData);
-                setSignedIn(true);
+                    setUser(userData);
+                    setSignedIn(true);
+                    if (userData.rol === 'admin' || userData.rol === 'master') {
+                    navigate('/admin/dashboard');
+                    } else {
+                    navigate('/favorites');
+                    }
                 }} />
             <Outlet/>
             </Container>

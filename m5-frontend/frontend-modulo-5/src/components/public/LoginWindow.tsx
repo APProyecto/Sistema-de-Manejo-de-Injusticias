@@ -5,6 +5,7 @@ import googleLogo from '../../assets/google.svg';
 import AuthLogo from '../../assets/auth0.svg';
 import { GoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
+import { useAuth } from '../../context/authContext';
 
 interface LoginWindowProps {
   open: boolean;
@@ -17,23 +18,67 @@ interface LoginWindowProps {
 export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWindowProps) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const {login} = useAuth();
+    const {mockLogin} = useAuth();
+    const [error, setError] = useState('');
 
     const handleLogin = async () => {
+        setError('');
+        try {
+            const user = await mockLogin(email, password);
+            if(onLoginSuccess){
+                onLoginSuccess(user);
+            }
+            onClose();
+        } catch (err: any) {
+            setError(err.message);
+        }
+
+
+    /*
+      try {
         const result = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/users/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
+        
         const data = await result.json();
+        
         if (result.ok) {
-            onLoginSuccess(data.user);
-            onClose();   
+            // la función del contexto
+            login(data.token, data.user);
+            onClose();
         } else {
-            console.log(data.error);
+            setError(data.error || 'Login failed');
         }
+        } catch (err) {
+        setError('Network error. Please try again.');
+        }
+    */
     };
 
-    
+    const handleGoogleSuccess = async (credentialResponse: any) => {
+        try {
+        const result = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/users/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: credentialResponse.credential }),
+        });
+        
+        const data = await result.json();
+        
+        if (result.ok) {
+            // con la función del contexto
+            login(data.token, data.user);
+            onClose();
+        } else {
+            setError(data.error || 'Google login failed');
+        }
+        } catch (err) {
+        setError('Network error. Please try again.');
+        }
+    }
 
     const theme = useTheme();
     return (
@@ -46,7 +91,9 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
 
                 <Typography variant='h2'>Log In</Typography>
                 <Typography variant='body1' sx={loginWindowStyles.typography(theme)}>By continuing, you agree to our <Typography component='span' sx={loginWindowStyles.highlighted(theme)}>User Agreement</Typography> and acknowledge that you understand the Privacy Policy</Typography>
-                <Button sx={loginWindowStyles.auth0Button(theme)}>
+                <Button sx={loginWindowStyles.auth0Button(theme)}
+                    onClick={handleLogin}
+                >
                     <img src={AuthLogo} width={30} height={30} />
                     <Typography sx={loginWindowStyles.textButton(theme)}>
                         Continue with Auth0
@@ -65,22 +112,8 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
                     zIndex: 1 
                 }}>
                     <GoogleLogin
-                        onSuccess={async (credentialResponse) => {
-                            const result = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/users/google`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ token: credentialResponse.credential }),
-                            });
-                            const data = await result.json();
-                            if (result.ok) {
-                                onLoginSuccess(data.user);
-                                onClose();
-                            } else {
-                                console.log(data.error);
-                            }
-                        }}
-                        onError={() => console.log('Google login failed')}
-                        
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setError('Google login failed')}
                     />
                 </Box>
                 
