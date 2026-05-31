@@ -1,17 +1,28 @@
 import { authApi } from './api';
 
+interface User {
+  id: number
+  nombreUsuario: string
+  nombre: string
+  apellido: string
+  email: string
+  rol: 'user' | 'admin' | 'master'
+  fotoPerfil?: string
+  genero?: string
+  pais?: string
+}
+
 interface LoginResponse {
-  success: boolean;
+  success: boolean
   data: {
-    token: string;
-    user: {
-      id: number;
-      nombreUsuario: string;
-      email: string;
-      rol: 'user' | 'admin' | 'master';
-      fotoPerfil?: string;
-    };
-  };
+    token: string
+    user: User
+  }
+}
+
+interface ProfileResponse {
+  success: boolean
+  data: User
 }
 
 export const login = async (identifier: string, password: string): Promise<LoginResponse> => {
@@ -29,3 +40,14 @@ export const login = async (identifier: string, password: string): Promise<Login
   
   return response.data;
 };
+
+export const logout = async (): Promise<void> => {
+  await authApi.post('/api/logout')
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+}
+
+export const getUserProfile = async (id: number): Promise<ProfileResponse> => {
+  const response = await authApi.get<ProfileResponse>(`/api/users/${id}`)
+  return response.data
+}

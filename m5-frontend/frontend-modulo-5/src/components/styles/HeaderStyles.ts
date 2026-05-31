@@ -92,4 +92,22 @@ export const headerStyles = {
     fontSize: 35,
     color: '#000000',
   }),
+  profilePicture: (theme:Theme): SxProps<Theme> => ({
+        width: '45px',
+        height: '45px',
+  }),
+  profilePictureButton: (theme:Theme): SxProps<Theme> => ({
+      width: '45px',
+      height: '45px',
+      borderRadius: '22.5px',
+      borderColor: 'transparent',
+      padding: '0px',
+      '&:hover': {
+          backgroundColor: 'transparent',
+          textDecoration: 'underline',
+      },
+      fontSize: theme.typography.body2.fontSize,
+      fontWeight: theme.typography.body2.fontWeight,
+      color: theme.typography.body2.color,
+  }),
 };

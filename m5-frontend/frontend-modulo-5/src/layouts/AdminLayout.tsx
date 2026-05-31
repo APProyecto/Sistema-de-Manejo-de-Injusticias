@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useState } from "react";
 import AdminSideMenu from "../components/admin/AdminNormalSideMenu";
 import AdminModeSideMenu from "../components/admin/AdminDashboardSideMenu";
+import UserHeader from "../components/user/UserHeader";
 
 export default function AdminLayout() {
     const [user, setUser] = useState(null);
@@ -30,7 +31,7 @@ export default function AdminLayout() {
 
     return (
         <Container>
-            <PublicHeader />
+            <UserHeader />
             <Container sx={
             {display:'flex', 
             flexDirection:'row', 

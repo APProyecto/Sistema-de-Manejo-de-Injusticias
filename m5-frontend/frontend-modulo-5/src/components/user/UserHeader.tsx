@@ -1,10 +1,19 @@
-import { AppBar, Toolbar, Typography, Button, Box, useTheme, TextField, InputAdornment } from '@mui/material';
+import { AppBar, Toolbar, Button, Box, useTheme, TextField, InputAdornment, Avatar } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { headerStyles } from '../styles/HeaderStyles';
 import TuneIcon from '@mui/icons-material/Tune';
 import LogoSrc from '../../assets/logo.png';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/authContext';
 export default function UserHeader() {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const handleProfileClick = () => {
+    navigate('/profile/');
+  };
+  const {user} = useAuth()
+
+
 
   return (
     <AppBar sx={headerStyles.appBar(theme)}>
@@ -48,8 +57,17 @@ export default function UserHeader() {
         />
 
         <Box>
-          <Button color="inherit" href="/login" variant="outlined" sx={headerStyles.loginButton(theme)}>
-            Login
+          <Button 
+            color="inherit" 
+            title='User Profile' 
+            sx={headerStyles.profilePictureButton(theme)}
+            onClick={handleProfileClick}
+          >
+                <Avatar
+                    src= {user?.fotoPerfil}
+                    alt= {'data.username'}
+                    sx={headerStyles.profilePicture(theme)}
+                />
           </Button>
         </Box>
       </Toolbar>

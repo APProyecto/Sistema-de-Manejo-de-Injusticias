@@ -5,11 +5,15 @@ import type { ReactNode } from 'react';
 export type UserRole = 'user' | 'admin' | 'master';
 
 interface User {
-  id: number;
-  nombreUsuario: string;
-  email: string;
-  rol: UserRole;
-  fotoPerfil?: string;
+  id: number
+  nombreUsuario: string
+  nombre: string
+  apellido: string
+  email: string
+  rol: UserRole
+  fotoPerfil?: string
+  genero?: string
+  pais?: string
 }
 
 interface AuthContextType {
