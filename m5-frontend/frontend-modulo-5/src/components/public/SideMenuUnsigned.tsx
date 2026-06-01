@@ -1,11 +1,6 @@
 import { AppBar, Toolbar, Typography, Button, Box, Container, useTheme, TextField, InputAdornment } from '@mui/material';
 import { sideMenuStyles } from '../styles/SideMenuStyles';
 import LoginWindow from './LoginWindow';
-import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import StarBorderPurple500OutlinedIcon from '@mui/icons-material/StarBorderPurple500Outlined';
-import CreateIcon from '@mui/icons-material/Create';
-import MarkunreadOutlinedIcon from '@mui/icons-material/MarkunreadOutlined';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
@@ -14,7 +9,6 @@ interface SideMenuUnsignedProps {
 }
 
 export default function SideMenuUnsigned({ onLoginSuccess }: SideMenuUnsignedProps) {
-  console.log('onLoginSuccess en SideMenu:', onLoginSuccess);
   const theme = useTheme();
   const navigate = useNavigate();
   const [loginOpen, setLoginOpen] = useState (false);

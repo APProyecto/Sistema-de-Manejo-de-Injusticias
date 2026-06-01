@@ -4,27 +4,27 @@ import { http, HttpResponse } from 'msw'
 const users = [
   {
     id: 1,
-    nombreUsuario: 'admin',
-    nombre: 'Ana',
-    apellido: 'García',
+    username: 'admin',
+    name: 'Ana',
+    lastName: 'García',
     email: 'ana@example.com',
     password: '1234',
-    rol: 'admin' as const,
-    fotoPerfil: 'https://plus.unsplash.com/premium_photo-1669343628944-d0e2d053a5e8?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW5zdGFncmFtJTIwcHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D',
-    genero: 'femenino',
-    pais: 'Costa Rica',
+    role: 'admin' as const,
+    profilePicture: 'https://plus.unsplash.com/premium_photo-1669343628944-d0e2d053a5e8?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW5zdGFncmFtJTIwcHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D',
+    gender: 'femenino',
+    region: 'Costa Rica',
   },
   {
     id: 2,
-    nombreUsuario: 'user',
-    nombre: 'Carlos',
-    apellido: 'López',
+    username: 'user',
+    name: 'Carlos',
+    lastName: 'López',
     email: 'carlos@example.com',
     password: '1234',
-    rol: 'user' as const,
-    fotoPerfil: 'https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-avatar-image-for-profile-png-image_13001882.png',
-    genero: 'masculino',
-    pais: 'México',
+    role: 'user' as const,
+    profilePicture: 'https://png.pngtree.com/png-clipart/20230927/original/pngtree-man-avatar-image-for-profile-png-image_13001882.png',
+    gender: 'masculino',
+    region: 'México',
   },
 ]
 
@@ -39,7 +39,7 @@ export const handlers = [
 
     const user = users.find(u =>
       (email && u.email === email) ||
-      (nombreUsuario && u.nombreUsuario === nombreUsuario)
+      (nombreUsuario && u.username === nombreUsuario)
     )
 
     if (!user || user.password !== password) {

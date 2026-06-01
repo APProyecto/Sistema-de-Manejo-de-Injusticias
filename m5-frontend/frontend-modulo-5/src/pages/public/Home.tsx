@@ -2,27 +2,11 @@ import { Container, Typography, Card, CardContent, Button, Box, useTheme } from 
 import type { PostCardData } from '../../types';
 import PostCard from '../../components/common/PostCard';
 import OptionMenuFeed from '../../components/user/OptionMenuFeed';
-import { homeStyles } from './HomeStyles';
+import { homeStyles } from '../styles/HomeStyles';
 
 export default function Home() {
 
   const theme = useTheme();
-
-  const onPostClick = (id: number) => {
-    console.log('go to post view');
-  }
-
-  const onUsernameClick = (id: number) => {
-    console.log("got to the user's page")
-  }
-
-  const onIndictedClick = (id:number) => {
-    console.log("go to the indicted's page");
-  }
-  
-  const onCaseClick = (id:number) => {
-    console.log("go to the case's page");
-  }
 
   let data: PostCardData[] = [
     {
@@ -69,10 +53,6 @@ export default function Home() {
         <PostCard 
           key={data.id}
           data={data}
-          onCaseClick={onCaseClick}
-          onPostClick={onPostClick}
-          onIndictedClick={onIndictedClick}
-          onUsernameClick={onUsernameClick}
           inFeed={true}
           >
         </PostCard>

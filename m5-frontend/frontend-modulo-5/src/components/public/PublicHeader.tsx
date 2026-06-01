@@ -3,11 +3,22 @@ import SearchIcon from '@mui/icons-material/Search';
 import { headerStyles } from '../styles/HeaderStyles';
 import TuneIcon from '@mui/icons-material/Tune';
 import LogoSrc from '../../assets/logo.png';
-export default function PublicHeader() {
+import { useState } from 'react';
+import LoginWindow from './LoginWindow';
+
+interface PublicHeaderProps {
+  onLoginSuccess: (userData: any) => void;
+}
+
+export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
+
+
   const theme = useTheme();
+  const [loginOpen, setLoginOpen] = useState (false);
 
   return (
     <AppBar sx={headerStyles.appBar(theme)}>
+      <LoginWindow open = {loginOpen} onClose={() => setLoginOpen(false)} onLoginSuccess={(userData) => onLoginSuccess(userData)}/>
       <Toolbar sx={headerStyles.toolbar(theme)}>
         
         <Box sx={{ 
@@ -48,7 +59,12 @@ export default function PublicHeader() {
         />
 
         <Box>
-          <Button color="inherit" href="/login" variant="outlined" sx={headerStyles.loginButton(theme)}>
+          <Button
+           color="inherit" 
+           variant="outlined" 
+           sx={headerStyles.loginButton(theme)}
+           onClick={() => setLoginOpen(true)}
+          >
             Login
           </Button>
         </Box>
