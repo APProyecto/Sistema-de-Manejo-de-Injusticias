@@ -2,7 +2,7 @@ import { Container, Typography, Card, CardContent, Button, Box, useTheme } from 
 import type { PostCardData } from '../../types';
 import PostCard from '../../components/common/PostCard';
 import OptionMenuFeed from '../../components/user/OptionMenuFeed';
-import { homeStyles } from '../public/HomeStyles';
+import { homeStyles } from '../styles/HomeStyles';
 
 export default function AdminHome() {
 

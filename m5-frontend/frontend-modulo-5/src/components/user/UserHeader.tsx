@@ -64,7 +64,7 @@ export default function UserHeader() {
             onClick={handleProfileClick}
           >
                 <Avatar
-                    src= {user?.fotoPerfil}
+                    src= {user?.profilePicture}
                     alt= {'data.username'}
                     sx={headerStyles.profilePicture(theme)}
                 />

@@ -1,16 +1,5 @@
+import type { User } from '../types';
 import { authApi } from './api';
-
-interface User {
-  id: number
-  nombreUsuario: string
-  nombre: string
-  apellido: string
-  email: string
-  rol: 'user' | 'admin' | 'master'
-  fotoPerfil?: string
-  genero?: string
-  pais?: string
-}
 
 interface LoginResponse {
   success: boolean

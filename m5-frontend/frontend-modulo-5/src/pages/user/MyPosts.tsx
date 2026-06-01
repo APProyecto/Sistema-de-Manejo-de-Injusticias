@@ -1,5 +1,5 @@
 import { Container, Typography, Card, CardContent, Button, Box, useTheme } from '@mui/material';
-import { homeStyles } from '../public/HomeStyles';
+import { homeStyles } from '../styles/HomeStyles';
 import type { PostCardData } from '../../types';
 import PostCard from '../../components/common/PostCard';
 import OptionMenuMyPosts from '../../components/user/OptionMenuMyPosts';
@@ -9,22 +9,6 @@ import { myPostsStyles } from '../styles/MyPostsStyles';
 export default function MyPosts() {
 
   const theme = useTheme();
-
-  const onPostClick = (id: number) => {
-    console.log('go to post view');
-  }
-
-  const onUsernameClick = (id: number) => {
-    console.log("got to the user's page")
-  }
-
-  const onIndictedClick = (id:number) => {
-    console.log("go to the indicted's page");
-  }
-  
-  const onCaseClick = (id:number) => {
-    console.log("go to the case's page");
-  }
 
   let data: PostCardData[] = [
     {
@@ -75,10 +59,6 @@ export default function MyPosts() {
           <PostCard 
           key={data.id}
           data={data}
-          onCaseClick={onCaseClick}
-          onPostClick={onPostClick}
-          onIndictedClick={onIndictedClick}
-          onUsernameClick={onUsernameClick}
           inFeed={false}
           >
           </PostCard>

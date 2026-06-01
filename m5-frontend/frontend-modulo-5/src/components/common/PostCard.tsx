@@ -17,15 +17,27 @@ import OptionMenuMyPosts from "../user/OptionMenuMyPosts";
 
 interface PostCardProps {
     data: PostCardData,
-    onUsernameClick?: (id: number) => void;
-    onPostClick?: (id: number) => void;
-    onIndictedClick: (id: number) => void;
-    onCaseClick: (id: number) => void;
     inFeed: boolean;
 }
 
-export default function PostCard({ data, onUsernameClick, onPostClick, onIndictedClick, onCaseClick, inFeed}: PostCardProps){
+export default function PostCard({ data, inFeed}: PostCardProps){
     const theme = useTheme();
+
+    const onPostClick = (id: number) => {
+        console.log('go to post view');
+    }
+
+    const onUsernameClick = (id: number) => {
+        console.log("got to the user's page")
+    }
+
+    const onIndictedClick = (id:number) => {
+        console.log("go to the indicted's page");
+    }
+    
+    const onCaseClick = (id:number) => {
+        console.log("go to the case's page");
+    }
 
     const handleStateColor = (state: string) => {
         if(state === 'Active'){

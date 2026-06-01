@@ -1,20 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import type { User, UserRole } from '../types';
 
-// Definir los roles posibles
-export type UserRole = 'user' | 'admin' | 'master';
 
-interface User {
-  id: number
-  nombreUsuario: string
-  nombre: string
-  apellido: string
-  email: string
-  rol: UserRole
-  fotoPerfil?: string
-  genero?: string
-  pais?: string
-}
+
 
 interface AuthContextType {
   user: User | null;
@@ -68,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return false;
     
     const rolesArray = Array.isArray(roles) ? roles : [roles];
-    return rolesArray.includes(user.rol);
+    return rolesArray.includes(user.role);
   };
 
   return (
@@ -76,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isAuthenticated: !!user,
       isLoading,
-      userRole: user?.rol || null,
+      userRole: user?.role || null,
       login,
       logout,
       hasRole,

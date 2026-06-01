@@ -14,6 +14,7 @@ import Profile from '../pages/user/Profile';
 import CreateBoycott from '../pages/user/CreateBoycott';
 import Favorites from '../pages/user/Favorites';
 import MyPosts from '../pages/user/MyPosts';
+import EditProfile from '../pages/user/EditProfile';
 
 // Páginas de admin
 import AdminHome from '../pages/admin/AdminHome';
@@ -33,6 +34,7 @@ export default function AppRoutes() {
     <Routes>
       {/* Rutas sin header ni side menu */}
       <Route path='register' element={<Register />}/>
+
       {/* Rutas públicas (sin inciar sesión) */}
       <Route element={<DynamicLayout />}>
         <Route path="/" element={<Home />} />
@@ -59,6 +61,12 @@ export default function AppRoutes() {
         <Route path="/my-posts" element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
             <MyPosts />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/edit-profile" element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
+            <EditProfile />
           </ProtectedRoute>
         } />
 
