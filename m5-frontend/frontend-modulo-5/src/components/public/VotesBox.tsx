@@ -1,6 +1,6 @@
 import { Container, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from "@mui/material";
 import { VotesBoxStyles } from "../styles/VotesBoxStyles";
-import { useState } from "react";
+import React, { useState } from "react";
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
@@ -13,7 +13,8 @@ export default function VotesBox ({votes}: VotesBoxProps) {
     const theme = useTheme();
     const [vote, setVote] = useState<'positive' | 'negative' | null>(null);
 
-    const handleVote = (newVote: 'positive' | 'negative') => {
+    const handleVote = (newVote: 'positive' | 'negative', event: React.MouseEvent) => {
+        event.stopPropagation();
         if (vote === newVote){
             setVote(null);
         } else {
@@ -27,7 +28,7 @@ export default function VotesBox ({votes}: VotesBoxProps) {
             <ToggleButton
                 value={"checked"} 
                 selected={vote === 'positive'}
-                onChange={() => handleVote('positive')}
+                onChange={(event) => handleVote('positive', event)}
                 sx={VotesBoxStyles.positiveVoteButton(theme)}
                 disableRipple
                 disableTouchRipple
@@ -44,7 +45,7 @@ export default function VotesBox ({votes}: VotesBoxProps) {
             <ToggleButton
                 value={"checked"} 
                 selected={vote === 'negative'}
-                onChange={() => handleVote('negative')}
+                onChange={(event) => handleVote('negative', event)}
                 sx={VotesBoxStyles.negativeVoteButton(theme)}
                 disableRipple
                 disableTouchRipple

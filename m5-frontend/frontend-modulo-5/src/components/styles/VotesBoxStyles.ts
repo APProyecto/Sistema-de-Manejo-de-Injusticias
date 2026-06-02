@@ -42,6 +42,7 @@ export const VotesBoxStyles = {
         '&.Mui-selected': {
             color: theme.palette.error.main,
             backgroundColor: 'transparent',
+            '&:hover': {backgroundColor: 'transparent'}
         }
     }),
     
@@ -60,6 +61,7 @@ export const VotesBoxStyles = {
         '&.Mui-selected': {
             color: theme.palette.success.main,
             backgroundColor: 'transparent',
+            '&:hover': {backgroundColor: 'transparent'}
         }
     }),
 }

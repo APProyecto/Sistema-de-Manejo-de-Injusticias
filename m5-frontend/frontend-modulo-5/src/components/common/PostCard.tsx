@@ -14,6 +14,7 @@ import { Circle } from "@mui/icons-material";
 import OptionMenu from "../user/OptionMenuFeed";
 import OptionMenuFeed from "../user/OptionMenuFeed";
 import OptionMenuMyPosts from "../user/OptionMenuMyPosts";
+import { useNavigate } from "react-router-dom";
 
 interface PostCardProps {
     data: PostCardData,
@@ -22,21 +23,30 @@ interface PostCardProps {
 
 export default function PostCard({ data, inFeed}: PostCardProps){
     const theme = useTheme();
+    const navigate = useNavigate();
 
-    const onPostClick = (id: number) => {
-        console.log('go to post view');
+    const onPostClick = () => {
+        navigate(`/detailed-post/${data.id}`);
     }
 
-    const onUsernameClick = (id: number) => {
+    const onUsernameClick = () => {
         console.log("got to the user's page")
     }
 
-    const onIndictedClick = (id:number) => {
+    const onIndictedClick = () => {
         console.log("go to the indicted's page");
     }
     
-    const onCaseClick = (id:number) => {
+    const onCaseClick = () => {
         console.log("go to the case's page");
+    }
+
+    const onEvidencesClick = () => {
+        navigate(`/detailed-post/${data.id}/evidences`)
+    }
+
+    const onCommentsClick = () => {
+
     }
 
     const handleStateColor = (state: string) => {
@@ -48,8 +58,12 @@ export default function PostCard({ data, inFeed}: PostCardProps){
     }
 
     return(
-        <Container sx={PostCardStyles.container(theme)}>
-            <Container sx={PostCardStyles.topContainer(theme)}>
+        <Button 
+            sx={PostCardStyles.container(theme)}
+            onClick={onPostClick}
+        >
+            <Container 
+                sx={PostCardStyles.topContainer(theme)}>
 
                 {/* Profile Picture */}
                 <Avatar
@@ -60,6 +74,7 @@ export default function PostCard({ data, inFeed}: PostCardProps){
 
                 {/* Username */}
                 <Button
+                onClick={onUsernameClick}
                     sx={PostCardStyles.usernameButton(theme)}
                 >
                     {data.username}
@@ -83,12 +98,14 @@ export default function PostCard({ data, inFeed}: PostCardProps){
                     <Entity
                         src={data.indicted_picture}
                         name={data.indicted}
+                        onPressClick={onIndictedClick}
                     ></Entity>
 
                     {/*Case*/}
                     <Entity
                         src={data.case_picture}
                         name={data.case}
+                        onPressClick={onCaseClick}
                     ></Entity>
                 </Container>
 
@@ -122,6 +139,7 @@ export default function PostCard({ data, inFeed}: PostCardProps){
                         text={data.coments}
                         icon={InsertCommentIcon}
                         iconColor={theme.palette.text.primary}
+                        onPressClick={onCommentsClick}
                         >
                     </PostInteracionButton>
 
@@ -130,6 +148,7 @@ export default function PostCard({ data, inFeed}: PostCardProps){
                         text={data.evidences}
                         icon={DocumentScannerIcon}
                         iconColor={theme.palette.text.primary}
+                        onPressClick={onEvidencesClick}
                         >
                     </PostInteracionButton>
                 </Container>
@@ -144,6 +163,6 @@ export default function PostCard({ data, inFeed}: PostCardProps){
                 >
                 </PostInteracionButton>
             </Container>
-        </Container>
+        </Button>
     )
 }
