@@ -21,18 +21,34 @@ const theme = darkTheme;
 
 function App() {
   const {
-  isAuthenticated,
-  getAccessTokenSilently,
+    isAuthenticated,
+    getAccessTokenSilently,
+    user,
   } = useAuth0();
 
   useEffect(() => {
-  async function syncAuthUser() {
-    try {
+
+    async function syncAuthUser() {
+
+      try {
+
         if (!isAuthenticated) return;
+
         const token = await getAccessTokenSilently();
-        const user = await syncUser(token);
+
+        // GUARDAR TOKEN
+        localStorage.setItem("token", token);
+
+        await syncUser(
+          token,
+          user?.email || "",
+          user?.name || "User",
+        );
+
         console.log("Usuario sincronizado:", user);
+
       } catch (error) {
+
         console.error(error);
       }
     }

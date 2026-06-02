@@ -15,6 +15,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       authorizationParams={{
         redirect_uri: window.location.origin,
         audience: "https://injusticias-api",
+        scope: "openid profile email",
       }}
     >
       <BrowserRouter>

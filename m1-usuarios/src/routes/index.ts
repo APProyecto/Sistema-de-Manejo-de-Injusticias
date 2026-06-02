@@ -32,10 +32,12 @@ router.get("/me", checkJwt, async (req: any, res) => {
   try {
 
     const payload = req.auth?.payload;
+    console.log(payload);
 
     const auth0Id = payload.sub;
-    const email = payload.email || "";
-    const name = payload.name || "User";
+
+    const email = req.headers["x-user-email"] as string;
+    const name = req.headers["x-user-name"] as string || "User";
 
     let user = await prisma.appUser.findFirst({
       where: {
