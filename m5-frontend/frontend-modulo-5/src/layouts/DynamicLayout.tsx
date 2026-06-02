@@ -13,7 +13,7 @@ export default function DynamicLayout() {
   }
   
   // Si es admin o master, layout admin
-  if (user?.rol === 'admin' || user?.rol === 'master') {
+  if (user?.role === 'admin' || user?.role === 'master') {
     return <AdminLayout />;
   }
   
