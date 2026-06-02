@@ -21,6 +21,7 @@ export const myPostsStyles = {
     }),
     container: (theme: Theme): SxProps<Theme> => ({
         display: 'flex',
+        alignItems: 'center',
         flexDirection: 'column',
         boxSizing: 'border-box',
         flex: 1,

@@ -10,24 +10,23 @@ interface PostInteractionButtonProps {
     text: string,
     icon: React.ElementType,
     iconColor: string, //se pasa el color del icono como parámetro para usar el componente con el estado del boycott
+    onPressClick?: () => void;
 }
 
-export default function PostInteracionButton ({text, icon: Icon, iconColor}: PostInteractionButtonProps) {
+export default function PostInteracionButton ({text, icon: Icon, iconColor, onPressClick}: PostInteractionButtonProps) {
     const theme = useTheme();
     const [vote, setVote] = useState<'positive' | 'negative' | null>(null);
 
-    const handleVote = (newVote: 'positive' | 'negative') => {
-        if (vote === newVote){
-            setVote(null);
-        } else {
-            setVote(newVote);
-        }
+    const handleClick = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        if(onPressClick) onPressClick();
     }
+
 
     return(
         <Container sx={PostInteractionButtonStyles.interactiveButtonContainer(theme)}>
             <IconButton
-                onClick={() => {}}
+                onClick={(event) => handleClick(event)}
                 sx={PostInteractionButtonStyles.button(theme)}
                 disableRipple
                 disableTouchRipple

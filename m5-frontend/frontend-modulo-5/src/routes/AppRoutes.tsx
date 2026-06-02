@@ -8,6 +8,8 @@ import AdminLayout from '../layouts/AdminLayout';
 
 // Páginas públicas
 import Home from '../pages/public/Home';
+import DetailedPost from '../pages/public/DetailedPost';
+import Evidences from '../pages/public/Evidences';
 
 // Páginas de usuario
 import Profile from '../pages/user/Profile';
@@ -38,6 +40,8 @@ export default function AppRoutes() {
       {/* Rutas públicas (sin inciar sesión) */}
       <Route element={<DynamicLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/detailed-post/:id" element={<DetailedPost />} />
+        <Route path="/detailed-post/:id/evidences" element={<Evidences />} />
 
       {/* Rutas de usuario registrado */}
         
