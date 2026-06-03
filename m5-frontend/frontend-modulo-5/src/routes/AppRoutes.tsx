@@ -17,6 +17,8 @@ import CreateBoycott from '../pages/user/CreateBoycott';
 import Favorites from '../pages/user/Favorites';
 import MyPosts from '../pages/user/MyPosts';
 import EditProfile from '../pages/user/EditProfile';
+import MyVotes from '../pages/user/MyVotes';
+import Suggestions from '../pages/user/Suggestions';
 
 // Páginas de admin
 import AdminHome from '../pages/admin/AdminHome';
@@ -65,6 +67,16 @@ export default function AppRoutes() {
         <Route path="/my-posts" element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
             <MyPosts />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-votes" element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
+            <MyVotes />
+          </ProtectedRoute>
+        } />
+        <Route path="suggestions" element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
+            <Suggestions />
           </ProtectedRoute>
         } />
 
