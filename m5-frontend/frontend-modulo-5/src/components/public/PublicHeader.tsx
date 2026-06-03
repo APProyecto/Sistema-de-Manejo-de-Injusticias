@@ -1,10 +1,14 @@
 import { AppBar, Toolbar, Typography, Button, Box, useTheme, TextField, InputAdornment } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
 import SearchIcon from '@mui/icons-material/Search';
 import { headerStyles } from '../styles/HeaderStyles';
 import TuneIcon from '@mui/icons-material/Tune';
 import LogoSrc from '../../assets/logo.png';
 import { useState } from 'react';
 import LoginWindow from './LoginWindow';
+import { useAuth } from '../../context/authContext';
+import { useNavigate } from 'react-router-dom';
+import DefaultAvatar from '../../assets/pfpDefaultImage.png';
 
 interface PublicHeaderProps {
   onLoginSuccess: (userData: any) => void;
@@ -15,6 +19,12 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
 
   const theme = useTheme();
   const [loginOpen, setLoginOpen] = useState (false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAvatarClick = () => {
+    navigate('/my-votes');
+  };
 
   return (
     <AppBar sx={headerStyles.appBar(theme)}>
@@ -59,14 +69,28 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
         />
 
         <Box>
-          <Button
-           color="inherit" 
-           variant="outlined" 
-           sx={headerStyles.loginButton(theme)}
-           onClick={() => setLoginOpen(true)}
-          >
-            Login
-          </Button>
+          {user ? (
+            <Button
+              color="inherit"
+              sx={headerStyles.profilePictureButton(theme)}
+              onClick={handleAvatarClick}
+            >
+              <Avatar
+                src={user.profilePicture || DefaultAvatar}
+                alt={user.username}
+                sx={headerStyles.profilePicture(theme)}
+              />
+            </Button>
+          ) : (
+            <Button
+              color="inherit"
+              variant="outlined"
+              sx={headerStyles.loginButton(theme)}
+              onClick={() => setLoginOpen(true)}
+            >
+              Login
+            </Button>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

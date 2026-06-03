@@ -6,12 +6,12 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 interface VotesBoxProps {
     votes: string
-    
+    initialVote?: 'positive' | 'negative' | null
 }
 
-export default function VotesBox ({votes}: VotesBoxProps) {
+export default function VotesBox ({votes, initialVote = null}: VotesBoxProps) {
     const theme = useTheme();
-    const [vote, setVote] = useState<'positive' | 'negative' | null>(null);
+    const [vote, setVote] = useState<'positive' | 'negative' | null>(initialVote);
 
     const handleVote = (newVote: 'positive' | 'negative', event: React.MouseEvent) => {
         event.stopPropagation();
@@ -37,7 +37,7 @@ export default function VotesBox ({votes}: VotesBoxProps) {
             </ToggleButton>
 
             {/*Votes*/}
-            <Typography>
+            <Typography sx={VotesBoxStyles.votesText(theme)}>
                 {votes}
             </Typography>
 

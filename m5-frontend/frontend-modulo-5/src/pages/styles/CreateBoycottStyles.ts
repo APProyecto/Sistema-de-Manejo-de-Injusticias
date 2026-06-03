@@ -2,9 +2,9 @@ import type { SxProps, Theme } from '@mui/material';
 
 const fieldRoot = (theme: Theme): SxProps<Theme> => ({
   '& .MuiOutlinedInput-root': {
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.palette.secondary.main,
     borderRadius: '10px',
-    color: '#111111',
+    color: '#000000',
     '& fieldset': {
       borderColor: 'transparent',
     },
@@ -16,7 +16,7 @@ const fieldRoot = (theme: Theme): SxProps<Theme> => ({
     },
   },
   '& .MuiInputBase-input': {
-    color: '#111111',
+    color: '#000000',
     padding: '14px 14px',
   },
 });
@@ -77,34 +77,34 @@ export const createBoycottStyles = {
   }),
   textField: (theme: Theme): SxProps<Theme> => fieldRoot(theme),
   selectMenuPaper: (): SxProps<Theme> => ({
-    backgroundColor: '#ffffff',
-    color: '#111111',
+    backgroundColor: '#2f2f2a',
+    color: '#000000',
     borderRadius: '10px',
     marginTop: '6px',
     '& .MuiMenuItem-root': {
-      color: '#111111',
+      color: '#ffffff',
       fontWeight: 500,
     },
   }),
   selectMenuItem: (): SxProps<Theme> => ({
-    color: '#111111',
+    color: '#ffffff',
     fontWeight: 500,
     '&.Mui-selected': {
-      backgroundColor: '#f1f1f1',
+      backgroundColor: '#4a4a44',
     },
     '&.Mui-selected:hover': {
-      backgroundColor: '#e8e8e8',
+      backgroundColor: '#5a5a53',
     },
     '&:hover': {
-      backgroundColor: '#f7f7f7',
+      backgroundColor: '#43433d',
     },
   }),
   textarea: (theme: Theme): SxProps<Theme> => ({
     ...fieldRoot(theme),
     '& .MuiOutlinedInput-root': {
-      backgroundColor: '#ffffff',
+      backgroundColor: '#2f2f2a',
       borderRadius: '10px',
-      color: '#111111',
+      color: '#000000',
       alignItems: 'flex-start',
       '& fieldset': {
         borderColor: 'transparent',
@@ -117,7 +117,7 @@ export const createBoycottStyles = {
       },
     },
     '& .MuiInputBase-input': {
-      color: '#111111',
+      color: '#ffffff',
       padding: '14px 14px',
     },
   }),
