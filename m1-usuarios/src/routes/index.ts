@@ -27,6 +27,24 @@ router.get(
   }
 );
 
+router.get("/db-test", async (_req, res) => {
+  try {
+    const count = await prisma.appUser.count();
+
+    res.json({
+      ok: true,
+      totalUsers: count,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      ok: false,
+      error,
+    });
+  }
+});
+
 router.get("/me", checkJwt, async (req: any, res) => {
 
   try {
@@ -39,6 +57,9 @@ router.get("/me", checkJwt, async (req: any, res) => {
     const email = req.headers["x-user-email"] as string;
     const name = req.headers["x-user-name"] as string || "User";
 
+    console.log("EMAIL:", email);
+    console.log("NAME:", name);
+
     let user = await prisma.appUser.findFirst({
       where: {
         Email: email,
@@ -46,6 +67,11 @@ router.get("/me", checkJwt, async (req: any, res) => {
     });
 
     if (!user) {
+
+      console.log("EMAIL:", email);
+      console.log("NAME:", name);
+
+      console.log("CREANDO USUARIO");
 
       user = await prisma.appUser.create({
         data: {

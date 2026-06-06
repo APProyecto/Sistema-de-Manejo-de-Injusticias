@@ -36,8 +36,12 @@ function App() {
 
         const token = await getAccessTokenSilently();
 
+        console.log("TOKEN:", token);
+
         // GUARDAR TOKEN
         localStorage.setItem("token", token);
+
+        console.log("TOKEN:", token);
 
         await syncUser(
           token,
