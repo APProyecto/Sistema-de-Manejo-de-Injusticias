@@ -1,6 +1,13 @@
 import {Request, Response} from "express";
 import { prisma } from "../../config/prisma";
 
+import {downloadFileFromGridFS} from "../../../../m0-base-datos/src/services/gridfs.service";
+
+import {
+    getEntityDocumentByEntityId,
+    getAppUserDocumentByUserId,
+    getBoycottDocumentByMysqlId
+} from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
 /*
     Function: getMostFollowedCases.
@@ -42,6 +49,7 @@ export async function getMostFollowedCases(req:Request, res:Response){
                 },
                 Entity:{
                     select:{
+                        EntityID:true,
                         EntityName:true,
                     },
                 },
@@ -54,7 +62,9 @@ export async function getMostFollowedCases(req:Request, res:Response){
             for (let j = 0; j < FindCases.length; j++) {
                 if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
                     let element = {
-                        ...FindCases[j],
+                        entityname: FindCases[j].Entity.EntityName,
+                        entityPicture: getEntityPicture(FindCases[j].Entity.EntityID),
+                        injusticeType: FindCases[j].InjusticeType.InjusticeName,
                         followers: followersCount[i]._count,
                     }
                     summary.push(element);
@@ -75,6 +85,81 @@ export async function getMostFollowedCases(req:Request, res:Response){
             ok: false,
             error: "Internal server error",
         });
+    }
+}
+
+async function getEntityPicture(entId:number){
+    try {
+        
+        const CurrentMongoDocument = await getEntityDocumentByEntityId(entId);
+
+        if(!CurrentMongoDocument?.picture?.mongoFileId){
+            console.error(
+                "getEntityPicture picture not found",
+            );
+            return null;
+        }
+
+        const fileBuffer = await downloadFileFromGridFS(CurrentMongoDocument.picture.mongoFileId.toString());
+
+        return fileBuffer;
+
+    } catch (error) {
+        console.error(
+            "getEntityPicture error:",
+            error
+        );
+        return null;
+    }
+} 
+
+async function getAppUserPicture(userId:number){
+    try {
+        
+        const CurrentMongoDocument = await getAppUserDocumentByUserId(userId);
+
+        if(!CurrentMongoDocument?.picture?.mongoFileId){
+            console.error(
+                "getAppUserPicture picture not found",
+            );
+            return null;
+        }
+
+        const fileBuffer = await downloadFileFromGridFS(CurrentMongoDocument.picture.mongoFileId.toString());
+
+        return fileBuffer;
+
+    } catch (error) {
+        console.error(
+            "getAppUserPicture error:",
+            error
+        );
+        return null;
+    }
+}
+
+async function getBoycottDesc(boycottId:number){
+    try {
+        
+        const CurrentMongoDocument = await getBoycottDocumentByMysqlId(boycottId);
+
+        if(!CurrentMongoDocument?.description){
+            console.error(
+                "getBoycottDesc description not found",
+            );
+            return null;
+        }
+
+        const description = CurrentMongoDocument.description;
+
+        return description;
+
+    } catch (error) {
+        console.error(
+            "getBoycottDesc error:",
+            error
+        );
+        return null;
     }
 }
 
@@ -99,6 +184,8 @@ export async function getUserPostAndComments(req:Request, res:Response){
             }
         });
 
+        const AppUserPicture = getAppUserPicture(Number(userId));
+
         const UserPost = await prisma.boycott.findMany({
             where:{
                 CreatorID: userId?.UserID,
@@ -108,7 +195,7 @@ export async function getUserPostAndComments(req:Request, res:Response){
             },
             select:{
                 Title:true,
-                MongoDocumentId:true,
+                BoycottID:true,
                 BoycottState:{
                     select:{
                         StateName:true,
@@ -117,6 +204,17 @@ export async function getUserPostAndComments(req:Request, res:Response){
             }
 
         });
+
+        const enrichPost = [];
+
+        for (let i = 0; i < UserPost.length; i++) {
+                let post = {
+                    Title: UserPost[i].Title,
+                    State: UserPost[i].BoycottState.StateName,
+                    Description: getBoycottDesc(UserPost[i].BoycottID)
+                }
+                enrichPost.push(post)
+        }
 
         const UserComments = await prisma.commentBoycott.findMany({
             where:{
@@ -151,6 +249,7 @@ export async function getUserPostAndComments(req:Request, res:Response){
                     select:{
                         Entity:{
                             select:{
+                                EntityID:true,
                                 EntityName:true,
                             }
                         }
@@ -159,12 +258,23 @@ export async function getUserPostAndComments(req:Request, res:Response){
             }
         });
 
+        const enrichEntities = [];
+
+        for (let i = 0; i < entityFollowing.length; i++) {
+                let entity = {
+                    EntityName: entityFollowing[i].Boycott.Entity.EntityName,
+                    EntityPicture: getEntityPicture(entityFollowing[i].Boycott.Entity.EntityID)
+                }
+                enrichEntities.push(entity)
+        }
+
         res.json({
             ok: true,
             username: userName,
-            posts: UserPost,
+            userPicture: AppUserPicture,
+            posts: enrichPost,
             Comments: UserComments,
-            Follows: entityFollowing
+            Follows: enrichEntities
         });
 
 
