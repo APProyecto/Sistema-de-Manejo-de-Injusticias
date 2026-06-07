@@ -1,10 +1,16 @@
+// Definir los roles posibles
+export type UserRole = 'user' | 'admin' | 'master';
+
 export interface User {
-  id: number;
-  nombreUsuario: string;
-  email: string;
-  pais: string;
-  fotoPerfil?: string;
-  rol: 'sin_cuenta' | 'registrado' | 'administrador';
+  id: number
+  username: string
+  name: string
+  lastName: string
+  email: string
+  role: UserRole
+  profilePicture?: string
+  gender?: string
+  region?: string
 }
 
 export interface PostCardData {

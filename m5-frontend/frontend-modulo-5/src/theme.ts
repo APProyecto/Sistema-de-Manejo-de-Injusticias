@@ -30,6 +30,35 @@ export const lightTheme = createTheme({
         },
       },
     },
+    MuiButton: {
+        defaultProps: {
+            disableRipple: true,
+            disableTouchRipple: true,
+        },
+    },
+    MuiIconButton: {
+        defaultProps: {
+            disableRipple: true,
+            disableTouchRipple: true,
+        },
+    },
+    MuiToggleButton: {
+        defaultProps: {
+            disableRipple: true,
+            disableTouchRipple: true,
+        },
+    },
+    // Si usas otros componentes con ripple
+    MuiListItemButton: {
+        defaultProps: {
+            disableRipple: true,
+        },
+    },
+    MuiTab: {
+        defaultProps: {
+            disableRipple: true,
+        },
+    },
   },
 });
 
@@ -66,6 +95,35 @@ export const darkTheme = createTheme({
           backgroundColor: 'transparent',
         },
       },
+    },
+    MuiButton: {
+        defaultProps: {
+            disableRipple: true,
+            disableTouchRipple: true,
+        },
+    },
+    MuiIconButton: {
+        defaultProps: {
+            disableRipple: true,
+            disableTouchRipple: true,
+        },
+    },
+    MuiToggleButton: {
+        defaultProps: {
+            disableRipple: true,
+            disableTouchRipple: true,
+        },
+    },
+    // Si usas otros componentes con ripple
+    MuiListItemButton: {
+        defaultProps: {
+            disableRipple: true,
+        },
+    },
+    MuiTab: {
+        defaultProps: {
+            disableRipple: true,
+        },
     },
   },
 
