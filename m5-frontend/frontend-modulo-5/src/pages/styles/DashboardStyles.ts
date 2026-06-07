@@ -27,7 +27,7 @@ export const DashboardStyles = {
     background:theme.palette.grey[200],
     borderRadius:9
   }),
-  companiesItemsBox: (theme:Theme): SxProps<Theme> => ({
+  companiesItemsBox: (): SxProps<Theme> => ({
     display:'flex',
     width:'33%'
   })

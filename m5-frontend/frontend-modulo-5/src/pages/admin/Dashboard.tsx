@@ -75,7 +75,7 @@ export default function Dashboard() {
             {/* WIP : Al dar click al archivo no pasa nada, los archivos aun no son reales */}
         }}>
             <Box sx={DashboardStyles.companiesBox(theme)}>
-              <Box sx={DashboardStyles.companiesItemsBox(theme)}>
+              <Box sx={DashboardStyles.companiesItemsBox()}>
                 {/* WIP : Usar Fotos reales */}
                 <Avatar
                   src={company.icon}
@@ -86,11 +86,11 @@ export default function Dashboard() {
                 {/* WIP : Usar numeros reales */}
                 <Typography variant='h6' sx={{my:'Auto',ml:2}}>{company.name}</Typography>
               </Box>
-              <Box sx={DashboardStyles.companiesItemsBox(theme)}>
+              <Box sx={DashboardStyles.companiesItemsBox()}>
                 {/* WIP : Usar numeros reales */}
                 <Typography variant='h6' sx={{textAlign:'center',my:'Auto',mx:'Auto'}}>{company.reports} Reports</Typography>
               </Box>
-              <Box sx={DashboardStyles.companiesItemsBox(theme)}>
+              <Box sx={DashboardStyles.companiesItemsBox()}>
                 {/* WIP : Usar numeros reales */}
                 <Typography variant='h6' sx={{my:'Auto',ml:'Auto',mr:5}}>{company.state}</Typography>
              </Box>
