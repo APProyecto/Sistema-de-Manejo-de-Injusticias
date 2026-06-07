@@ -10,7 +10,7 @@ app.use(express.json());
 app.get("/health", (_req, res) => {
   res.json({
     ok: true,
-    service: "m4-stadistics",
+    service: "m4-estadisticas",
   });
 });
 

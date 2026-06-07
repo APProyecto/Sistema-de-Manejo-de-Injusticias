@@ -1,0 +1,107 @@
+import type { SxProps, Theme } from '@mui/material';
+import { fontSize, palette } from '@mui/system';
+
+export const profileStyles = {
+    container: (theme: Theme): SxProps<Theme> => ({
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
+        flex: 1,
+        background: 'theme.palette.background.default',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        width: '100%',
+        gap: '20px',
+    }),
+    actionsPannelContainer: (theme: Theme): SxProps<Theme> => ({
+        backgroundColor: 'transparent',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingX: '60px',
+        height: '100px',
+        marginTop: '10px',
+    }),
+    filler: (theme: Theme): SxProps<Theme> => ({
+        backgroundColor: 'transparent',
+    }),
+    profilePicture: (theme: Theme): SxProps<Theme> => ({
+        height: '65px',
+        width: '65px',        
+    }),
+    username: (theme: Theme): SxProps<Theme> => ({
+        backgroundColor: 'transparent',
+        margin: '20px',
+        fontWeight: theme.typography.h2.fontWeight,
+        fontSize: theme.typography.h2.fontSize,
+        color: theme.typography.h2.color,
+    }),
+    editButton: (theme: Theme): SxProps<Theme> => ({
+        backgroundColor: theme.palette.secondary.main,
+        display: 'inline-flex',
+        minWidth: 'max-content',
+        maxWidth: '100%', 
+        borderRadius: '25px',
+        gap: '10px',
+        paddingX: '15px',
+        marginRight: '50px',
+        '&:hover': {
+            backgroundColor: theme.palette.grey[200],
+            color: theme.palette.background.default,
+        },
+    }),
+    editButtonIcon: (theme: Theme): SxProps<Theme> => ({
+        className: 'edit-button-icon',
+        color: theme.palette.background.default,
+    }),
+    editButtonText: (theme: Theme): SxProps<Theme> => ({
+        className: 'edit-button-text',
+        textWrap: 'balance',
+        color: theme.palette.background.default,
+        fontWeight: theme.typography.body2.fontWeight,
+        fontSize: theme.typography.body2.fontSize,
+    }),
+    logOutButton: (theme: Theme): SxProps<Theme> => ({
+        backgroundColor: 'transparent',
+        display: 'inline-flex',
+        minWidth: 'max-content',
+        maxWidth: '100%', 
+        borderRadius: '25px',
+        gap: '10px',
+        paddingX: '10px',
+        '&:hover': {
+            backgroundColor: theme.palette.grey[100],
+            color: theme.palette.background.default,
+        },
+    }),
+    logOutButtonIcon: (theme: Theme): SxProps<Theme> => ({
+        color: theme.palette.secondary.main,
+        className: 'logout-button-icon',
+    }),
+    logOutButtonText: (theme: Theme): SxProps<Theme> => ({
+        className: 'logout-button-text',
+        textWrap: 'balance',
+        color: theme.palette.secondary.main,
+        fontWeight: theme.typography.body2.fontWeight,
+        fontSize: theme.typography.body2.fontSize,
+    }),
+    myVotesText: (theme: Theme): SxProps<Theme> => ({
+        marginLeft: '60px',
+        textAlign: 'left',
+        className: 'logout-button-text',
+        textWrap: 'balance',
+        color: theme.palette.primary.main,
+        fontWeight: theme.typography.h2.fontWeight,
+        fontSize: theme.typography.h2.fontSize,
+    }),
+    postsContainer: (theme: Theme): SxProps<Theme> => ({
+        paddingBottom: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
+        flex: 1,
+        background: 'theme.palette.background.default',
+        width: '100%',
+        gap: '50px',
+    }),
+}
