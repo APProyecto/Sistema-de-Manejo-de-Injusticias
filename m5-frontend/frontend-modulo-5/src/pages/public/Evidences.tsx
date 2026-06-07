@@ -87,7 +87,11 @@ export default function Evidences() {
                 <Box sx={{ml:10, mr:10, mt:10}}>
                      {Files.map((File) => (
                         <Box sx={{m:0,p:2,pb:0,'&:hover':{background:theme.palette.grey[100]}, borderRadius:5}} key={File.name}>
-                            <Box sx={{width:'100%',display:'flex'}}>
+                            <Box sx={{width:'100%',display:'flex'}} 
+                                onClick={()=>{setSelectedFile(File.name);
+                                    {/* WIP : Al dar click al archivo no pasa nada, los archivos aun no son reales */}
+                                }}>
+                                    
                                 <img
                                     src= {File.icon}
                                     alt= {'myUsername'}
@@ -98,9 +102,6 @@ export default function Evidences() {
                                         paddingBottom:2,
                                         objectFit: 'contain'
                                     }} 
-                                onClick={()=>{setSelectedFile(File.name);
-                                    {/* WIP : Al dar click al archivo no pasa nada, los archivos aun no son reales */}
-                                }}
                                 />
                                 <Typography variant='h6' sx={{mb:1,ml:1,mr:'Auto'}}>{File.name}</Typography>
                                 <Typography variant='body1' sx={{mt:1,mb:0,ml:'Auto',mr:1}}>{File.extension}-{File.size}</Typography>
