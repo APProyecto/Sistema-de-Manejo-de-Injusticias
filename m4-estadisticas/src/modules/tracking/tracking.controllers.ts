@@ -240,6 +240,17 @@ export async function getUserPostAndComments(req:Request, res:Response){
             }
         });
 
+        const flatComments = [];
+
+        for (let i = 0; i < UserComments.length; i++) {
+                let comment = {
+                    Title: UserComments[i].Boycott.Title,
+                    User:UserComments[i].Boycott.AppUser_Boycott_CreatorIDToAppUser.UserName,
+                    Description: UserComments[i].Description
+                }
+                flatComments.push(comment)
+        }
+
         const entityFollowing = await prisma.userFavoriteBoycott.findMany({
             where:{
                 UserID: userId?.UserID,
@@ -273,7 +284,7 @@ export async function getUserPostAndComments(req:Request, res:Response){
             username: userName,
             userPicture: AppUserPicture,
             posts: enrichPost,
-            Comments: UserComments,
+            Comments: flatComments,
             Follows: enrichEntities
         });
 
