@@ -50,15 +50,15 @@ router.get("/me", checkJwt, async (req: any, res) => {
   try {
 
     const payload = req.auth?.payload;
-    console.log(payload);
+    //console.log(payload);
 
     const auth0Id = payload.sub;
 
     const email = req.headers["x-user-email"] as string;
     const name = req.headers["x-user-name"] as string || "User";
 
-    console.log("EMAIL:", email);
-    console.log("NAME:", name);
+    //console.log("EMAIL:", email);
+    //console.log("NAME:", name);
 
     let user = await prisma.appUser.findFirst({
       where: {
@@ -68,16 +68,21 @@ router.get("/me", checkJwt, async (req: any, res) => {
 
     if (!user) {
 
-      console.log("EMAIL:", email);
-      console.log("NAME:", name);
+      //console.log("EMAIL:", email);
+      //console.log("NAME:", name);
 
-      console.log("CREANDO USUARIO");
+      //console.log("CREANDO USUARIO");
+
+      const parts = name.trim().split(" ");
+
+      const firstName = parts[0] || "";
+      const lastName = parts.slice(1).join(" ");
 
       user = await prisma.appUser.create({
         data: {
 
-          FirstName: name,
-          LastName: "",
+          FirstName: firstName,
+          LastName: lastName,
           UserName: email.split("@")[0],
           Email: email,
 
