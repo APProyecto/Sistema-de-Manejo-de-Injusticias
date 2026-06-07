@@ -254,3 +254,85 @@ export async function voteComment(req: Request, res: Response) {
     });
   }
 }
+
+/*
+    Function: deleteCommentVote.
+    Inputs: UserID and CommentID in body.
+    Description: Deletes a user's vote from a comment and recalculates vote counters.
+*/
+export async function deleteCommentVote(req: Request, res: Response) {
+  try {
+    const { UserID, CommentID } = req.body;
+
+    const userId = parseInt(UserID as string);
+    const commentId = parseInt(CommentID as string);
+
+    if (!userId || !commentId) {
+      return res.status(400).json({
+        ok: false,
+        error: "UserID and CommentID are required",
+      });
+    }
+
+    const existingVote = await prisma.userVotesComment.findUnique({
+      where: {
+        UserID_CommentID: {
+          UserID: userId,
+          CommentID: commentId,
+        },
+      },
+    });
+
+    if (!existingVote) {
+      return res.status(404).json({
+        ok: false,
+        error: "Vote not found",
+      });
+    }
+
+    await prisma.userVotesComment.delete({
+      where: {
+        UserID_CommentID: {
+          UserID: userId,
+          CommentID: commentId,
+        },
+      },
+    });
+
+    const votesInFavor = await prisma.userVotesComment.count({
+      where: {
+        CommentID: commentId,
+        IsInFavor: true,
+      },
+    });
+
+    const votesAgainst = await prisma.userVotesComment.count({
+      where: {
+        CommentID: commentId,
+        IsInFavor: false,
+      },
+    });
+
+    const updatedComment = await prisma.commentBoycott.update({
+      where: { CommentBoycottID: commentId },
+      data: {
+        VotesInFavor: votesInFavor,
+        VotesAgainst: votesAgainst,
+        ModifiedAt: new Date(),
+        ModifiedBy: userId,
+      },
+    });
+
+    return res.json({
+      ok: true,
+      message: "Vote deleted successfully",
+      comment: updatedComment,
+    });
+  } catch (error) {
+    console.error("deleteCommentVote error:", error);
+    return res.status(500).json({
+      ok: false,
+      error: "Internal server error",
+    });
+  }
+}
