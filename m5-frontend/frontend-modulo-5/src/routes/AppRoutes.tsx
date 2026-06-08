@@ -20,7 +20,7 @@ import Dashboard from '../pages/admin/Dashboard';
 import ManageUsers from '../pages/admin/ManageUsers';
 import ManageReports from '../pages/admin/ManageReports';
 import Statistics from '../pages/admin/Statistics';
-import Quereis from '../pages/admin/Queries';
+import Queries from '../pages/admin/Queries';
 import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
 import Logs from '../pages/admin/Logs';
 import ManageComments from '../pages/admin/ManageComments';
@@ -109,7 +109,7 @@ export default function AppRoutes() {
         } />
         <Route path="/admin/queries" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
-            <Quereis />
+            <Queries />
           </ProtectedRoute>
         } />
         <Route path="/admin/cases-of-injustice" element={
