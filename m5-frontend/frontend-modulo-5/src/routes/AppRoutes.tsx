@@ -1,10 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
-
-// Layouts
-import PublicLayout from '../layouts/PublicLayout';
-import UserLayout from '../layouts/UserLayout';
-import AdminLayout from '../layouts/AdminLayout';
 
 // Páginas públicas
 import Home from '../pages/public/Home';
@@ -21,7 +16,6 @@ import MyVotes from '../pages/user/MyVotes';
 import Suggestions from '../pages/user/Suggestions';
 
 // Páginas de admin
-import AdminHome from '../pages/admin/AdminHome';
 import Dashboard from '../pages/admin/Dashboard';
 import ManageUsers from '../pages/admin/ManageUsers';
 import ManageReports from '../pages/admin/ManageReports';
@@ -87,11 +81,7 @@ export default function AppRoutes() {
         } />
 
       {/* Rutas de administrador */}
-        <Route path="/admin/" element={
-          <ProtectedRoute allowedRoles={['admin', 'master']}>
-            <AdminHome />
-          </ProtectedRoute>
-        } />
+        <Route path="/admin/" element={<Navigate to="/" replace />} />
         <Route path="/admin/dashboard" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <Dashboard />
