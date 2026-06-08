@@ -11,4 +11,21 @@ export const QueriesStyles = {
     border:1,
     borderRadius:5,
   }),
+  Select: (theme: Theme): SxProps<Theme> => ({
+  background: theme.palette.background.paper,
+  color: 'black',
+  borderRadius: 5,
+  textAlign: 'center',
+  '&:before': { borderBottom: 'none' },
+  '&:after': { borderBottom: 'none' },
+  '&.Mui-focused': { background: theme.palette.background.paper },
+  '& .MuiSelect-select:hover': { background: theme.palette.background.paper,
+    borderRadius: 5,
+    },
+    '& .MuiFilledInput-root': {
+    transition: 'none',
+    },
+    height:30,
+    my:1
+  })
 }

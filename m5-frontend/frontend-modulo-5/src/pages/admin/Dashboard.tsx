@@ -72,7 +72,7 @@ export default function Dashboard() {
         {companies.map((company) => (
           <Box key={company.name} 
           onClick={()=>{setSelectedCompany(company.name);
-            {/* WIP : Al dar click al archivo no pasa nada, los archivos aun no son reales */}
+            {/* WIP : Al dar click al boycott no pasa nada */}
         }}>
             <Box sx={DashboardStyles.companiesBox(theme)}>
               <Box sx={DashboardStyles.companiesItemsBox()}>

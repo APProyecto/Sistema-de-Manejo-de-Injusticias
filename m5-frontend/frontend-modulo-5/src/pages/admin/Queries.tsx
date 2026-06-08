@@ -51,7 +51,7 @@ const Queries = [
 export default function Quereis() {
   const theme = useTheme();
   const [Category, setCategory] = useState(0);
-  
+  const [reportSelected, setReport] = useState('None');
 
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default}}>
@@ -103,24 +103,7 @@ export default function Quereis() {
                     }
                 }
             }}
-            sx={{
-          
-                background: theme.palette.background.paper,
-                color: 'black',
-                borderRadius: 5,
-                textAlign: 'center',
-                '&:before': { borderBottom: 'none' },
-                '&:after': { borderBottom: 'none' },
-                '&.Mui-focused': { background: theme.palette.background.paper },
-                '& .MuiSelect-select:hover': { background: theme.palette.background.paper,
-                  borderRadius: 5,
-                  },
-                  '& .MuiFilledInput-root': {
-                  transition: 'none',
-                  },
-                  height:30,
-                  my:1
-            }}
+            sx={QueriesStyles.Select(theme)}
             >
                 {Categories.map((c) => (
                     <MenuItem key={c.id} value={c.id}>
@@ -150,8 +133,10 @@ export default function Quereis() {
       
       {Queries.map((Query) =>(
         <Box key={Query.injustice} sx={{'&:hover':{background:theme.palette.grey[100]},display:'flex'}}
-
+          onClick={()=>{setReport(Query.injustice);}}
           >
+          {/* WIP : Al dar click al archivo no pasa nada, los archivos aun no son reales */}
+
           <Box sx={{width:'14%',display:'flex',my:1}}>
             <Avatar
             src={Query.authorPFP}
