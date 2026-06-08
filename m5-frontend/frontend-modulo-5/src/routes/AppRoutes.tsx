@@ -26,7 +26,7 @@ import Dashboard from '../pages/admin/Dashboard';
 import ManageUsers from '../pages/admin/ManageUsers';
 import ManageReports from '../pages/admin/ManageReports';
 import Statistics from '../pages/admin/Statistics';
-import Quereis from '../pages/admin/Queries';
+import Queries from '../pages/admin/Queries';
 import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
 import Logs from '../pages/admin/Logs';
 import ManageComments from '../pages/admin/ManageComments';
@@ -42,7 +42,7 @@ export default function AppRoutes() {
       {/* Rutas públicas (sin inciar sesión) */}
       <Route element={<DynamicLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/detailed-post/:id" element={<DetailedPost />} />
+        <Route path="/detailed-post/:id" element={<Queries />} />
         <Route path="/detailed-post/:id/evidences" element={<Evidences />} />
 
       {/* Rutas de usuario registrado */}
@@ -119,7 +119,7 @@ export default function AppRoutes() {
         } />
         <Route path="/admin/queries" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
-            <Quereis />
+            <Queries />
           </ProtectedRoute>
         } />
         <Route path="/admin/cases-of-injustice" element={
