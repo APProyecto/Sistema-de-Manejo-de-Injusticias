@@ -155,7 +155,7 @@ async function getBoycottDesc(boycottId: number) {
 
 export async function getUserPostAndComments(req: Request, res: Response) {
   try {
-    const { userName, CategoryFilter } = req.body;
+    const { userName, CategoryFilter } = req.query;
 
     const userId = await prisma.appUser.findFirst({
       where: {
