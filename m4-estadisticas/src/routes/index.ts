@@ -1,5 +1,6 @@
 import { Router } from "express";
-import moduleRoutes from "../modules/example/example.routes";
+import dashboardRoutes from "../modules/metrics/dashboard.routes";
+
 const router = Router();
 
 router.get("/", (_req, res) => {
@@ -9,5 +10,5 @@ router.get("/", (_req, res) => {
     });
 });
 
-router.use("/example", moduleRoutes);
+router.use("/metrics", dashboardRoutes);
 export default router;
