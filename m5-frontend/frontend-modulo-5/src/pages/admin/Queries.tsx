@@ -5,13 +5,7 @@ import { QueriesStyles } from '../styles/QueriesStyles';
 import UserPFP from '../../assets/pfpDefaultImage.png';
 import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
 import { useNavigate } from 'react-router-dom';
-
-const Categories = [
-  {id:0,name:'Category'},
-  {id:1,name:'Politics'},
-  {id:2,name:'Health'},
-  {id:3,name:'Labor practices'},
-];
+import { Categories } from '../../data/Categories';
 
 const Queries = [
     {

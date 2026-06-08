@@ -1,5 +1,4 @@
 import { type SxProps, type Theme } from '@mui/material';
-import { palette } from '@mui/system';
 
 export const QueriesStyles = {
   TopButton: (theme: Theme): SxProps<Theme> => ({
