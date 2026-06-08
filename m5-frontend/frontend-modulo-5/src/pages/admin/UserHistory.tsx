@@ -8,6 +8,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import TuneIcon from '@mui/icons-material/Tune';
 import { Circle} from '@mui/icons-material';
 import PostInteracionButton from '../../components/common/PostInteractionButton';
+import QueryNavegation from './QueryNavigation';
 
 const Queries = [
     {
@@ -59,32 +60,7 @@ export default function UserHistory() {
 
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default,overflowY: 'auto'}}>
-      <Box sx={{alignItems:'center', display:'flex'}}>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Reports</Typography>
-          </Button>
-          {/* This button dont do anything because we are actually in the report query page */}
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-          {/* WIP : Doesnt work, have to redirect to the company boycotts page */}
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Company Boycotts</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-          {/* WIP : Doesnt work, have to redirect to the User History page */}
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>User History</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-          {/* WIP : Doesnt work, have to redirect to the Most Followed Cases page */}
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Most Followed Cases</Typography>
-          </Button>
-        </Box>
-      </Box>
+      <QueryNavegation/>
       
       <Box>
         <TextField
@@ -126,12 +102,12 @@ export default function UserHistory() {
                 style={{ width: 50, height: 50}}
                 sx={{ mx:1, my: 'Auto'}}
             />
-            <Typography variant='body2' sx={{my:'Auto'}}>{Query.user}</Typography>
+            <Typography variant='h4' sx={{my:'Auto',fontWeight:'bold'}}>{Query.user}</Typography>
           </Box>
 
           <Box sx={{mx:2,my:2,pb:1, background:theme.palette.grey[200],borderRadius:5}}>
             <Box sx={{display:'flex'}}>
-              <Typography variant='h4' sx={UserHistoryStyles.subTitle(theme)}>User Posts</Typography>
+              <Typography variant='h5' sx={UserHistoryStyles.subTitle(theme)}>User Posts</Typography>
             </Box>
             {Query.userPosts.map((Post) =>(
               <Box key={Post.title} sx={{...UserHistoryStyles.Box(theme),display:'flex'}}
@@ -161,7 +137,7 @@ export default function UserHistory() {
 
           <Box sx={{mx:2,my:4,pb:1, background:theme.palette.grey[200],borderRadius:5}}>
             <Box sx={{display:'flex'}}>
-              <Typography variant='h4' sx={UserHistoryStyles.subTitle(theme)}>User Comments</Typography>
+              <Typography variant='h5' sx={UserHistoryStyles.subTitle(theme)}>User Comments</Typography>
             </Box>
             {Query.userComments.map((Comment) =>(
               <Box key={Comment.postTitle} sx={UserHistoryStyles.Box(theme)}

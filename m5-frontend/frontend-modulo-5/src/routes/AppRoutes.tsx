@@ -21,6 +21,8 @@ import ManageUsers from '../pages/admin/ManageUsers';
 import ManageReports from '../pages/admin/ManageReports';
 import Statistics from '../pages/admin/Statistics';
 import Queries from '../pages/admin/Queries';
+import UserHistory from '../pages/admin/UserHistory';
+import MostFollowedCases from '../pages/admin/MostFollowedCases';
 import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
 import Logs from '../pages/admin/Logs';
 import ManageComments from '../pages/admin/ManageComments';
@@ -110,6 +112,16 @@ export default function AppRoutes() {
         <Route path="/admin/queries" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <Queries />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/user-history" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <UserHistory />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/most-followed-cases" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <MostFollowedCases />
           </ProtectedRoute>
         } />
         <Route path="/admin/cases-of-injustice" element={
