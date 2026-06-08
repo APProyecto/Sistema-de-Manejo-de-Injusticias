@@ -342,11 +342,13 @@ export async function getByEntity(req: Request, res: Response) {
       },
     });
 
-    const grouped = boycotts.reduce((acc: any, boycott) => {
+    const grouped: any = {};
+
+    for (const boycott of boycotts) {
       const entityId = boycott.Entity.EntityID;
 
-      if (!acc[entityId]) {
-        acc[entityId] = {
+      if (!grouped[entityId]) {
+        grouped[entityId] = {
           entityId,
           entityName: boycott.Entity.EntityName,
           mongoDocumentId: boycott.Entity.MongoDocumentID,
@@ -354,18 +356,17 @@ export async function getByEntity(req: Request, res: Response) {
         };
       }
 
-      acc[entityId].boycotts.push({
+      const mongoDoc = await getBoycottDocumentByMysqlId(boycott.BoycottID);
+
+      grouped[entityId].boycotts.push({
         boycottId: boycott.BoycottID,
         title: boycott.Title,
-        // PENDIENTE: la descripción del boycott no está disponible en MySQL.
-        // Se implementa cuando se defina dónde se almacena ese campo.
+        description: mongoDoc?.description ?? null,
         author: boycott.AppUser_Boycott_CreatorIDToAppUser?.UserName,
         date: boycott.PublicationDate,
         status: boycott.BoycottState?.StateName,
       });
-
-      return acc;
-    }, {});
+    }
 
     return res.json({
       total: boycotts.length,

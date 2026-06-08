@@ -14,7 +14,7 @@ router.get("/", (_req, res) => {
 });
 
 router.get("/getFollowers", getMostFollowedCases);
-router.get("/getUserHistory", getUserPostAndComments);
+router.post("/getUserHistory", getUserPostAndComments);
 router.get("/getByEntity", getByEntity);
 
 export default router;

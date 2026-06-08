@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import { prisma } from "../../config/prisma";
+import { getBoycottDocumentByMysqlId } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
 /*
   Function: getAuditPublications.
-  Inputs: injusticeTypeId, dateFrom, dateTo, countryId, orderByVotes (query params).
+  Inputs: injusticeTypeId, dateFrom, dateTo, countryId, author, indicted, orderByVotes (query params).
   Description: Returns a filtered and sortable list of boycott publications for content auditing.
   Outputs: JSON with total records and publication list.
 */
@@ -14,7 +15,9 @@ export async function getAuditPublications(req: Request, res: Response) {
       dateFrom,
       dateTo,
       countryId,
-      orderByVotes = "desc",
+      author,
+      indicted,
+      orderByVotes = "inFavor", // Opciones: "inFavor", "against", o "desc" para descendente
     } = req.query;
 
     const where: any = {};
@@ -31,6 +34,18 @@ export async function getAuditPublications(req: Request, res: Response) {
 
     if (countryId) {
       where.CountryID = Number(countryId);
+    }
+
+    if (author) {
+      where.AppUser_Boycott_CreatorIDToAppUser = {
+        UserName: { contains: author as string },
+      };
+    }
+
+    if (indicted) {
+      where.Entity = {
+        EntityName: { contains: indicted as string },
+      };
     }
 
     const boycotts = await prisma.boycott.findMany({
@@ -58,31 +73,36 @@ export async function getAuditPublications(req: Request, res: Response) {
           select: { StateName: true },
         },
       },
-      orderBy: {
-        VotesInFavor: orderByVotes === "asc" ? "asc" : "desc",
-      },
+      orderBy:
+        orderByVotes === "against"
+          ? { VotesAgainst: "desc" }
+          : { VotesInFavor: "desc" },
     });
 
-    // PENDIENTE: el conteo de archivos adjuntos por publicación se obtiene desde MongoDB
-    // usando MongoDocumentId. Se implementa cuando MongoDB esté configurado en el proyecto.
+    const enrichedData = await Promise.all(
+      boycotts.map(async (b) => {
+        const mongoDoc = await getBoycottDocumentByMysqlId(b.BoycottID);
 
-    // NOTA: CheckedBy (campo "check o equis") - Pendiente de aclaración
+        return {
+          boycottId: b.BoycottID,
+          title: b.Title,
+          author: b.AppUser_Boycott_CreatorIDToAppUser?.UserName,
+          indicted: b.Entity?.EntityName,
+          injusticeCategory: b.InjusticeType?.InjusticeName,
+          date: b.PublicationDate,
+          country: b.Country?.CountryName,
+          votesInFavor: b.VotesInFavor,
+          votesAgainst: b.VotesAgainst,
+          numberReports: b.NumberReports,
+          status: b.BoycottState?.StateName,
+          filesCount: mongoDoc?.filesNumber ?? 0,
+        };
+      }),
+    );
 
     return res.json({
       total: boycotts.length,
-      data: boycotts.map((b) => ({
-        boycottId: b.BoycottID,
-        title: b.Title,
-        author: b.AppUser_Boycott_CreatorIDToAppUser?.UserName,
-        indicted: b.Entity?.EntityName,
-        injusticeCategory: b.InjusticeType?.InjusticeName,
-        date: b.PublicationDate,
-        country: b.Country?.CountryName,
-        votesInFavor: b.VotesInFavor,
-        votesAgainst: b.VotesAgainst,
-        numberReports: b.NumberReports,
-        status: b.BoycottState?.StateName,
-      })),
+      data: enrichedData,
     });
   } catch (error) {
     console.error("getAuditPublications error:", error);
