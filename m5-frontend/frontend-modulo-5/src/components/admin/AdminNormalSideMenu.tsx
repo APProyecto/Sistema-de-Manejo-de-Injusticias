@@ -65,7 +65,7 @@ export default function AdminNormalSideMenu({ onSwitchToDashboardMode, currentMo
             onClick={onSwitchToDashboardMode}
         >
             <Assessment sx={sideMenuStyles.buttonIcon(theme)}></Assessment>
-            <Typography sx={sideMenuStyles.buttonText(theme)}>Dashboard</Typography>
+            <Typography sx={sideMenuStyles.buttonText(theme)}>Admin Dashboard</Typography>
         </Button>
 
         {/* Espacio en blanco para rellenar */}
