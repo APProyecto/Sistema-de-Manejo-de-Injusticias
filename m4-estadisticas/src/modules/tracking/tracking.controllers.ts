@@ -330,7 +330,7 @@ export async function getByEntity(req: Request, res: Response) {
           select: {
             EntityID: true,
             EntityName: true,
-            MongoDocumentID: true,
+            //MongoDocumentID: true,
           },
         },
         BoycottState: {
@@ -351,17 +351,17 @@ export async function getByEntity(req: Request, res: Response) {
         grouped[entityId] = {
           entityId,
           entityName: boycott.Entity.EntityName,
-          mongoDocumentId: boycott.Entity.MongoDocumentID,
+          //mongoDocumentId: boycott.Entity.MongoDocumentID,
           boycotts: [],
         };
       }
 
-      const mongoDoc = await getBoycottDocumentByMysqlId(boycott.BoycottID);
+      //const mongoDoc = await getBoycottDocumentByMysqlId(boycott.BoycottID);
 
       grouped[entityId].boycotts.push({
         boycottId: boycott.BoycottID,
         title: boycott.Title,
-        description: mongoDoc?.description ?? null,
+        //description: mongoDoc?.description ?? null,
         author: boycott.AppUser_Boycott_CreatorIDToAppUser?.UserName,
         date: boycott.PublicationDate,
         status: boycott.BoycottState?.StateName,

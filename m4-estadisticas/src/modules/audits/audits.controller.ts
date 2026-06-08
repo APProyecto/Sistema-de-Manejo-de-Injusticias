@@ -56,7 +56,7 @@ export async function getAuditPublications(req: Request, res: Response) {
         PublicationDate: true,
         VotesInFavor: true,
         VotesAgainst: true,
-        NumberReports: true,
+        //NumberReports: true,
         AppUser_Boycott_CreatorIDToAppUser: {
           select: { UserName: true },
         },
@@ -93,7 +93,7 @@ export async function getAuditPublications(req: Request, res: Response) {
           country: b.Country?.CountryName,
           votesInFavor: b.VotesInFavor,
           votesAgainst: b.VotesAgainst,
-          numberReports: b.NumberReports,
+          //numberReports: b.NumberReports,
           status: b.BoycottState?.StateName,
           filesCount: mongoDoc?.filesNumber ?? 0,
         };
