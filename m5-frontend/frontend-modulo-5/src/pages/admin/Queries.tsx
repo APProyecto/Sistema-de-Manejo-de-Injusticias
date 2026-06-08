@@ -6,6 +6,7 @@ import UserPFP from '../../assets/pfpDefaultImage.png';
 import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
 import { useNavigate } from 'react-router-dom';
 import { Categories } from '../../data/Categories';
+import QueryNavegation from './QueryNavigation';
 
 const Queries = [
     {
@@ -56,32 +57,7 @@ export default function Quereis() {
 
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default}}>
-      <Box sx={{alignItems:'center', display:'flex'}}>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Reports</Typography>
-          </Button>
-          {/* This button dont do anything because we are actually in the report query page */}
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-          {/* WIP : Doesnt work, have to redirect to the company boycotts page */}
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Company Boycotts</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-          {/* WIP : Doesnt work, have to redirect to the User History page */}
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>User History</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-          {/* WIP : Doesnt work, have to redirect to the Most Followed Cases page */}
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Most Followed Cases</Typography>
-          </Button>
-        </Box>
-      </Box>
+      <QueryNavegation/>
 
       <Box sx={{display:'flex', alignItems:'center', mt:5,mb:0}}>
         <Box sx={{width:'14%'}}>

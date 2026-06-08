@@ -5,6 +5,7 @@ import { QueriesStyles } from '../styles/QueriesStyles';
 import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
 import { Categories } from '../../data/Categories';
 import { EntityType } from '../../data/EntityType';
+import QueryNavegation from './QueryNavigation';
 
 const Queries = [
     {
@@ -24,28 +25,7 @@ export default function MostFollowedCases() {
 
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default}}>
-      <Box sx={{alignItems:'center', display:'flex'}}>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Reports</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Company Boycotts</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>User History</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Most Followed Cases</Typography>
-          </Button>
-        </Box>
-      </Box>
+      <QueryNavegation/>
 
       <Box sx={{display:'flex', alignItems:'center', mt:5,mb:0}}>
         <Box sx={{width:'25%'}}>
