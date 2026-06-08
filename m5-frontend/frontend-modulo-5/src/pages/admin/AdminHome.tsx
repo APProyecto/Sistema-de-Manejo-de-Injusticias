@@ -1,83 +1,118 @@
 import { Container, Typography, Card, CardContent, Button, Box, useTheme } from '@mui/material';
-import type { PostCardData } from '../../types';
-import PostCard from '../../components/common/PostCard';
-import OptionMenuFeed from '../../components/user/OptionMenuFeed';
+import { useNavigate } from 'react-router-dom';
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import CommentOutlinedIcon from '@mui/icons-material/CommentOutlined';
+import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
+import BalanceOutlinedIcon from '@mui/icons-material/BalanceOutlined';
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import { homeStyles } from '../styles/HomeStyles';
 
+const adminOptions = [
+  {
+    label: 'Manage Users',
+    description: 'Assign roles and manage user statuses',
+    path: '/admin/manage-users',
+    icon: <PeopleAltOutlinedIcon fontSize='large' />,    
+  },
+  {
+    label: 'Manage Reports',
+    description: 'Review and act on user reports',
+    path: '/admin/manage-reports',
+    icon: <ReportProblemOutlinedIcon fontSize='large' />,    
+  },
+  {
+    label: 'Manage Comments',
+    description: 'Moderate comments and flagged content',
+    path: '/admin/manage-comments',
+    icon: <CommentOutlinedIcon fontSize='large' />,    
+  },
+  {
+    label: 'Statistics',
+    description: 'View application usage and admin metrics',
+    path: '/admin/statistics',
+    icon: <QueryStatsOutlinedIcon fontSize='large' />,    
+  },
+  {
+    label: 'Queries',
+    description: 'Inspect advanced search and filters',
+    path: '/admin/queries',
+    icon: <BalanceOutlinedIcon fontSize='large' />,    
+  },
+  {
+    label: 'Cases of Injustice',
+    description: 'Track cases and legal status updates',
+    path: '/admin/cases-of-injustice',
+    icon: <ArticleOutlinedIcon fontSize='large' />,    
+  },
+  {
+    label: 'Logs',
+    description: 'Track logs and system updates',
+    path: '/admin/logs',
+    icon: <ArticleOutlinedIcon fontSize='large' />,    
+  }
+];
+
 export default function AdminHome() {
-
   const theme = useTheme();
-
-  const onPostClick = (id: number) => {
-    console.log('go to post view');
-  }
-
-  const onUsernameClick = (id: number) => {
-    console.log("got to the user's page")
-  }
-
-  const onIndictedClick = (id:number) => {
-    console.log("go to the indicted's page");
-  }
-  
-  const onCaseClick = (id:number) => {
-    console.log("go to the case's page");
-  }
-
-  let data: PostCardData[] = [
-    {
-      id: 1,
-      username: 'username_123',
-      user_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781104/cool-profile-picture-87h46gcobjl5e4xu_bifpln.jpg',
-      indicted: 'Starbucksssssssssssssssssssssssssssssssssss',
-      indicted_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781215/images_11_objw2p.png',
-      case: 'War in Gazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      case_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
-      title: 'starbucks supports the genocide in gaza',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempor.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempo',
-      creation_date: '7h ago',
-      is_favorite: false,
-      votes: '23k',
-      voted_by_user: true,
-      coments: '25k',
-      evidences: '6',
-      state: 'Active',
-    },
-    {
-      id: 2,
-      username: 'anotherUsername',
-      user_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781104/cool-profile-picture-87h46gcobjl5e4xu_bifpln.jpg',
-      indicted: 'Alice',
-      indicted_picture: 'https://collection.cloudinary.com/dewscucnp/e12ce56707ce38351028cd0d62474fb0',
-      case: 'Exploitation',
-      case_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
-      title: 'Alice exploits their workersssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempor.',
-      creation_date: '8 days ago',
-      is_favorite: true,
-      votes: '27M',
-      voted_by_user: false,
-      coments: '205k',
-      evidences: '40',
-      state: 'Closed',
-    }
-  ]
+  const navigate = useNavigate();
 
   return (
     <Container sx={homeStyles.container(theme)}>
-      {data.map((data) => (
-        <PostCard 
-          key={data.id}
-          data={data}
-          onCaseClick={onCaseClick}
-          onPostClick={onPostClick}
-          onIndictedClick={onIndictedClick}
-          onUsernameClick={onUsernameClick}
-          inFeed={true}
+      <Box sx={{ width: '100%', mb: 4 }}>
+        <Typography variant='h4' sx={{ fontWeight: 700, mb: 1 }}>
+          Admin Home
+        </Typography>
+        <Typography variant='body1' sx={{ color: theme.palette.text.secondary, maxWidth: 760 }}>
+          Use the admin control panel to manage users, reports, comments, statistics, queries, and cases. Select any option to open the corresponding admin tool.
+        </Typography>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 24,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          width: '100%',
+        }}
+      >
+        {adminOptions.map((option) => (
+          <Card
+            key={option.label}
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              borderRadius: 3,
+              minHeight: 205,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+            }}
           >
-        </PostCard>
-      )
-      )}
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, color: theme.palette.primary.main }}>
+                {option.icon}
+                <Typography variant='h6' sx={{ fontWeight: 700 }}>
+                  {option.label}
+                </Typography>
+              </Box>
+              <Typography variant='body2' sx={{ color: theme.palette.text.secondary }}>
+                {option.description}
+              </Typography>
+            </CardContent>
+            <Box sx={{ p: 3, pt: 0 }}>
+              <Button
+                fullWidth
+                variant='contained'
+                color='primary'
+                onClick={() => navigate(option.path)}
+                sx={{ textTransform: 'none' }}
+              >
+                Open {option.label}
+              </Button>
+            </Box>
+          </Card>
+        ))}
+      </Box>
     </Container>
   );
 }
