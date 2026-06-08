@@ -181,7 +181,7 @@ export default function ManageUsers() {
                 Select New Status
               </Typography>
               <Typography variant="caption" sx={manageUsersStyles.headerCaption(theme)}>
-                Make Administrator
+                Change Role
               </Typography>
             </Box>
 
