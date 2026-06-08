@@ -1,9 +1,11 @@
 import { type SxProps, type Theme } from '@mui/material';
+import { palette } from '@mui/system';
 
 export const QueriesStyles = {
   TopButton: (theme: Theme): SxProps<Theme> => ({
     background:theme.palette.secondary.main,
-    borderRadius:10
+    borderRadius:10,
+    '&:hover':{background:theme.palette.grey[100]}
   }),
   Divider: (theme: Theme): SxProps<Theme> => ({
     background: theme.palette.secondary.main,

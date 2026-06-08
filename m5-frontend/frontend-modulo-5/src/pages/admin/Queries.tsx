@@ -4,6 +4,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { QueriesStyles } from '../styles/QueriesStyles';
 import UserPFP from '../../assets/pfpDefaultImage.png';
 import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
+import { useNavigate } from 'react-router-dom';
 
 const Categories = [
   {id:0,name:'Category'},
@@ -50,8 +51,14 @@ const Queries = [
 
 export default function Quereis() {
   const theme = useTheme();
+  const navigate = useNavigate();
+
   const [Category, setCategory] = useState(0);
   const [reportSelected, setReport] = useState('None');
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
 
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default}}>
@@ -60,19 +67,23 @@ export default function Quereis() {
           <Button sx={QueriesStyles.TopButton(theme)}>
             <Typography variant='body2' sx={{color:theme.palette.background.default}}>Reports</Typography>
           </Button>
+          {/* This button dont do anything because we are actually in the report query page */}
         </Box>
         <Box sx={{width:'25%'}}>
           <Button sx={QueriesStyles.TopButton(theme)}>
+          {/* WIP : Doesnt work, have to redirect to the company boycotts page */}
             <Typography variant='body2' sx={{color:theme.palette.background.default}}>Company Boycotts</Typography>
           </Button>
         </Box>
         <Box sx={{width:'25%'}}>
           <Button sx={QueriesStyles.TopButton(theme)}>
+          {/* WIP : Doesnt work, have to redirect to the User History page */}
             <Typography variant='body2' sx={{color:theme.palette.background.default}}>User History</Typography>
           </Button>
         </Box>
         <Box sx={{width:'25%'}}>
           <Button sx={QueriesStyles.TopButton(theme)}>
+          {/* WIP : Doesnt work, have to redirect to the Most Followed Cases page */}
             <Typography variant='body2' sx={{color:theme.palette.background.default}}>Most Followed Cases</Typography>
           </Button>
         </Box>
@@ -93,7 +104,7 @@ export default function Quereis() {
             size='small'
             hiddenLabel
             value={Category}
-            onChange={(c) => setCategory(Number(c.target.value))}
+            onChange={(c) => setCategory(c.target.value)}
             disableUnderline
             variant="filled"
             MenuProps={{
