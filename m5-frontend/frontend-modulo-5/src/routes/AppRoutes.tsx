@@ -42,7 +42,7 @@ export default function AppRoutes() {
       {/* Rutas públicas (sin inciar sesión) */}
       <Route element={<DynamicLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/detailed-post/:id" element={<Queries />} />
+        <Route path="/detailed-post/:id" element={<DetailedPost />} />
         <Route path="/detailed-post/:id/evidences" element={<Evidences />} />
 
       {/* Rutas de usuario registrado */}
