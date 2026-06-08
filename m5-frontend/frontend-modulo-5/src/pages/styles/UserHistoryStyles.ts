@@ -42,5 +42,30 @@ export const UserHistoryStyles = {
     },
     fontSize: 35,
     color: '#000000',
+  }),
+
+  Box: (theme: Theme): SxProps<Theme> => ({
+    mx:2,
+    my:2,
+    py:2,
+    background:theme.palette.background.default,
+    borderRadius:10,
+    '&:hover':{background:theme.palette.grey[100]}
+  }),
+  subTitle: (theme: Theme): SxProps<Theme> => ({
+    ml:4,
+    mt:2,
+    mb:0,
+    fontWeight:'bold'
+  }),
+  subText: (theme: Theme): SxProps<Theme> => ({
+    textAlign:'left',
+    ml:4
+  }),
+  subTextBold: (theme: Theme): SxProps<Theme> => ({
+    textAlign:'left',
+    ml:4,
+    fontWeight:'bold'
   })
+
 }

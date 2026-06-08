@@ -3,23 +3,8 @@ import { useState } from 'react';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { QueriesStyles } from '../styles/QueriesStyles';
 import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
-
-const Categories = [
-  {id:0,name:'Category'},
-  {id:1,name:'Politics'},
-  {id:2,name:'Health'},
-  {id:3,name:'Labor practices'},
-];
-const EntityType = [
-  {id:0,name:'Entity'},
-  {id:1,name:'Company'},
-  {id:2,name:'Organization'},
-  {id:3,name:'Person'},
-  {id:4,name:'Brand'},
-  {id:5,name:'Product'},
-  {id:6,name:'Goverment'},
-  {id:7,name:'Institution'},
-];
+import { Categories } from '../../data/Categories';
+import { EntityType } from '../../data/EntityType';
 
 const Queries = [
     {

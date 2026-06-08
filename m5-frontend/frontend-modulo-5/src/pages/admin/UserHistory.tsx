@@ -3,51 +3,35 @@ import { useState } from 'react';
 import { UserHistoryStyles } from '../styles/UserHistoryStyles';
 import { QueriesStyles } from '../styles/QueriesStyles';
 import UserPFP from '../../assets/pfpDefaultImage.png';
-import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import TuneIcon from '@mui/icons-material/Tune';
-
-const Categories = [
-  {id:0,name:'Category'},
-  {id:1,name:'Politics'},
-  {id:2,name:'Health'},
-  {id:3,name:'Labor practices'},
-];
+import { Circle} from '@mui/icons-material';
+import PostInteracionButton from '../../components/common/PostInteractionButton';
 
 const Queries = [
     {
-        authorPFP: UserPFP,
-        author: 'User123',
-        indictedPFP: StarbucksLogo,
-        indicted: 'Starbucks',
-        injustice:'Politics',
-        files:5,
-        date:'04-19-2026',
-        country:'Global',
-        votes:'21K'
-    },
-    {
-        authorPFP: UserPFP,
-        author: 'User123',
-        indictedPFP: StarbucksLogo,
-        indicted: 'Starbucks',
-        injustice:'Health',
-        files:5,
-        date:'04-19-2026',
-        country:'USA',
-        votes:'25K'
-    },
-    {
-        authorPFP: UserPFP,
-        author: 'User123',
-        indictedPFP: StarbucksLogo,
-        indicted: 'Starbucks',
-        injustice:'Labor practices',
-        files:5,
-        date:'04-19-2026',
-        country:'France',
-        votes:'5K'
+        userPFP: UserPFP,
+        user: 'User123',
+        userPosts: [{title:'Starbucks Controversy',
+          description:' There has been controversy surrounding Starbucks due to boycott calls linked to the Israel and Gaza conflict. Many consumers and activists have accused the company...',
+          state:'Open'},
+          {title:'Starbucks supports Israel',
+            description:' Im deeply troubled by reports suggesting Starbucks backing of Israel, especially given the ongoing genocide in Gaza. As patrons, our choices reflect our values, and its disheartening to see a company...',
+            state:'Closed'
+          }],
+        userComments: [
+          {
+            postTitle:'Starbucks supports Israel',
+            postAuthor: 'User1234',
+            comment:'Starbucks CEO and shareholders are not only evil for supporting genocide. They also fail to engage in sustainable or ethical practices, from Ethiopia to the Americas.'
+          },
+          {
+            postTitle:'Starbucks Controversy',
+            postAuthor: 'User1234',
+            comment:'I want to see Starbucks go bankrupt and cease to exist! The brand deserves it.'
+          }
+        ]
     },
   ];
 
@@ -55,15 +39,26 @@ export default function UserHistory() {
   const theme = useTheme();
   const navigate = useNavigate();
 
-  const [Category, setCategory] = useState(0);
-  const [reportSelected, setReport] = useState('None');
+  const [userSearchBar, setUserSearchBar] = useState('None');
+  const [userSelected, setUser] = useState('None');
+  const [postSelected, setPostSelected] = useState('None');
+  const [commentSelected, setCommentSelected] = useState('None');
+
 
   const handleNavigation = (path: string) => {
     navigate(path);
   };
 
+  const handleStateColor = (state: string) => {
+        if(state === 'Open'){
+            return theme.palette.success.main;
+        }else{
+            return theme.palette.background.default;
+        }
+    }
+
   return (
-    <Container sx={{p:5,backgroundColor:theme.palette.background.default}}>
+    <Container sx={{p:5,backgroundColor:theme.palette.background.default,overflowY: 'auto'}}>
       <Box sx={{alignItems:'center', display:'flex'}}>
         <Box sx={{width:'25%'}}>
           <Button sx={QueriesStyles.TopButton(theme)}>
@@ -93,10 +88,15 @@ export default function UserHistory() {
       
       <Box>
         <TextField
+          value={userSearchBar}
           placeholder="Search..."
           variant="outlined"
           size="medium"
           sx={UserHistoryStyles.searchField(theme)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              setUserSearchBar(userSearchBar);
+            }}}
           slotProps={{
             input: {
               startAdornment: (
@@ -113,24 +113,82 @@ export default function UserHistory() {
           }}
         />
       </Box>
-      {Queries.map((Query) =>(
-        <Box key={Query.injustice} sx={{'&:hover':{background:theme.palette.grey[100]},display:'flex'}}
-          onClick={()=>{setReport(Query.injustice);}}
-          >
-          {/* WIP : Al dar click al archivo no pasa nada, los archivos aun no son reales */}
 
-          <Box sx={{width:'14%',display:'flex',my:1}}>
+      {Queries.map((Query) =>(
+        <Box key={Query.user} sx={{my:2,py:2,background:theme.palette.grey[100],borderRadius:10}}
+          onClick={()=>{setUser(Query.user);}}
+          >
+
+          <Box sx={{display:'flex',mx:2}}>
             <Avatar
-            src={Query.authorPFP}
-                alt="Logo" 
-                style={{ width: 30, height: 30}}
-                sx={{ m:1, my: 'Auto'}}
+            src={Query.userPFP}
+                alt="Logo"
+                style={{ width: 50, height: 50}}
+                sx={{ mx:1, my: 'Auto'}}
             />
-            <Typography variant='body2' sx={{my:'Auto'}}>{Query.author}</Typography>
+            <Typography variant='body2' sx={{my:'Auto'}}>{Query.user}</Typography>
           </Box>
+
+          <Box sx={{mx:2,my:2,pb:1, background:theme.palette.grey[200],borderRadius:5}}>
+            <Box sx={{display:'flex'}}>
+              <Typography variant='h4' sx={UserHistoryStyles.subTitle(theme)}>User Posts</Typography>
+            </Box>
+            {Query.userPosts.map((Post) =>(
+              <Box key={Post.title} sx={{...UserHistoryStyles.Box(theme),display:'flex'}}
+              onClick={()=>{setPostSelected(Post.title);}}>
+              {/* WIP : Falta hacer que al clickear el post haga algo */}
+
+                <Box>
+                  <Box sx={{display:'flex',ml:2}}>
+                    <Typography variant='h5' sx={UserHistoryStyles.subTextBold(theme)}>{Post.title}</Typography>
+                  </Box>
+                  <Box sx={{display:'flex'}}>
+                    <Typography variant='h6' sx={UserHistoryStyles.subText(theme)}>{Post.description}</Typography>
+                  </Box>
+                </Box>
+           
+                <Box sx={{mr:2,ml:'Auto',alignContent:'center'}}>
+                  <PostInteracionButton
+                    text={Post.state}
+                    icon={Circle}
+                    iconColor={handleStateColor(Post.state)}
+                  ></PostInteracionButton>
+                </Box>
+              </Box>
+            ))
+            }
+          </Box>
+
+          <Box sx={{mx:2,my:4,pb:1, background:theme.palette.grey[200],borderRadius:5}}>
+            <Box sx={{display:'flex'}}>
+              <Typography variant='h4' sx={UserHistoryStyles.subTitle(theme)}>User Comments</Typography>
+            </Box>
+            {Query.userComments.map((Comment) =>(
+              <Box key={Comment.postTitle} sx={UserHistoryStyles.Box(theme)}
+              onClick={()=>{setCommentSelected(Comment.comment);}}>
+              {/* WIP : Falta hacer que al clickear el comentario haga algo */}
+           
+                <Box>
+                  <Box sx={{display:'flex',ml:2}}>
+                    <Typography variant='h5' sx={UserHistoryStyles.subTextBold(theme)}>{Comment.postTitle}</Typography>
+                  </Box>
+                  <Box sx={{display:'flex',ml:2}}>
+                    <Typography variant='body1' sx={UserHistoryStyles.subTextBold(theme)}>From: {Comment.postAuthor}</Typography>
+                  </Box>
+                  <Box sx={{display:'flex'}}>
+                    <Typography variant='h6' sx={UserHistoryStyles.subText(theme)}>{Comment.comment}</Typography>
+                  </Box>
+
+                </Box>
+        
+              </Box>
+            ))
+            }
+          </Box>
+
         </Box>
       ))}
-
+      
     </Container>
   );
 }
