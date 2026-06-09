@@ -13,6 +13,8 @@ import {
   safeDecryptText,
 } from "../../../../m0-base-datos/src/utils/encryption";
 
+import { createHmac} from "crypto";
+
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 /*
@@ -37,6 +39,79 @@ export async function countUsers(_req: Request, res: Response) {
   }
 }
 
+//function for the JWT token 
+function base64Encode(text: string): string {
+  return btoa(text).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
+function base64Decode(text: string): string {
+  text = text.replace(/-/g, "+").replace(/_/g,"/");
+  while (text.length % 4){
+    text += "=";
+  }
+  return atob(text);
+}
+
+//Creates a token with the email and the ID of the user 
+function GenerateJWT(email: string, id:Number): string {
+  try {
+    const header = {alg: "HS256", typ: "JWT"};
+    const payload = {id: id, email: email};
+    const encryptedheader = base64Encode(JSON.stringify(header));
+    const encryptedpayload = base64Encode(JSON.stringify(payload));
+    const pass = "askjda1l492_+?aaj@@_+s7102j4asf";
+    const sign = createHmac("sha256", pass).update(`${encryptedheader}.${encryptedpayload}`).digest("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+
+
+    return `${encryptedheader}.${encryptedpayload}.${sign}`;
+  } catch (error) {
+    console.error("countUsers error:", error);
+
+    return "";
+  }
+}
+
+
+
+//Checks if the token is valid and has not been changed 
+function verifyToken(token: string): boolean {
+  const [encryptedheader, encryptedpayload, sign] = token.split(".");
+  const pass = "askjda1l492_+?aaj@@_+s7102j4asf";
+  const TokenSign = createHmac("sha256", pass).update(`${encryptedheader}.${encryptedpayload}`).digest("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  return TokenSign === sign;
+} 
+
+
+//gets the email 
+function GetTokenEmail(token: string): string {
+  const [encryptedheader,encryptedpayload,sign] = token.split(".");
+  const payload = JSON.parse(base64Decode(encryptedpayload));
+  return payload.email;
+}
+
+//gets the id
+function GetTokenid(token: string): string {
+  const [encryptedheader,encryptedpayload,sign] = token.split(".");
+  const payload = JSON.parse(base64Decode(encryptedpayload));
+  return payload.id;
+}
+
+export async function pruebaToken(req: Request, res: Response) {
+    const email = "pruebadetoken@mail";
+    let id = 2;
+    const token = GenerateJWT(email,id);
+    const ver = verifyToken(token);
+    const emailToken = GetTokenEmail(token);
+    const idToken = GetTokenid(token);
+    return res.json({
+        originalEmail : email,
+        originid: id, 
+        token : token,
+        verify :  ver,
+        emailtoken : emailToken,
+        idtoken: idToken
+      });
+}
 
 export async function checkRol(req: Request, res: Response) {
   try {
