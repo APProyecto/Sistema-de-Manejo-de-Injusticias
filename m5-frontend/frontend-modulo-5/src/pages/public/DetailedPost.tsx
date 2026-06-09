@@ -208,7 +208,9 @@ export default function DetailedPost() {
 
       {/* ── Right sidebar ── */}
       <Container sx={detailedPostStyles.rightContainer(theme)}>
-        <Entity src={data.indicted.picture} name={data.indicted.name} />
+          <Box sx={detailedPostStyles.indictedContainer(theme)}>
+            <Entity src={data.indicted.picture} name={data.indicted.name} />
+          </Box>
 
         <Typography sx={detailedPostStyles.text(theme)}>{data.indicted.description}</Typography>
 

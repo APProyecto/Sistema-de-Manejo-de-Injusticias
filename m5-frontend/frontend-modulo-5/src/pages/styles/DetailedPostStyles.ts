@@ -13,6 +13,13 @@ export const detailedPostStyles = {
     background: theme.palette.background.default,
   }),
 
+
+  indictedContainer: (theme: Theme): SxProps<Theme> => ({
+    textAlign: 'left',
+    marginBottom: '20px',
+
+  }),
+
   centerContainer: (theme: Theme): SxProps<Theme> => ({
     flex: 1,
     overflowY: 'auto',
@@ -27,7 +34,7 @@ export const detailedPostStyles = {
     minWidth: '220px',
     maxWidth: '300px',
     flexShrink: 0,
-    height: '100%',
+    minheight: '100%',
     overflowY: 'auto',
     overflowX: 'hidden',
     padding: '20px !important',
