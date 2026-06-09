@@ -1,10 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
-
-// Layouts
-import PublicLayout from '../layouts/PublicLayout';
-import UserLayout from '../layouts/UserLayout';
-import AdminLayout from '../layouts/AdminLayout';
 
 // Páginas públicas
 import Home from '../pages/public/Home';
@@ -17,14 +12,17 @@ import CreateBoycott from '../pages/user/CreateBoycott';
 import Favorites from '../pages/user/Favorites';
 import MyPosts from '../pages/user/MyPosts';
 import EditProfile from '../pages/user/EditProfile';
+import MyVotes from '../pages/user/MyVotes';
+import Suggestions from '../pages/user/Suggestions';
 
 // Páginas de admin
-import AdminHome from '../pages/admin/AdminHome';
 import Dashboard from '../pages/admin/Dashboard';
 import ManageUsers from '../pages/admin/ManageUsers';
 import ManageReports from '../pages/admin/ManageReports';
 import Statistics from '../pages/admin/Statistics';
-import Quereis from '../pages/admin/Queries';
+import Queries from '../pages/admin/Queries';
+import UserHistory from '../pages/admin/UserHistory';
+import MostFollowedCases from '../pages/admin/MostFollowedCases';
 import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
 import Logs from '../pages/admin/Logs';
 import ManageComments from '../pages/admin/ManageComments';
@@ -67,6 +65,16 @@ export default function AppRoutes() {
             <MyPosts />
           </ProtectedRoute>
         } />
+        <Route path="/my-votes" element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
+            <MyVotes />
+          </ProtectedRoute>
+        } />
+        <Route path="suggestions" element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
+            <Suggestions />
+          </ProtectedRoute>
+        } />
 
         <Route path="/edit-profile" element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'master']}>
@@ -75,11 +83,7 @@ export default function AppRoutes() {
         } />
 
       {/* Rutas de administrador */}
-        <Route path="/admin/" element={
-          <ProtectedRoute allowedRoles={['admin', 'master']}>
-            <AdminHome />
-          </ProtectedRoute>
-        } />
+        <Route path="/admin/" element={<Navigate to="/" replace />} />
         <Route path="/admin/dashboard" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <Dashboard />
@@ -107,7 +111,17 @@ export default function AppRoutes() {
         } />
         <Route path="/admin/queries" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
-            <Quereis />
+            <Queries />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/user-history" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <UserHistory />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/most-followed-cases" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <MostFollowedCases />
           </ProtectedRoute>
         } />
         <Route path="/admin/cases-of-injustice" element={

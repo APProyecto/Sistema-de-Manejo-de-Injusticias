@@ -35,7 +35,7 @@ export default function AdminNormalSideMenu({ onSwitchToDashboardMode, currentMo
         {/* Home */}
         <Button 
             sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/')}
+            onClick={() => handleNavigation('/')}
         >
             <HomeOutlinedIcon sx={sideMenuStyles.buttonIcon(theme)}></HomeOutlinedIcon>
             <Typography sx={sideMenuStyles.buttonText(theme)}>Home</Typography>
@@ -65,7 +65,7 @@ export default function AdminNormalSideMenu({ onSwitchToDashboardMode, currentMo
             onClick={onSwitchToDashboardMode}
         >
             <Assessment sx={sideMenuStyles.buttonIcon(theme)}></Assessment>
-            <Typography sx={sideMenuStyles.buttonText(theme)}>Dashboard</Typography>
+            <Typography sx={sideMenuStyles.buttonText(theme)}>Admin Dashboard</Typography>
         </Button>
 
         {/* Espacio en blanco para rellenar */}

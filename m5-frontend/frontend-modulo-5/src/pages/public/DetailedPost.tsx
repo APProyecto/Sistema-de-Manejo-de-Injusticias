@@ -1,237 +1,249 @@
-import React, { useState } from 'react';
-import { Container, Box, Typography, Avatar, IconButton, Chip, Divider, useTheme } from '@mui/material';
+import { Avatar, Box, Button, Container, Divider, TextField, Typography, useTheme } from '@mui/material';
+import { useNavigate, useParams } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DownloadIcon from '@mui/icons-material/Download';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import ImageIcon from '@mui/icons-material/Image';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import ChatBubbleOutlineIcon from '@mui/icons-material/Chat';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import { useParams, useNavigate } from 'react-router-dom';
+import ReplyIcon from '@mui/icons-material/Reply';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ReportIcon from '@mui/icons-material/ReportGmailerrorred';
+import PDFLogo from '../../assets/PDFIcon.png';
+import DefaultAvatar from '../../assets/pfpDefaultImage.png';
+import { useMemo, useState } from 'react';
 import { detailedPostStyles } from '../styles/DetailedPostStyles';
-import Entity from '../../components/common/Entity';
-import type { DetailedPostData } from '../../types';
-import VotesBox from '../../components/public/VotesBox';
-import PostInteracionButton from '../../components/common/PostInteractionButton';
-import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import { PostCardStyles } from '../../components/styles/PostCardStyles';
-import { Circle } from "@mui/icons-material";
 
 type CommentFilter = 'New' | 'Old' | 'Most Relevant' | 'Less Relevant';
 const FILTERS: CommentFilter[] = ['New', 'Old', 'Most Relevant', 'Less Relevant'];
 
 export default function DetailedPost() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const theme = useTheme();
-  const [activeFilter, setActiveFilter] = useState<CommentFilter>('New');
+    const { id } = useParams();
+    const theme = useTheme();
+    const navigate = useNavigate();
+    const [comment, setComment] = useState('');
+    const [selectedFilter, setSelectedFilter] = useState<'New' | 'Old' | 'Most Relevant' | 'Less Relevant'>('New');
 
-  const onCommentsClick = () => {
+    const post = useMemo(() => ({
+      id: id ?? '1',
+      username: 'Justifier_12',
+      userPicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781104/cool-profile-picture-87h46gcobjl5e4xu_bifpln.jpg',
+      title: 'Starbucks supports Israel',
+      createdAt: 'First posted: 10/04/2026',
+      updatedAt: 'Last updated: 14/04/2026',
+      description:
+        'I\'m deeply troubled by reports suggesting Starbucks\' backing of Israel, especially given the ongoing genocide in Gaza. As patrons, our choices reflect our values, and it\'s disheartening to see a company seemingly prioritize political alignment over human rights. If these allegations hold true, it\'s imperative for Starbucks to address these concerns transparently. A clear statement clarifying their stance would empower consumers to make informed decisions about supporting their brand.',
+      entity: 'Starbucks',
+      entityIcon: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781215/images_11_objw2p.png',
+      caseName: 'Genocide in Gaza',
+      caseIcon: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
+      category: 'Corporate Ethics and Political Involvement',
+      type: 'Political',
+      country: 'USA',
+      tags: ['Animal cruelty in sourcing', 'Environmental pollution', 'Over labor'],
+    }), [id]);
 
-  }
+    const attachments = [
+      { icon: PDFLogo, name: 'EvidenceFile_01.pdf', extension: 'PDF', size: '20kb' },
+      { icon: PDFLogo, name: 'PhotoProof_01.png', extension: 'JPG', size: '120kb' },
+    ];
 
-  const handleStateColor = (state: string) => {
-      if(state === 'Active'){
-          return theme.palette.success.main;
-      }else{
-          return theme.palette.background.default;
-      }
-  }
-  const data: DetailedPostData = {
-    id: 1,
-    indicted: {
-      id: 1,
-      name: 'Starbucks',
-      picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781215/images_11_objw2p.png',
-      cases: ['Animal cruelty in sourcing', 'Environmental pollution', 'Over labor'],
-      category: 'Food',
-      description: 'Starbucks is a premier roaster and retailer of specialty coffee with locations in dozens of countries.',
-    },
-    type: 'Political',
-    country: 'USA',
-    case: 'War in Gaza',
-    case_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
-    title: 'starbucks supports the genocide in gaza',
-    description: "I'm deeply troubled by reports suggesting Starbucks' backing of Israel, especially given the ongoing genocide in Gaza. As patrons, our choices reflect our values, and it's disheartening to see a company seemingly prioritize political alignment over human rights.",
-    creation_date: '10/04/2026',
-    is_favorite: false,
-    votes: '23k',
-    voted_by_user: true,
-    comment_amount: '25k',
-    evidences: [
-      { id: 1, extension: 'pdf', name: 'EvidenceFile_01.pdf', type: 'pdf', weight: '20kb' },
-      { id: 2, extension: 'png', name: 'PhotoProof_01.png', type: 'image', weight: '1200kb' },
-      { id: 3, extension: 'pdf', name: 'ExtraDoc.pdf', type: 'pdf', weight: '35kb' },
-    ],
-    comments: [
+    const comments = [
       {
         id: 1,
-        content: "I've heard that they donate to causes that don't align with my values. It's disappointing when a company's actions don't match their public image.",
-        creation_date: '12/08/2026',
-        post_id: 1,
-        user: { id: 1, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'EcoWarrior7' },
-        voted_by_user: true,
-        votes: '9',
+        username: 'EcoWarrior7',
+        avatar: DefaultAvatar,
+        text: "I've heard that they donate to causes that don't align with my values. It's disappointing when a company's actions don't match their public image.",
+        voteLabel: '21k',
       },
       {
         id: 2,
-        content: "I've heard that they've been accused of union busting. It's a shame when companies don't support their employees' rights.",
-        creation_date: '13/08/2026',
-        post_id: 1,
-        user: { id: 2, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'Fairness4All' },
-        voted_by_user: false,
-        votes: '5',
+        username: 'Fairness4All',
+        avatar: DefaultAvatar,
+        text: "I've heard that they've been accused of union busting. It's a shame when companies don't support their employees' rights.",
+        voteLabel: '21k',
       },
-      {
-        id: 3,
-        content: "I read that they've had some issues with fair trade practices. It makes me question whether they're truly committed to ethical sourcing.",
-        creation_date: '14/08/2026',
-        post_id: 1,
-        user: { id: 3, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'SourceMatters' },
-        voted_by_user: false,
-        votes: '3',
-      },
-    ],
-    last_updated: '14/04/2026',
-    user: { id: 2, username: 'Justifier_12', profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg' },
-    state: 'Active',
-  };
+    ];
 
-  const visibleEvidences = data.evidences.slice(0, 2);
-  const extraEvidences = data.evidences.length - 2;
+    const handleBack = () => navigate(-1);
+
+    const handleSubmitComment = () => {
+      setComment('');
+    };
+
+    const commentFilters: Array<'New' | 'Old' | 'Most Relevant' | 'Less Relevant'> = ['New', 'Old', 'Most Relevant', 'Less Relevant'];
 
   return (
-    <Container sx={detailedPostStyles.mainContainer(theme)}>
+    <Container sx={detailedPostStyles.container(theme)}>
+      <Button sx={detailedPostStyles.backButton(theme)} onClick={handleBack}>
+        <ArrowBackIcon />
+        <Typography sx={detailedPostStyles.backTitle(theme)}>Post details</Typography>
+      </Button>
 
-      {/* ── Center ── */}
-      <Container sx={detailedPostStyles.centerContainer(theme)}>
-
-        {/* Post header */}
-        <Box sx={detailedPostStyles.postHeader(theme)}>
-          <IconButton size="small" onClick={() => navigate(-1)} sx={detailedPostStyles.backButton(theme)}>
-            <ArrowBackIcon fontSize="small" />
-          </IconButton>
-          <Avatar src={data.user.profilePicture} alt={data.user.username} sx={detailedPostStyles.avatar(theme)} />
-          <Typography sx={detailedPostStyles.username(theme)}>{data.user.username}</Typography>
-        </Box>
-
-        <Typography sx={detailedPostStyles.dateText(theme)}>First posted: {data.creation_date}</Typography>
-        <Typography sx={detailedPostStyles.dateText(theme)}>Last updated: {data.last_updated}</Typography>
-
-        {/* Title + description */}
-        <Typography sx={detailedPostStyles.postTitle(theme)}>{data.title}</Typography>
-        <Typography sx={detailedPostStyles.text(theme)}>{data.description}</Typography>
-
-        {/* Attachments */}
-        <Typography sx={detailedPostStyles.subtitle(theme)}>Attachments</Typography>
-        <Box sx={detailedPostStyles.attachmentsRow(theme)}>
-          {visibleEvidences.map((ev) => (
-            <Box key={ev.id} sx={detailedPostStyles.attachmentCard(theme)}>
-              {ev.type === 'pdf'
-                ? <PictureAsPdfIcon fontSize="small" sx={detailedPostStyles.attachmentIconPdf(theme)} />
-                : <ImageIcon fontSize="small" sx={detailedPostStyles.attachmentIconImg(theme)} />}
-              <Box sx={detailedPostStyles.attachmentInfo(theme)}>
-                <Typography sx={detailedPostStyles.attachmentName(theme)} noWrap>{ev.name}</Typography>
-                <Typography sx={detailedPostStyles.attachmentWeight(theme)}>{ev.weight}</Typography>
+      <Container sx={detailedPostStyles.pageGrid()}>
+        <Container sx={detailedPostStyles.mainColumn()}>
+          <Container sx={detailedPostStyles.postCard()}>
+            <Container sx={detailedPostStyles.postHeader()}>
+              <Avatar src={post.userPicture} alt={post.username} sx={PostCardStyles.profilePicture(theme)} />
+              <Box sx={detailedPostStyles.authorMeta()}>
+                <Typography sx={detailedPostStyles.authorName(theme)}>{post.username}</Typography>
+                <Typography sx={detailedPostStyles.metaText(theme)}>{post.createdAt}</Typography>
+                <Typography sx={detailedPostStyles.metaText(theme)}>{post.updatedAt}</Typography>
               </Box>
-              <IconButton size="small" sx={detailedPostStyles.downloadButton(theme)}>
-                <DownloadIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          ))}
-          {extraEvidences > 0 && (
-            <Box sx={detailedPostStyles.extraEvidences(theme)}>
-              <Typography sx={detailedPostStyles.extraEvidencesText(theme)}>+{extraEvidences}</Typography>
-            </Box>
-          )}
-        </Box>
+              <Box sx={{ flex: 1 }} />
+            </Container>
 
-        {/* Action bar */}
-        <Box sx={detailedPostStyles.actionBar(theme)}>
-          {/* Votes */}
-          <VotesBox
-              votes={data.votes}
-              >
-          </VotesBox>
+            <Typography sx={detailedPostStyles.title(theme)}>{post.title}</Typography>
 
-          {/* Comments */}
-          <PostInteracionButton
-              text={data.comment_amount}
-              icon={InsertCommentIcon}
-              iconColor={theme.palette.text.primary}
-              onPressClick={onCommentsClick}
-              >
-          </PostInteracionButton>
+            <Typography sx={detailedPostStyles.bodyText(theme)}>
+              Description...
+              <br />
+              {post.description}
+            </Typography>
 
-          <Container sx={PostCardStyles.filler(theme)}></Container>
+            <Typography sx={detailedPostStyles.attachmentsTitle(theme)}>Attachments</Typography>
+            <Container sx={detailedPostStyles.attachmentList()}>
+              {attachments.map((file) => (
+                <Box key={file.name} sx={detailedPostStyles.attachmentRow(theme)}>
+                  <Box sx={detailedPostStyles.attachmentLeft()}>
+                    <img src={file.icon} alt={file.name} style={detailedPostStyles.attachmentIcon() as any} />
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography sx={detailedPostStyles.attachmentName(theme)} noWrap>
+                        {file.name}
+                      </Typography>
+                      {file.extension ? (
+                        <Typography sx={detailedPostStyles.attachmentMeta(theme)}>
+                          {file.extension} - {file.size}
+                        </Typography>
+                      ) : null}
+                    </Box>
+                  </Box>
+                  <ArrowDownwardIcon />
+                </Box>
+              ))}
+            </Container>
 
-          {/* State */}
-          <PostInteracionButton
-              text={data.state}
-              icon={Circle}
-              iconColor={handleStateColor(data.state)}
-          >
-          </PostInteracionButton>
-        </Box>
+            <Box sx={detailedPostStyles.postMetricsRow()}>
+              <Box sx={detailedPostStyles.postMetricsLeft()}>
+                <Box sx={detailedPostStyles.postMetricPill(theme)}>
+                  <CheckCircleIcon sx={detailedPostStyles.postMetricIcon(theme)} />
+                  <Typography variant="body2">21k</Typography>
+                  <CancelIcon sx={detailedPostStyles.postMetricIcon(theme)} />
+                </Box>
 
-        <Divider sx={detailedPostStyles.divider(theme)} />
-
-        {/* Comment filters */}
-        <Box sx={detailedPostStyles.filtersRow(theme)}>
-          {FILTERS.map((f) => (
-            <Chip
-              key={f}
-              label={f}
-              size="small"
-              onClick={() => setActiveFilter(f)}
-              sx={detailedPostStyles.filterChip(theme, activeFilter === f)}
-            />
-          ))}
-        </Box>
-
-        {/* Comments */}
-        <Box sx={detailedPostStyles.commentsList(theme)}>
-          {data.comments.map((comment) => (
-            <Box key={comment.id} sx={detailedPostStyles.commentCard(theme)}>
-              <Box sx={detailedPostStyles.commentHeader(theme)}>
-                <Avatar src={comment.user.profilePicture} alt={comment.user.username} sx={detailedPostStyles.avatar(theme)} />
-                <Typography sx={detailedPostStyles.username(theme)}>{comment.user.username}</Typography>
-                <FiberManualRecordIcon sx={detailedPostStyles.dotSeparator(theme)} />
-                <Typography sx={detailedPostStyles.dateText(theme)}>{comment.creation_date}</Typography>
+                <Box sx={detailedPostStyles.postMetricPill(theme)}>
+                  <ReplyIcon sx={detailedPostStyles.postMetricIcon(theme)} />
+                  <Typography variant="body2">25k</Typography>
+                </Box>
               </Box>
-              <Typography sx={detailedPostStyles.text(theme)}>{comment.content}</Typography>
+
+              <Box sx={detailedPostStyles.postStatePill(theme)}>
+                <Box sx={detailedPostStyles.postStateDot(theme)} />
+                <Typography variant="body2">Open</Typography>
+              </Box>
             </Box>
-          ))}
-        </Box>
+            <Divider sx={{ borderColor: 'rgba(255,255,255,0.35)' }} />
 
-      </Container>
+            <Box sx={detailedPostStyles.commentFilters()}>
+              {commentFilters.map((filter) => (
+                <Button
+                  key={filter}
+                  onClick={() => setSelectedFilter(filter)}
+                  sx={detailedPostStyles.commentFilterButton(theme, selectedFilter === filter)}
+                >
+                  {filter}
+                </Button>
+              ))}
+            </Box>
 
-      {/* ── Right sidebar ── */}
-      <Container sx={detailedPostStyles.rightContainer(theme)}>
-          <Box sx={detailedPostStyles.indictedContainer(theme)}>
-            <Entity src={data.indicted.picture} name={data.indicted.name} />
-          </Box>
+            <Container sx={detailedPostStyles.commentComposer()}>
+              <Box sx={detailedPostStyles.commentInputRow()}>
+                <TextField
+                  fullWidth
+                  placeholder="Write a comment..."
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                  sx={detailedPostStyles.commentField(theme)}
+                />
+                <Button onClick={handleSubmitComment} sx={detailedPostStyles.sendButton(theme)}>
+                  <ArrowForwardIcon sx={detailedPostStyles.sendButtonIcon(theme)} />
+                </Button>
+              </Box>
+            </Container>
 
-        <Typography sx={detailedPostStyles.text(theme)}>{data.indicted.description}</Typography>
+            <Container sx={detailedPostStyles.commentsStack()}>
+              {comments.map((item) => (
+                <Container key={item.id} sx={detailedPostStyles.commentCard()}>
+                  <Box sx={detailedPostStyles.commentTopRow()}>
+                    <Avatar src={item.avatar} alt={item.username} sx={detailedPostStyles.avatar()} />
+                    <Typography sx={detailedPostStyles.authorName(theme)}>{item.username}</Typography>
+                    <Box sx={{ flex: 1 }} />
+                    <Button sx={{ minWidth: 'auto', color: theme.palette.text.primary, p: 0 }}>
+                      <ReportIcon />
+                    </Button>
+                  </Box>
 
-        <Typography sx={detailedPostStyles.subtitle(theme)}>Category</Typography>
-        <Typography sx={detailedPostStyles.text(theme)}>{data.indicted.category}</Typography>
+                  <Typography sx={detailedPostStyles.commentBody(theme)}>{item.text}</Typography>
 
-        <Typography sx={detailedPostStyles.subtitle(theme)}>Type of Injustice</Typography>
-        <Typography sx={detailedPostStyles.text(theme)}>{data.type}</Typography>
+                  <Box sx={detailedPostStyles.commentActions()}>
+                    <Button
+                      onClick={() => undefined}
+                      sx={detailedPostStyles.commentActionButton(theme)}
+                    >
+                      <ReplyIcon sx={detailedPostStyles.commentActionIcon(theme)} />
+                    </Button>
 
-        <Typography sx={detailedPostStyles.subtitle(theme)}>Country</Typography>
-        <Typography sx={detailedPostStyles.text(theme)}>{data.country}</Typography>
-
-        <Typography sx={detailedPostStyles.subtitle(theme)}>Other Company Cases</Typography>
-        {data.indicted.cases.map((item, index) => (
-          <Container key={index} sx={detailedPostStyles.bulletItem(theme)}>
-            <Typography sx={detailedPostStyles.bulletPoint(theme)}>{'\u2022'}</Typography>
-            <Typography sx={detailedPostStyles.text(theme)}>{item}</Typography>
+                    <Button
+                      onClick={() => undefined}
+                      sx={detailedPostStyles.commentActionButton(theme, true)}
+                    >
+                      <CheckCircleIcon sx={detailedPostStyles.commentActionIcon(theme)} />
+                      <Typography variant="caption">{item.voteLabel}</Typography>
+                      <CancelIcon sx={detailedPostStyles.commentActionIcon(theme)} />
+                    </Button>
+                  </Box>
+                </Container>
+              ))}
+            </Container>
           </Container>
-        ))}
-      </Container>
+        </Container>
 
+        <Container sx={detailedPostStyles.sideColumn()}>
+          <Container sx={detailedPostStyles.sidebarCard()}>
+            <Box sx={detailedPostStyles.companyBadge()}>
+              <Avatar src={post.entityIcon} alt={post.entity} sx={{ width: 34, height: 34 }} />
+              <Typography sx={detailedPostStyles.companyBadgeText(theme)}>{post.entity}</Typography>
+            </Box>
+
+            <Typography sx={detailedPostStyles.sidebarText(theme)}>
+              Starbucks is a premier roaster and retailer of specialty coffee with locations in dozens of countries.
+            </Typography>
+
+            <Box>
+              <Typography sx={detailedPostStyles.sidebarHeading(theme)}>Category:</Typography>
+              <Typography sx={detailedPostStyles.sidebarText(theme)}>{post.category}</Typography>
+            </Box>
+
+            <Box>
+              <Typography sx={detailedPostStyles.sidebarHeading(theme)}>Type of injustice:</Typography>
+              <Typography sx={detailedPostStyles.sidebarText(theme)}>{post.type}</Typography>
+            </Box>
+
+            <Box>
+              <Typography sx={detailedPostStyles.sidebarHeading(theme)}>Country:</Typography>
+              <Typography sx={detailedPostStyles.sidebarText(theme)}>{post.country}</Typography>
+            </Box>
+
+            <Box>
+              <Typography sx={detailedPostStyles.sidebarHeading(theme)}>Other company injustices</Typography>
+              {post.tags.map((tag) => (
+                <Typography key={tag} sx={detailedPostStyles.sidebarText(theme)} component="li">
+                  {tag}
+                </Typography>
+              ))}
+            </Box>
+          </Container>
+        </Container>
+      </Container>
     </Container>
   );
 }

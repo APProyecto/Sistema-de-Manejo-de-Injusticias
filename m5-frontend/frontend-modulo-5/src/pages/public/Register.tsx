@@ -441,8 +441,9 @@ export default function Register() {
                   mb:'5%',
                   borderRadius:5,
                   mr:1
-                  }}>
-                  {/*WIP cick cancel */}
+                  }}
+                  onClick={() => handleNavigation('/')}>
+                  
                   <Typography variant='h2'>Cancel</Typography>
                 </Button>
 

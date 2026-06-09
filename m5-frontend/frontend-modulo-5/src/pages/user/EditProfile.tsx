@@ -1,20 +1,150 @@
-import { Container, Typography, Card, CardContent, Button, Box } from '@mui/material';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { Avatar, Box, Button, Container, MenuItem, TextField, Typography, useTheme } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/authContext';
+import { editProfileStyles } from '../styles/EditProfileStyles';
+import DefaultAvatar from '../../assets/pfpDefaultImage.png';
 
 
 export default function EditProfile() {
+    const theme = useTheme();
     const navigate = useNavigate();
+    const { user, login } = useAuth();
+    const [username, setUsername] = useState('');
+    const [profilePicture, setProfilePicture] = useState('');
+    const [previewPicture, setPreviewPicture] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [gender, setGender] = useState('Gender');
+    const [email, setEmail] = useState('');
+    const [country, setCountry] = useState('Costa Rica');
+
+    useEffect(() => {
+        if (!user) return;
+
+        setUsername(user.username);
+        setProfilePicture(user.profilePicture || '');
+        setPreviewPicture(user.profilePicture || DefaultAvatar);
+        setFirstName(user.name);
+        setLastName(user.lastName);
+        setEmail(user.email);
+        setGender(user.gender || 'Gender');
+        setCountry(user.region || 'Costa Rica');
+    }, [user]);
+
+    const initials = useMemo(() => {
+        if (!username) return 'U';
+        return username.slice(0, 1).toUpperCase();
+    }, [username]);
+
     const handleBack = () => {
         navigate(-1);
-    }
+    };
+
+    const handlePictureChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const nextPicture = URL.createObjectURL(file);
+        setProfilePicture(nextPicture);
+        setPreviewPicture(nextPicture);
+        event.target.value = '';
+    };
+
+    const handleSave = async () => {
+        if (!user) return;
+
+        const updatedUser = {
+            ...user,
+            username,
+            profilePicture,
+        };
+
+        const token = localStorage.getItem('token') || 'dev-token';
+        await login(token, updatedUser);
+        navigate('/my-votes');
+    };
+
   return (
-    <Container sx={{backgroundColor: '#ffee00'}}>
-        <Button
-            onClick={handleBack}
-        >{'<'}</Button>
-      <Typography>EditProfile</Typography>
-      
-      
+    <Container sx={editProfileStyles.container(theme)}>
+      <Button onClick={handleBack} sx={editProfileStyles.backButton(theme)}>
+        <ArrowBackIcon />
+        <Typography sx={editProfileStyles.backTitle(theme)}>Edit User Profile</Typography>
+      </Button>
+
+      <Container sx={editProfileStyles.panel()}>
+        <Box sx={editProfileStyles.topSection()}>
+          <Box sx={editProfileStyles.avatarColumn()}>
+            <Avatar
+              src={previewPicture || DefaultAvatar}
+              alt={username}
+              sx={editProfileStyles.avatar()}
+            >
+              {initials}
+            </Avatar>
+
+            <Button component="label" sx={editProfileStyles.changePictureButton()}>
+              <EditIcon />
+              Change Picture
+              <input hidden type="file" accept="image/*" onChange={handlePictureChange} />
+            </Button>
+          </Box>
+
+          <Box sx={editProfileStyles.usernameColumn()}>
+            <Box sx={{ position: 'relative', width: '100%', maxWidth: '260px' }}>
+              <TextField
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                sx={editProfileStyles.usernameField(theme)}
+              />
+              <EditIcon sx={{ ...editProfileStyles.usernameEditIcon(), position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)' }} />
+            </Box>
+          </Box>
+        </Box>
+
+        <Box sx={editProfileStyles.form()}>
+          <Box sx={editProfileStyles.fieldGroup()}>
+            <Typography sx={editProfileStyles.label(theme)}>Firstname</Typography>
+            <TextField value={firstName} disabled sx={editProfileStyles.readonlyField(theme)} />
+          </Box>
+
+          <Box sx={editProfileStyles.fieldGroup()}>
+            <Typography sx={editProfileStyles.label(theme)}>Last name</Typography>
+            <TextField value={lastName} disabled sx={editProfileStyles.readonlyField(theme)} />
+          </Box>
+
+          <Box sx={editProfileStyles.fieldGroup()}>
+            <Typography sx={editProfileStyles.label(theme)}>Gender</Typography>
+            <TextField select value={gender} disabled sx={editProfileStyles.readonlyField(theme)}>
+              <MenuItem value="Gender">Gender</MenuItem>
+              <MenuItem value="Female">Female</MenuItem>
+              <MenuItem value="Male">Male</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
+            </TextField>
+          </Box>
+
+          <Box sx={editProfileStyles.fieldGroup()}>
+            <Typography sx={editProfileStyles.label(theme)}>Email</Typography>
+            <TextField value={email} disabled sx={editProfileStyles.readonlyField(theme)} />
+          </Box>
+
+          <Box sx={editProfileStyles.fieldGroup()}>
+            <Typography sx={editProfileStyles.label(theme)}>Country</Typography>
+            <TextField value={country} disabled sx={editProfileStyles.readonlyField(theme)} />
+          </Box>
+        </Box>
+
+        <Box sx={editProfileStyles.actions()}>
+          <Button onClick={handleSave} sx={editProfileStyles.saveButton()}>
+            Save
+          </Button>
+          <Button onClick={handleBack} sx={editProfileStyles.cancelButton()}>
+            Cancel
+          </Button>
+        </Box>
+      </Container>
     </Container>
   );
 }

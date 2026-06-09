@@ -5,11 +5,12 @@ import TuneIcon from '@mui/icons-material/Tune';
 import LogoSrc from '../../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
+import DefaultAvatar from '../../assets/pfpDefaultImage.png';
 export default function UserHeader() {
   const theme = useTheme();
   const navigate = useNavigate();
   const handleProfileClick = () => {
-    navigate('/profile/');
+    navigate('/my-votes');
   };
   const {user} = useAuth()
 
@@ -64,8 +65,8 @@ export default function UserHeader() {
             onClick={handleProfileClick}
           >
                 <Avatar
-                    src= {user?.profilePicture}
-                    alt= {'data.username'}
+                    src={user?.profilePicture || DefaultAvatar}
+                    alt={user?.username || 'User avatar'}
                     sx={headerStyles.profilePicture(theme)}
                 />
           </Button>

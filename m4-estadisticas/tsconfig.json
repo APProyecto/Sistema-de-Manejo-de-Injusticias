@@ -1,12 +1,13 @@
 {
-"compilerOptions": {
-"target": "ES2020",
-"module": "CommonJS",
-"moduleResolution": "node",
-"types": ["node"],
-"strict": true,
-"esModuleInterop": true,
-"skipLibCheck": true,
-"noEmit": true
-}
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+	"target": "ES2020",
+	"module": "CommonJS",
+	"moduleResolution": "node",
+	"types": ["node"],
+	"strict": true,
+	"esModuleInterop": true,
+	"skipLibCheck": true,
+	"noEmit": true
+  }
 }
