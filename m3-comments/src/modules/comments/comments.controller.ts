@@ -35,6 +35,7 @@ export async function getComments(req: Request, res: Response) {
                 CommentStateID: 1,
             },
             select: {
+                CommentBoycottID: true,
                 Description: true,
                 CommentDate: true,
                 CreatorID: true,
