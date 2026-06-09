@@ -71,7 +71,9 @@ export default function UserHistory() {
     });
 
     let response = await fetch(`http://localhost:3004/api/tracking/getUserHistory?${parameters.toString()}`)
-    console.log("Algo");
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error('Error:', error));
     console.log(response);
   };
 
