@@ -70,11 +70,10 @@ export default function UserHistory() {
       CategoryFilter:'Category'
     });
 
-    let response = await fetch(`${import.meta.env.VITE_API_MODULE4}/api/tracking/getUserHistory?${parameters.toString()}`)
+    await fetch(`http://localhost:3004/api/tracking/getUserHistory?${parameters.toString()}`)
       .then(response => response.json())
       .then(data => console.log(data))
       .catch(error => console.error('Error:', error));
-    console.log(response);
   };
 
   const handleStateColor = (state: string) => {
