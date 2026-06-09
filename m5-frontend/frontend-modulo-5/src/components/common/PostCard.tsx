@@ -19,9 +19,10 @@ import { useNavigate } from "react-router-dom";
 interface PostCardProps {
     data: PostCardData,
     inFeed: boolean;
+    voteSelection?: 'positive' | 'negative' | null;
 }
 
-export default function PostCard({ data, inFeed}: PostCardProps){
+export default function PostCard({ data, inFeed, voteSelection = null }: PostCardProps){
     const theme = useTheme();
     const navigate = useNavigate();
 
@@ -131,6 +132,7 @@ export default function PostCard({ data, inFeed}: PostCardProps){
                     {/* Votes */}
                     <VotesBox
                         votes={data.votes}
+                        initialVote={voteSelection}
                         >
                     </VotesBox>
 
