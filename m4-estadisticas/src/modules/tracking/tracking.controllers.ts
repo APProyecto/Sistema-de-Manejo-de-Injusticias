@@ -18,8 +18,8 @@ import {
 export async function getMostFollowedCases(req:Request, res:Response){
     try {
         
-        const indictedFilter = req.query.indictedfilter;
-        const injusticeFilter = req.query.injusticefilter;
+        const indictedFilter = req.query.indictedFilter?.toString();
+        const injusticeFilter = req.query.injusticeFilter?.toString();
 
         const followersCount = await prisma.userFavoriteBoycott.groupBy({
             by:['BoycottID'],
@@ -174,8 +174,8 @@ async function getBoycottDesc(boycottId:number){
 
 export async function getUserPostAndComments(req:Request, res:Response){
     try {
-        const userName = req.query.username;
-        const CategoryFilter =req.query.categoryfilter;
+        const userName = req.query.userName?.toString();
+        const CategoryFilter =req.query.CategoryFilter?.toString();
         
         const userId = await prisma.appUser.findFirst({
             where:{
