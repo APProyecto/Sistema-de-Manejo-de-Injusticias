@@ -64,14 +64,13 @@ export default function UserHistory() {
   };
 
   const searchUser = async () => {
-    console.log(`${import.meta.env.VITE_API_MODULE4}/api/tracking/getUserHistory`);
 
     const parameters = new URLSearchParams({
       userName: userSearchBar,
       CategoryFilter:'Category'
     });
 
-    let response = await fetch(`${import.meta.env.VITE_API_MODULE4}/api/tracking/getUserHistory?${parameters.toString()}`)
+    let response = await fetch(`http://localhost:3004/api/tracking/getUserHistory?${parameters.toString()}`)
     console.log("Algo");
     console.log(response);
   };
