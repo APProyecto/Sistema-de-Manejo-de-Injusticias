@@ -74,6 +74,7 @@ export default function UserHistory() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyU)
     }).then(r => r.json());
+    console.log(`${import.meta.env.VITE_API_MODULE1}/api/tracking/getUserHistory`);
     console.log("Algo");
     console.log(response);
   };
