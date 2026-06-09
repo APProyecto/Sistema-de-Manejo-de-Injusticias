@@ -52,7 +52,7 @@ export default function UserHistory() {
   const theme = useTheme();
   const navigate = useNavigate();
 
-  const [userSearchBar, setUserSearchBar] = useState('None');
+  const [userSearchBar, setUserSearchBar] = useState('');
   const [userSelected, setUser] = useState('None');
   const [postSelected, setPostSelected] = useState('None');
   const [commentSelected, setCommentSelected] = useState('None');
@@ -68,13 +68,13 @@ export default function UserHistory() {
       userName: userSearchBar,
       CategoryFilter: "Category"
     }
+    console.log(`/api/tracking/getUserHistory`);
 
-    let response = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/tracking/getUserHistory`,{
+    let response = await fetch(`${import.meta.env.VITE_API_MODULE4}/api/tracking/getUserHistory`,{
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyU)
     }).then(r => r.json());
-    console.log(`${import.meta.env.VITE_API_MODULE1}/api/tracking/getUserHistory`);
     console.log("Algo");
     console.log(response);
   };
@@ -95,6 +95,13 @@ export default function UserHistory() {
         <TextField
           placeholder="Search..."
           value={userSearchBar}
+          onChange={(e) => setUserSearchBar(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              console.log(userSearchBar);
+              searchUser();
+            }
+          }}
           variant="outlined"
           size="medium"
           sx={UserHistoryStyles.searchField(theme)}
@@ -106,8 +113,7 @@ export default function UserHistory() {
                 </InputAdornment>
               ),
               endAdornment: (
-                <Button
-                  onClick={()=>{searchUser();}}>
+                <Button>
                   <TuneIcon sx={UserHistoryStyles.filterButton(theme)} />
                 </Button>
               ),
