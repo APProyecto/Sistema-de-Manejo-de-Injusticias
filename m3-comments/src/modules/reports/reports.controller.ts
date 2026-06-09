@@ -162,6 +162,23 @@ export async function closeReportBoycott(req: Request, res: Response) {
 }
 
 /*
+    Function: getBoycottReports. Filters reports based on optional search and state parameters.
+    Inputs: Request object containing optional search and state.
+    Description: Retrieves all the existing reports for boycotts.
+    Outputs: JSON response with the list of reports or an error message.
+*/
+export async function getBoycottReports(req: Request, res: Response){
+	try {
+		const { search, state } = req.query;
+		//g
+
+	} catch (error) {
+		console.error("getCommentReports error:", error);
+		res.status(500).json({ ok: false, error: "Internal server error" });
+	}
+}
+
+/*
 - Reporte de boycotts con las mismas razones.
 	- Atributos del reporte:
 		Subject : String
