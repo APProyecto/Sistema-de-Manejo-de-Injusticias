@@ -64,17 +64,14 @@ export default function UserHistory() {
   };
 
   const searchUser = async () => {
-    let bodyU = {
-      userName: userSearchBar,
-      CategoryFilter: "Category"
-    }
-    console.log(`/api/tracking/getUserHistory`);
+    console.log(`${import.meta.env.VITE_API_MODULE4}/api/tracking/getUserHistory`);
 
-    let response = await fetch(`${import.meta.env.VITE_API_MODULE4}/api/tracking/getUserHistory`,{
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bodyU)
-    }).then(r => r.json());
+    const parameters = new URLSearchParams({
+      userName: userSearchBar,
+      CategoryFilter:'Category'
+    });
+
+    let response = await fetch(`${import.meta.env.VITE_API_MODULE4}/api/tracking/getUserHistory?${parameters.toString()}`)
     console.log("Algo");
     console.log(response);
   };
