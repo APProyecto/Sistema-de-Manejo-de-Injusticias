@@ -109,4 +109,94 @@ export async function updateReportStatus(req: Request, res: Response) {
 	}
 }
 
+/*
+    Function: createReportBoycott
+    Inputs: Request object containing userDescription, boycottId, motiveReportId, ReportedBy and subject in the body.
+    Description: Creates a new report for a specific boycott post.
+    Outputs: JSON response with the created report or an error message.
+*/
+export async function createReportBoycott(req: Request, res: Response) {
+	try {
+		const { UserDescription, BoycottId, MotiveReportID, ReportedBy, Subject } = req.body;
+		const newReport = await prisma.report.create({
+			data: {
+				Subject,
+				UserDescription,
+				MotiveReportID: parseInt(MotiveReportID as string),
+				ReportedBy: parseInt(ReportedBy as string),
+				ReportStateID: 1,
+			},
+		});
 
+		await prisma.reportBoycott.create({ data: { ReportBoycottID: newReport.ReportID, BoycottID: parseInt(BoycottId as string) } });
+
+		res.status(201).json({ ok: true, report: newReport });
+	} catch (error) {
+		console.error('createReportBoycott error:', error);
+		res.status(500).json({ ok: false, error: 'Internal server error' });
+	}
+}
+
+/*
+    Function: closeReportBoycott
+    Inputs: Request object containing reportId, adminId, adminReply and status (1=approved/2=rejected) in the body.
+    Description: Updates the status of a comment report.
+    Outputs: JSON response with the updated report or an error message.
+*/
+export async function closeReportBoycott(req: Request, res: Response) {
+	try {
+		const { reportId, adminId, adminReply, status } = req.body;
+	
+		const updatedReport = await prisma.report.update({
+			where: { ReportID: parseInt(reportId as string) },
+			data: { ReportStateID: status, AdminAnswer: adminReply,
+					CheckedBy: adminId}
+			// Is the modified date saved as well? We'll soon find out
+		});
+
+		res.json({ ok: true, report: updatedReport });
+	} catch (error) {
+		console.error('closeReportBoycott error:', error);
+		res.status(500).json({ ok: false, error: 'Internal server error' });
+	}
+}
+
+/*
+- Reporte de boycotts con las mismas razones.
+	- Atributos del reporte:
+		Subject : String
+		UserDescription : String
+		AdminAnswer : String
+		ReportedAt : Date
+		CheckedAt : Date
+		CreatedBy : UserID
+		ModifiedAt : Date
+		ModifiedBy : UserID
+		FK ReportedBy : UserID
+		FK CheckedBy : UserID
+		FK ReportState : ReportStateID
+		FK MotiveReport : MotiveReportID
+		ReportBoycottID : ReportID
+		BoycottID : BoycottID
+
+- Crear reporte
+		Subject : String
+		UserDescription : String
+		CreatedBy : UserID
+		FK ReportedBy : UserID
+		FK MotiveReport : MotiveReportID
+		BoycottID : BoycottID
+
+- Cerrar reporte
+		ReportBoycottID : ReportID
+		AdminAnswer : String
+		FK ReportState : ReportStateID
+
+
+	- Eliminar reporte
+		ReportBoycottID : ReportID
+		
+- Actualizar status de reporte
+- Panel de administrador para revisar y responder reportes.
+	- Obtener reportes
+*/
