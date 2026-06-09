@@ -1,6 +1,7 @@
 import {Router} from "express";
 import {
     getCommentReports,
+    getBoycottReports,
     createCommentReport,
     createReportBoycott,
     closeReportBoycott,
@@ -9,6 +10,7 @@ import {
 const router = Router();
 
 router.get("/getAll", getCommentReports);
+router.get("/getBoycottReports", getBoycottReports);
 router.post("/createComment", createCommentReport);
 router.post("/createBoycottReport", createReportBoycott);
 router.post("/closeReport", closeReportBoycott);

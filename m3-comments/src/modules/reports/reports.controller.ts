@@ -170,10 +170,60 @@ export async function closeReportBoycott(req: Request, res: Response) {
 export async function getBoycottReports(req: Request, res: Response){
 	try {
 		const { search, state } = req.query;
-		//g
+		const filter: any = {ReportBoycott: {isNot: null}};
+
+		if (search && String(search).trim() !== ""){
+			const searchText = String(search).trim();
+			filter.AND = filter.AND || [];
+			filter.AND.push({
+				OR: [
+					{MotiveReport: {
+						MotiveName: {
+							contains: searchText, mode: 'insensitive'}
+						}
+					},
+					{ReportBoycott: {
+						Boycott: {
+							Title: {
+								contains: searchText, mode: 'insensitive'
+							}
+						}
+					}},
+				],
+			});
+		}
+
+		if (state && String(state).trim() !== "") {
+			const st = String(state).trim();
+			const stateCode = parseInt(st);
+			filter.AND = filter.AND || [];
+			if (!isNaN(stateCode)) {
+				filter.AND.push({ReportStateID: stateCode});
+			} else {
+				filter.AND.push({ReportState: {StateName: {contains: st, mode: 'insensitive'}}});
+			}
+		}
+
+		const reports = await prisma.report.findMany({
+			where: filter,
+			select: {
+				UserDescription: true,
+				Subject: true,
+				ReportedAt: true,
+				ReportedBy: true,
+				AdminAnswer: true,
+				CheckedBy: true,
+				ReportState: {select:{StateName: true}},
+				MotiveReport: {select:{MotiveName:true}},
+				ReportBoycott: {select: {Boycott: {select: {Title: true, BoycottID:true}}}},
+			},
+			orderBy: { ReportedAt: 'desc' },
+		});
+
+        res.json({ ok: true, reports });
 
 	} catch (error) {
-		console.error("getCommentReports error:", error);
+		console.error("getBoycottReports error:", error);
 		res.status(500).json({ ok: false, error: "Internal server error" });
 	}
 }
