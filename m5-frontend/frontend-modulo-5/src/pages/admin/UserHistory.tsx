@@ -63,6 +63,21 @@ export default function UserHistory() {
     navigate(path);
   };
 
+  const searchUser = async () => {
+    let bodyU = {
+      userName: userSearchBar,
+      CategoryFilter: "Category"
+    }
+
+    let response = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/tracking/getUserHistory`,{
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyU)
+    }).then(r => r.json());
+    console.log("Algo");
+    console.log(response);
+  };
+
   const handleStateColor = (state: string) => {
         if(state === 'Open'){
             return theme.palette.success.main;
@@ -77,15 +92,11 @@ export default function UserHistory() {
       
       <Box>
         <TextField
-          value={userSearchBar}
           placeholder="Search..."
+          value={userSearchBar}
           variant="outlined"
           size="medium"
           sx={UserHistoryStyles.searchField(theme)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              setUserSearchBar(userSearchBar);
-            }}}
           slotProps={{
             input: {
               startAdornment: (
@@ -94,7 +105,8 @@ export default function UserHistory() {
                 </InputAdornment>
               ),
               endAdornment: (
-                <Button>
+                <Button
+                  onClick={()=>{searchUser();}}>
                   <TuneIcon sx={UserHistoryStyles.filterButton(theme)} />
                 </Button>
               ),
