@@ -1,127 +1,235 @@
-import { Container, Typography, Card, CardContent, Button, Box, useTheme } from '@mui/material';
-import { useParams } from 'react-router-dom';
-import { detailedPostSyles } from '../styles/DetailedPostStyles';
+import React, { useState } from 'react';
+import { Container, Box, Typography, Avatar, IconButton, Chip, Divider, useTheme } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DownloadIcon from '@mui/icons-material/Download';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import ImageIcon from '@mui/icons-material/Image';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ChatBubbleOutlineIcon from '@mui/icons-material/Chat';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import { useParams, useNavigate } from 'react-router-dom';
+import { detailedPostStyles } from '../styles/DetailedPostStyles';
 import Entity from '../../components/common/Entity';
 import type { DetailedPostData } from '../../types';
+import VotesBox from '../../components/public/VotesBox';
+import PostInteracionButton from '../../components/common/PostInteractionButton';
+import InsertCommentIcon from '@mui/icons-material/InsertComment';
+import { PostCardStyles } from '../../components/styles/PostCardStyles';
+import { Circle } from "@mui/icons-material";
 
+type CommentFilter = 'New' | 'Old' | 'Most Relevant' | 'Less Relevant';
+const FILTERS: CommentFilter[] = ['New', 'Old', 'Most Relevant', 'Less Relevant'];
 
 export default function DetailedPost() {
-    const { id } = useParams();
-    const theme = useTheme();
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const [activeFilter, setActiveFilter] = useState<CommentFilter>('New');
 
-    let data : DetailedPostData = {
+  const onCommentsClick = () => {
+
+  }
+
+  const handleStateColor = (state: string) => {
+      if(state === 'Active'){
+          return theme.palette.success.main;
+      }else{
+          return theme.palette.background.default;
+      }
+  }
+  const data: DetailedPostData = {
+    id: 1,
+    indicted: {
       id: 1,
-      indicted: {
+      name: 'Starbucks',
+      picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781215/images_11_objw2p.png',
+      cases: ['Animal cruelty in sourcing', 'Environmental pollution', 'Over labor'],
+      category: 'Food',
+      description: 'Starbucks is a premier roaster and retailer of specialty coffee with locations in dozens of countries.',
+    },
+    type: 'Political',
+    country: 'USA',
+    case: 'War in Gaza',
+    case_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
+    title: 'starbucks supports the genocide in gaza',
+    description: "I'm deeply troubled by reports suggesting Starbucks' backing of Israel, especially given the ongoing genocide in Gaza. As patrons, our choices reflect our values, and it's disheartening to see a company seemingly prioritize political alignment over human rights.",
+    creation_date: '10/04/2026',
+    is_favorite: false,
+    votes: '23k',
+    voted_by_user: true,
+    comment_amount: '25k',
+    evidences: [
+      { id: 1, extension: 'pdf', name: 'EvidenceFile_01.pdf', type: 'pdf', weight: '20kb' },
+      { id: 2, extension: 'png', name: 'PhotoProof_01.png', type: 'image', weight: '1200kb' },
+      { id: 3, extension: 'pdf', name: 'ExtraDoc.pdf', type: 'pdf', weight: '35kb' },
+    ],
+    comments: [
+      {
         id: 1,
-        name: 'Starbucks',
-        picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781215/images_11_objw2p.png',
-        cases: ['animal testing', 'homophobia'],
-        category: 'Food',
-        description: 'Starbucks is a premier roaster and retailer of specialty coffee with locations in dozens of countries.',
+        content: "I've heard that they donate to causes that don't align with my values. It's disappointing when a company's actions don't match their public image.",
+        creation_date: '12/08/2026',
+        post_id: 1,
+        user: { id: 1, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'EcoWarrior7' },
+        voted_by_user: true,
+        votes: '9',
       },
-      type: 'Political',
-      country: 'USA',
-      case: 'War in Gazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      case_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
-      title: 'starbucks supports the genocide in gaza',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempor.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempo',
-      creation_date: '7h ago',
-      is_favorite: false,
-      votes: '23k',
-      voted_by_user: true,
-      comment_amount: '25k',
-      evidences: [
-        {
-          id: 1,
-          extension: 'pdf',
-          name: 'this name',
-          type: 'pdf',
-          weight: '20kb'
-        }
-      ],
-      comments: [
-        {
-          id: 1,
-          content: 'this is a comment',
-          creation_date: '12/08/2026',
-          post_id: 1,
-          user: {
-            id: 1,
-            profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
-            username: 'auser',
-          },
-          voted_by_user: true,
-          votes: '9',
-        }
-      ],
-      last_updated: '20/02/2025',
-      user: {
+      {
         id: 2,
-        username: 'hii',
-        profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg'
+        content: "I've heard that they've been accused of union busting. It's a shame when companies don't support their employees' rights.",
+        creation_date: '13/08/2026',
+        post_id: 1,
+        user: { id: 2, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'Fairness4All' },
+        voted_by_user: false,
+        votes: '5',
       },
-      state: 'Active',
-    }
+      {
+        id: 3,
+        content: "I read that they've had some issues with fair trade practices. It makes me question whether they're truly committed to ethical sourcing.",
+        creation_date: '14/08/2026',
+        post_id: 1,
+        user: { id: 3, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'SourceMatters' },
+        voted_by_user: false,
+        votes: '3',
+      },
+    ],
+    last_updated: '14/04/2026',
+    user: { id: 2, username: 'Justifier_12', profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg' },
+    state: 'Active',
+  };
+
+  const visibleEvidences = data.evidences.slice(0, 2);
+  const extraEvidences = data.evidences.length - 2;
 
   return (
-    <Container sx={detailedPostSyles.mainContainer(theme)}>
-     <Container sx={detailedPostSyles.centerContainer(theme)}>
+    <Container sx={detailedPostStyles.mainContainer(theme)}>
 
-     </Container>
-     <Container sx={detailedPostSyles.rightContainer(theme)}>
-      <Entity
-          src={data.indicted.picture}
-          name={data.indicted.name}
-      ></Entity>
+      {/* ── Center ── */}
+      <Container sx={detailedPostStyles.centerContainer(theme)}>
 
-      {/*Description*/}
-      <Typography
-        sx={detailedPostSyles.text(theme)}
-      >{data.indicted.description}
-      </Typography>
+        {/* Post header */}
+        <Box sx={detailedPostStyles.postHeader(theme)}>
+          <IconButton size="small" onClick={() => navigate(-1)} sx={detailedPostStyles.backButton(theme)}>
+            <ArrowBackIcon fontSize="small" />
+          </IconButton>
+          <Avatar src={data.user.profilePicture} alt={data.user.username} sx={detailedPostStyles.avatar(theme)} />
+          <Typography sx={detailedPostStyles.username(theme)}>{data.user.username}</Typography>
+        </Box>
 
-      {/*Category*/}
-      <Typography
-        sx={detailedPostSyles.subtitle(theme)}
-      >Category
-      </Typography>
-      <Typography sx={detailedPostSyles.text(theme)}>
-        {data.indicted.category}
-      </Typography>
+        <Typography sx={detailedPostStyles.dateText(theme)}>First posted: {data.creation_date}</Typography>
+        <Typography sx={detailedPostStyles.dateText(theme)}>Last updated: {data.last_updated}</Typography>
 
-      {/*Type of Injustice*/}
-      <Typography
-        sx={detailedPostSyles.subtitle(theme)}
-      >Type of Injustice
-      </Typography>
-      <Typography sx={detailedPostSyles.text(theme)}>
-        {data.type}
-      </Typography>
+        {/* Title + description */}
+        <Typography sx={detailedPostStyles.postTitle(theme)}>{data.title}</Typography>
+        <Typography sx={detailedPostStyles.text(theme)}>{data.description}</Typography>
 
-      {/*Country*/}
-      <Typography
-        sx={detailedPostSyles.subtitle(theme)}
-      >Country
-      </Typography>
-      <Typography sx={detailedPostSyles.text(theme)}>
-        {data.country}
-      </Typography>
+        {/* Attachments */}
+        <Typography sx={detailedPostStyles.subtitle(theme)}>Attachments</Typography>
+        <Box sx={detailedPostStyles.attachmentsRow(theme)}>
+          {visibleEvidences.map((ev) => (
+            <Box key={ev.id} sx={detailedPostStyles.attachmentCard(theme)}>
+              {ev.type === 'pdf'
+                ? <PictureAsPdfIcon fontSize="small" sx={detailedPostStyles.attachmentIconPdf(theme)} />
+                : <ImageIcon fontSize="small" sx={detailedPostStyles.attachmentIconImg(theme)} />}
+              <Box sx={detailedPostStyles.attachmentInfo(theme)}>
+                <Typography sx={detailedPostStyles.attachmentName(theme)} noWrap>{ev.name}</Typography>
+                <Typography sx={detailedPostStyles.attachmentWeight(theme)}>{ev.weight}</Typography>
+              </Box>
+              <IconButton size="small" sx={detailedPostStyles.downloadButton(theme)}>
+                <DownloadIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          ))}
+          {extraEvidences > 0 && (
+            <Box sx={detailedPostStyles.extraEvidences(theme)}>
+              <Typography sx={detailedPostStyles.extraEvidencesText(theme)}>+{extraEvidences}</Typography>
+            </Box>
+          )}
+        </Box>
 
-      {/*Other company Cases*/}
-      <Typography
-        sx={detailedPostSyles.subtitle(theme)}
-      >Other Company Cases
-      </Typography>
-      <Typography sx={detailedPostSyles.text(theme)}>
+        {/* Action bar */}
+        <Box sx={detailedPostStyles.actionBar(theme)}>
+          {/* Votes */}
+          <VotesBox
+              votes={data.votes}
+              >
+          </VotesBox>
+
+          {/* Comments */}
+          <PostInteracionButton
+              text={data.comment_amount}
+              icon={InsertCommentIcon}
+              iconColor={theme.palette.text.primary}
+              onPressClick={onCommentsClick}
+              >
+          </PostInteracionButton>
+
+          <Container sx={PostCardStyles.filler(theme)}></Container>
+
+          {/* State */}
+          <PostInteracionButton
+              text={data.state}
+              icon={Circle}
+              iconColor={handleStateColor(data.state)}
+          >
+          </PostInteracionButton>
+        </Box>
+
+        <Divider sx={detailedPostStyles.divider(theme)} />
+
+        {/* Comment filters */}
+        <Box sx={detailedPostStyles.filtersRow(theme)}>
+          {FILTERS.map((f) => (
+            <Chip
+              key={f}
+              label={f}
+              size="small"
+              onClick={() => setActiveFilter(f)}
+              sx={detailedPostStyles.filterChip(theme, activeFilter === f)}
+            />
+          ))}
+        </Box>
+
+        {/* Comments */}
+        <Box sx={detailedPostStyles.commentsList(theme)}>
+          {data.comments.map((comment) => (
+            <Box key={comment.id} sx={detailedPostStyles.commentCard(theme)}>
+              <Box sx={detailedPostStyles.commentHeader(theme)}>
+                <Avatar src={comment.user.profilePicture} alt={comment.user.username} sx={detailedPostStyles.avatar(theme)} />
+                <Typography sx={detailedPostStyles.username(theme)}>{comment.user.username}</Typography>
+                <FiberManualRecordIcon sx={detailedPostStyles.dotSeparator(theme)} />
+                <Typography sx={detailedPostStyles.dateText(theme)}>{comment.creation_date}</Typography>
+              </Box>
+              <Typography sx={detailedPostStyles.text(theme)}>{comment.content}</Typography>
+            </Box>
+          ))}
+        </Box>
+
+      </Container>
+
+      {/* ── Right sidebar ── */}
+      <Container sx={detailedPostStyles.rightContainer(theme)}>
+        <Entity src={data.indicted.picture} name={data.indicted.name} />
+
+        <Typography sx={detailedPostStyles.text(theme)}>{data.indicted.description}</Typography>
+
+        <Typography sx={detailedPostStyles.subtitle(theme)}>Category</Typography>
+        <Typography sx={detailedPostStyles.text(theme)}>{data.indicted.category}</Typography>
+
+        <Typography sx={detailedPostStyles.subtitle(theme)}>Type of Injustice</Typography>
+        <Typography sx={detailedPostStyles.text(theme)}>{data.type}</Typography>
+
+        <Typography sx={detailedPostStyles.subtitle(theme)}>Country</Typography>
+        <Typography sx={detailedPostStyles.text(theme)}>{data.country}</Typography>
+
+        <Typography sx={detailedPostStyles.subtitle(theme)}>Other Company Cases</Typography>
         {data.indicted.cases.map((item, index) => (
-          <Container sx={detailedPostSyles.bulletItem(theme)}>
-            <Typography sx={detailedPostSyles.bulletPoint(theme)}>{'\u2022'}</Typography>
-            <Typography>{item}</Typography>
+          <Container key={index} sx={detailedPostStyles.bulletItem(theme)}>
+            <Typography sx={detailedPostStyles.bulletPoint(theme)}>{'\u2022'}</Typography>
+            <Typography sx={detailedPostStyles.text(theme)}>{item}</Typography>
           </Container>
         ))}
-      </Typography>
+      </Container>
 
-     </Container>
     </Container>
   );
 }
