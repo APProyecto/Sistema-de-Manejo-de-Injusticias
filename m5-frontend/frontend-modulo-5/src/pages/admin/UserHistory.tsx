@@ -52,6 +52,8 @@ export default function UserHistory() {
   const theme = useTheme();
   const navigate = useNavigate();
 
+  const [user, setUserS] = useState<any|null>(null);
+
   const [userSearchBar, setUserSearchBar] = useState('');
   const [userSelected, setUser] = useState('None');
   const [postSelected, setPostSelected] = useState('None');
@@ -72,9 +74,10 @@ export default function UserHistory() {
 
     await fetch(`http://localhost:3004/api/tracking/getUserHistory?${parameters.toString()}`)
       .then(response => response.json())
-      .then(data => console.log(data))
+      .then(data => setUserS(data))
       .catch(error => console.error('Error:', error));
-  };
+      console.log(user?.username);
+    };
 
   const handleStateColor = (state: string) => {
         if(state === 'Open'){
