@@ -150,7 +150,12 @@ export const editProfileStyles = {
     fontWeight: theme.typography.h3.fontWeight,
     color: theme.palette.text.primary,
   }),
-  textField: (theme: Theme): SxProps<Theme> => fieldRoot(theme, false),
+  textField: (theme: Theme): SxProps<Theme> => ({
+  ...fieldRoot(theme, false),
+  '& .MuiSelect-select': {
+    textAlign: 'left',
+  },
+}),
   readonlyField: (theme: Theme): SxProps<Theme> => fieldRoot(theme, true),
   actions: (): SxProps<Theme> => ({
     display: 'flex',

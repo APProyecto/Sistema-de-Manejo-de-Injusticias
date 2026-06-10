@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
-import { Avatar, Box, Button, Container, MenuItem, TextField, Typography, useTheme } from '@mui/material';
+import { Avatar, Box, Button, Container, MenuItem, TextField, Typography, useTheme, Autocomplete } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
 import { editProfileStyles } from '../styles/EditProfileStyles';
 import DefaultAvatar from '../../assets/pfpDefaultImage.png';
-
+import { countries } from '../../data/countries';
+import { genders } from '../../data/genders';
 
 export default function EditProfile() {
     const theme = useTheme();
@@ -17,9 +18,9 @@ export default function EditProfile() {
     const [previewPicture, setPreviewPicture] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [gender, setGender] = useState('Gender');
+    const [gender, setGender] = useState(0);
     const [email, setEmail] = useState('');
-    const [country, setCountry] = useState('Costa Rica');
+    const [country, setCountry] = useState(0);
 
     useEffect(() => {
         if (!user) return;
@@ -30,8 +31,8 @@ export default function EditProfile() {
         setFirstName(user.name);
         setLastName(user.lastName);
         setEmail(user.email);
-        setGender(user.gender || 'Gender');
-        setCountry(user.region || 'Costa Rica');
+        setGender(user.gender ? Number(user.gender) : 0);
+        setCountry(user.region ? Number(user.region) : 0);
     }, [user]);
 
     const initials = useMemo(() => {
@@ -60,6 +61,11 @@ export default function EditProfile() {
             ...user,
             username,
             profilePicture,
+            name: firstName,
+            lastName,
+            email,
+            gender: String(gender),
+            region: String(country),
         };
 
         const token = localStorage.getItem('token') || 'dev-token';
@@ -107,32 +113,104 @@ export default function EditProfile() {
         <Box sx={editProfileStyles.form()}>
           <Box sx={editProfileStyles.fieldGroup()}>
             <Typography sx={editProfileStyles.label(theme)}>Firstname</Typography>
-            <TextField value={firstName} disabled sx={editProfileStyles.readonlyField(theme)} />
+            <TextField
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              sx={editProfileStyles.textField(theme)}
+            />
           </Box>
 
           <Box sx={editProfileStyles.fieldGroup()}>
             <Typography sx={editProfileStyles.label(theme)}>Last name</Typography>
-            <TextField value={lastName} disabled sx={editProfileStyles.readonlyField(theme)} />
+            <TextField
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              sx={editProfileStyles.textField(theme)}
+            />
           </Box>
 
           <Box sx={editProfileStyles.fieldGroup()}>
             <Typography sx={editProfileStyles.label(theme)}>Gender</Typography>
-            <TextField select value={gender} disabled sx={editProfileStyles.readonlyField(theme)}>
-              <MenuItem value="Gender">Gender</MenuItem>
-              <MenuItem value="Female">Female</MenuItem>
-              <MenuItem value="Male">Male</MenuItem>
-              <MenuItem value="Other">Other</MenuItem>
+            <TextField
+              select
+              value={gender}
+              onChange={(e) => setGender(Number(e.target.value))}
+              sx={editProfileStyles.textField(theme)}
+              slotProps={{
+                select: {
+                  MenuProps: {
+                    sx: {
+                      '& .MuiMenuItem-root': {
+                        color: 'black !important',
+                      }
+                    }
+                  }
+                }
+              }}
+            >
+              {genders.map((g) => (
+                <MenuItem key={g.id} value={g.id}>
+                  {g.name}
+                </MenuItem>
+              ))}
             </TextField>
           </Box>
 
           <Box sx={editProfileStyles.fieldGroup()}>
             <Typography sx={editProfileStyles.label(theme)}>Email</Typography>
-            <TextField value={email} disabled sx={editProfileStyles.readonlyField(theme)} />
+            <TextField
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              sx={editProfileStyles.textField(theme)}
+            />
           </Box>
 
           <Box sx={editProfileStyles.fieldGroup()}>
             <Typography sx={editProfileStyles.label(theme)}>Country</Typography>
-            <TextField value={country} disabled sx={editProfileStyles.readonlyField(theme)} />
+            <Autocomplete
+              value={countries.find(c => c.id === country) ?? null}
+              options={countries}
+              getOptionLabel={(option) => option.name}
+              onChange={(_, value) => setCountry(value?.id ?? 0)}
+              sx={{
+                width: '100%',
+                '& .MuiFilledInput-root': {
+                  background: 'white',
+                  height: '50px',
+                  color: theme.palette.background.default,
+                  borderRadius: '8px !important',
+                  '&:before': { borderBottom: 'none' },
+                  '&:after': { borderBottom: 'none' },
+                  '&:hover:not(.Mui-disabled):before': { borderBottom: 'none' },
+                },
+                '& .MuiInputLabel-root': {
+                  color: theme.palette.text.secondary,
+                },
+                '& .MuiFilledInput-root:hover': {
+                  background: 'white',
+                },
+                '& .MuiFilledInput-root.Mui-focused': {
+                  background: theme.palette.background.paper,
+                },
+              }}
+              renderInput={(params) => (
+                <TextField {...params} variant="filled" hiddenLabel />
+              )}
+              slotProps={{
+                paper: {
+                  sx: {
+                    backgroundColor: theme.palette.background.paper,
+                    color: 'black',
+                    '& .MuiAutocomplete-option:hover': {
+                      backgroundColor: theme.palette.grey[200],
+                    },
+                    '& .MuiAutocomplete-option[aria-selected="true"]': {
+                      backgroundColor: theme.palette.grey[300],
+                    }
+                  }
+                }
+              }}
+            />
           </Box>
         </Box>
 
