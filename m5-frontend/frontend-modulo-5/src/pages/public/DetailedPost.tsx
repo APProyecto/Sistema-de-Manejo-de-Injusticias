@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Box, Typography, Avatar, IconButton, Chip, Divider, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -10,24 +10,53 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { useParams, useNavigate } from 'react-router-dom';
 import { detailedPostStyles } from '../styles/DetailedPostStyles';
 import Entity from '../../components/common/Entity';
-import type { DetailedPostData } from '../../types';
+import type { Comment, DetailedPostData } from '../../types';
 import VotesBox from '../../components/public/VotesBox';
 import PostInteracionButton from '../../components/common/PostInteractionButton';
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import { PostCardStyles } from '../../components/styles/PostCardStyles';
 import { Circle } from "@mui/icons-material";
+import { getComments } from '../../services/commentsService';
+import PublicComment from '../../components/public/PublicComment';
+import { useAuth } from '../../context/authContext';
+import UserComment from '../../components/user/UserComment';
+import PostCommentBox from '../../components/user/PostCommentBox';
 
 type CommentFilter = 'New' | 'Old' | 'Most Relevant' | 'Less Relevant';
 const FILTERS: CommentFilter[] = ['New', 'Old', 'Most Relevant', 'Less Relevant'];
 
 export default function DetailedPost() {
+
+  const { isAuthenticated, user } = useAuth();
   const { id } = useParams();
+
+  const [filterNumber, setFilterNumber] = useState(0);
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  //actualiza los comentarios cada vez que cambia el id o el número de filtro
+  useEffect(() => {
+    if (id) getComments(Number(id), filterNumber).then(setComments);
+  }, [id, filterNumber]);
+
+
+
   const navigate = useNavigate();
   const theme = useTheme();
   const [activeFilter, setActiveFilter] = useState<CommentFilter>('New');
 
   const onCommentsClick = () => {
 
+  }
+
+  const handleFilterClick = (filter: CommentFilter) => {
+    console.log('filter');
+    setActiveFilter(filter);
+    switch (filter) {
+      case 'New': setFilterNumber(0); break;
+      case 'Old': setFilterNumber(1); break;
+      case 'Most Relevant': setFilterNumber(2); break;
+      case 'Less Relevant': setFilterNumber(3); break;
+    }
   }
 
   const handleStateColor = (state: string) => {
@@ -68,8 +97,7 @@ export default function DetailedPost() {
         id: 1,
         content: "I've heard that they donate to causes that don't align with my values. It's disappointing when a company's actions don't match their public image.",
         creation_date: '12/08/2026',
-        post_id: 1,
-        user: { id: 1, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'EcoWarrior7' },
+        user: { id: 1, profilePicture: 'http://localhost:3001/api/files/appUser/1/picture', username: 'EcoWarrior7' },
         voted_by_user: true,
         votes: '9',
       },
@@ -77,7 +105,6 @@ export default function DetailedPost() {
         id: 2,
         content: "I've heard that they've been accused of union busting. It's a shame when companies don't support their employees' rights.",
         creation_date: '13/08/2026',
-        post_id: 1,
         user: { id: 2, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'Fairness4All' },
         voted_by_user: false,
         votes: '5',
@@ -86,7 +113,6 @@ export default function DetailedPost() {
         id: 3,
         content: "I read that they've had some issues with fair trade practices. It makes me question whether they're truly committed to ethical sourcing.",
         creation_date: '14/08/2026',
-        post_id: 1,
         user: { id: 3, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'SourceMatters' },
         voted_by_user: false,
         votes: '3',
@@ -183,24 +209,21 @@ export default function DetailedPost() {
               key={f}
               label={f}
               size="small"
-              onClick={() => setActiveFilter(f)}
+              onClick={() => handleFilterClick(f)}
               sx={detailedPostStyles.filterChip(theme, activeFilter === f)}
             />
           ))}
         </Box>
 
+
+
         {/* Comments */}
         <Box sx={detailedPostStyles.commentsList(theme)}>
-          {data.comments.map((comment) => (
-            <Box key={comment.id} sx={detailedPostStyles.commentCard(theme)}>
-              <Box sx={detailedPostStyles.commentHeader(theme)}>
-                <Avatar src={comment.user.profilePicture} alt={comment.user.username} sx={detailedPostStyles.avatar(theme)} />
-                <Typography sx={detailedPostStyles.username(theme)}>{comment.user.username}</Typography>
-                <FiberManualRecordIcon sx={detailedPostStyles.dotSeparator(theme)} />
-                <Typography sx={detailedPostStyles.dateText(theme)}>{comment.creation_date}</Typography>
-              </Box>
-              <Typography sx={detailedPostStyles.text(theme)}>{comment.content}</Typography>
-            </Box>
+          {isAuthenticated ? <PostCommentBox></PostCommentBox>:<Box></Box>}
+          {comments.map((comment) => (
+            isAuthenticated
+            ? <UserComment comment={comment} loggedInUserId={user?.id}></UserComment>
+            : <PublicComment comment={comment}></PublicComment>
           ))}
         </Box>
 

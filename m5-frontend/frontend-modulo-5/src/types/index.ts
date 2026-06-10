@@ -78,7 +78,6 @@ export interface DetailedPostData {
 
 export interface Comment {
   id: number;
-  post_id: number;
   user: SimpleUser;
   content: string;
   creation_date: string;

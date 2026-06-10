@@ -40,3 +40,8 @@ export const getUserProfile = async (id: number): Promise<ProfileResponse> => {
   const response = await authApi.get<ProfileResponse>(`/api/users/${id}`)
   return response.data
 }
+
+export const getUserProfilePicture = async (id: number): Promise<ProfileResponse> => {
+  const response = await authApi.get<ProfileResponse>(`/api/files/appUser/${id}/picture`)
+  return response.data
+}
