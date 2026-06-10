@@ -67,4 +67,10 @@ searchField: (theme: Theme): SxProps<Theme> => ({
     color: '#000000',
     fontSize: 35
   }),
+
+  headerCases: (theme: Theme): SxProps<Theme> => ({
+    display: 'flex',
+    gap: 2,
+    width: '96%',
+  }),
 }

@@ -14,7 +14,7 @@ export default function CasesOfInjustice() {
           <TuneIcon />
         </Button>    
       <TextField
-          placeholder="Search for a user"
+          placeholder="Search for a case"
           variant="outlined"
           size="medium"
           sx={CasesOfInjusticeStyles.searchField(theme)}
@@ -28,6 +28,14 @@ export default function CasesOfInjustice() {
             },
           }}
         />
+        </Container>
+        <Container>
+          <Container sx={CasesOfInjusticeStyles.headerCases(theme)}>
+            <Typography>Picture</Typography>
+          <Typography>Case</Typography>
+          <Typography sx={ {marginLeft: 'auto'}}>Posts</Typography>
+          </Container>
+          
         </Container>
     </Container>
   );
