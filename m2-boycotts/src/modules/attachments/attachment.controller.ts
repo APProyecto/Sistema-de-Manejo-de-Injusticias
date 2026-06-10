@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../../config/prisma";
+import { getBoycottDocumentByMysqlId } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
 /*
   Controlador: attachment.controller.ts
@@ -32,7 +33,6 @@ export async function obtenerAdjuntos(req: Request, res: Response): Promise<void
         BoycottID: true,
         Title: true,
         MongoDocumentId: true,
-        BoycottState: { select: { StateName: true } },
       },
     });
 
@@ -42,15 +42,23 @@ export async function obtenerAdjuntos(req: Request, res: Response): Promise<void
       return;
     }
 
+    const documento = await getBoycottDocumentByMysqlId(boycottId);
+
+    const adjuntos = documento?.evidence
+      ?.filter((item) => Boolean(item.fileName))
+      .map((item) => ({
+        id: String(item.mongoFileId ?? item.gridFsId ?? ""),
+        nombre: item.fileName,
+        tipo: item.contentType ?? null,
+        tamano: item.fileSize ?? null,
+      }))
+      .filter((item) => item.id.length > 0) ?? [];
+
     res.json({
       ok: true,
-      data: {
-        boycottId: boycott.BoycottID,
-        titulo: boycott.Title,
-        // El frontend usa este ID para pedir los archivos a m0-base-datos
-        mongoDocumentId: boycott.MongoDocumentId ?? null,
-      },
+      data: adjuntos,
     });
+    
   } catch (error) {
     console.error("[obtenerAdjuntos]", error);
     res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
