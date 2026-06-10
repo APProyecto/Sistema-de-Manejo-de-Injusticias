@@ -72,7 +72,7 @@ export async function getMostFollowedCases(req: Request, res: Response) {
 
     res.json({
       ok: true,
-      mostFollowed: summary,
+      mostFollowed: [...summary].sort((a, b) => b.followers - a.followers),
     });
   } catch (error) {
     console.error("getMostFollowedCases error:", error);
@@ -252,7 +252,8 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       },
     });
 
-    const enrichEntities = [];
+    interface entityInter {EntityName: string; EntityPicture:Promise<Buffer<ArrayBufferLike> | null>}
+    let enrichEntities: entityInter[] = [];
 
     for (let i = 0; i < entityFollowing.length; i++) {
       let entity = {
@@ -261,7 +262,9 @@ export async function getUserPostAndComments(req: Request, res: Response) {
           entityFollowing[i].Boycott.Entity.EntityID,
         ),
       };
-      enrichEntities.push(entity);
+      if(!enrichEntities.some(InEntity => InEntity.EntityName === entity.EntityName)){
+        enrichEntities.push(entity)
+      }
     }
 
     res.json({
