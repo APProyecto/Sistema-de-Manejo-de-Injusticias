@@ -145,11 +145,11 @@ export async function createReportBoycott(req: Request, res: Response) {
 */
 export async function closeReportBoycott(req: Request, res: Response) {
 	try {
-		const { reportId, adminId, adminReply, status } = req.body;
+		const { reportId, adminId, adminReply, stateId } = req.body;
 	
 		const updatedReport = await prisma.report.update({
 			where: { ReportID: parseInt(reportId as string) },
-			data: { ReportStateID: status, AdminAnswer: adminReply,
+			data: { ReportStateID: stateId, AdminAnswer: adminReply,
 					CheckedBy: adminId}
 			// Is the modified date saved as well? We'll soon find out
 		});
