@@ -17,4 +17,12 @@ export const StatisticsStyles = {
     p:1,
     borderRadius:5
   }),
+  LabelGraphic: (theme: Theme): SxProps<Theme> => ({
+    color:theme.palette.primary.main
+  }),
+  LabelBox: (theme: Theme): SxProps<Theme> => ({
+    display:'flex',
+    pl:5,
+    pt:2
+  }),
 }
