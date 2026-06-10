@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -20,6 +20,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { commentApi } from '../../services/api';
 import { manageCommentsStyles } from '../styles/ManageCommentsStyles';
 
 type CommentStatus = 'Pending' | 'Approved' | 'Rejected';
@@ -39,6 +40,11 @@ const initialComments: CommentRow[] = [
   { id: 3, date: '19/04/2026', status: 'Pending', reason: 'Inappropriate', original: 'Do women even have a word on this?', description: 'Comment includes sexism and misogyny.' },
   { id: 4, date: '20/04/2026', status: 'Approved', reason: 'Resolved', original: 'Thanks for the info.', description: 'Helpful comment.' },
   { id: 5, date: '22/04/2026', status: 'Rejected', reason: 'Spam', original: 'Buy cheap watches now!', description: 'Promotional spam.' },
+  { id: 6, date: '23/04/2026', status: 'Pending', reason: 'Harassment', original: 'Everyone who disagrees should just leave.', description: 'Attack on users with differing opinions and personal insults.' },
+  { id: 7, date: '24/04/2026', status: 'Approved', reason: 'Moderated', original: 'I think this is a good point, but needs references.', description: 'Constructive feedback with suggestions for improvement.' },
+  { id: 8, date: '25/04/2026', status: 'Rejected', reason: 'Duplicate', original: 'Read the previous thread, this was already discussed.', description: 'Repeated content that does not add value to the discussion.' },
+  { id: 9, date: '26/04/2026', status: 'Pending', reason: 'Misinformation', original: 'Vaccines cause memory loss and other health problems.', description: 'False medical claim that could mislead community members.' },
+  { id: 10, date: '27/04/2026', status: 'Pending', reason: 'Off-topic', original: 'Now that we are here, did anyone watch the game last night? It was incredible!', description: 'Comment unrelated to the original post and distracting from the topic.' },
 ];
 
 export default function ManageComments() {
@@ -46,6 +52,12 @@ export default function ManageComments() {
   const [searchTerm, setSearchTerm] = useState('');
   const [comments, setComments] = useState<CommentRow[]>(initialComments);
   const [statusFilter, setStatusFilter] = useState<'All' | CommentStatus>('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const rowsPerPage = 5;
+  const useBackend = Boolean(import.meta.env.VITE_API_MODULE3);
+  const commentsEndpoint = import.meta.env.VITE_COMMENTS_MODERATION_ENDPOINT ?? '/api/comments/getAll?BoycottID=1&SortBy=0';
 
   const counts = useMemo(() => {
     const total = comments.length;
@@ -64,6 +76,56 @@ export default function ManageComments() {
       return matchesStatus && matchesSearch;
     });
   }, [comments, searchTerm, statusFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+  const currentPageItems = useMemo(
+    () => filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage),
+    [filtered, currentPage, rowsPerPage]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  useEffect(() => {
+    if (currentPage > pageCount) {
+      setCurrentPage(pageCount);
+    }
+  }, [currentPage, pageCount]);
+
+  useEffect(() => {
+    if (!useBackend) {
+      return;
+    }
+
+    const fetchComments = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await commentApi.get<{ ok: boolean; comments: any[] }>(commentsEndpoint);
+        const rawComments = response.data.comments ?? [];
+        const normalizedComments: CommentRow[] = rawComments.map((item) => ({
+          id: item.id ?? Number(item.comment_id) ?? Date.now(),
+          date:
+            item.date || item.creation_date || item.creationDate || item.created_at || item.createdAt || 'Unknown date',
+          status: ['Pending', 'Approved', 'Rejected'].includes(item.status) ? item.status : 'Pending',
+          reason: item.reason || item.report_reason || item.type || 'Reported',
+          original: item.original || item.content || item.text || item.comment || 'No text',
+          description: item.description || item.report_description || item.details || '',
+        }));
+
+        setComments(normalizedComments.length ? normalizedComments : initialComments);
+      } catch (fetchError) {
+        setError('No se pudo cargar el backend de comentarios. Usando datos de ejemplo.');
+        setComments(initialComments);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchComments();
+  }, [useBackend, commentsEndpoint]);
 
   const statusBg = (status: CommentStatus) => {
     switch (status) {
@@ -146,6 +208,23 @@ export default function ManageComments() {
         </Box>
       </Box>
 
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+        <Typography sx={{ color: theme.palette.grey[400], fontSize: 12 }}>
+          {useBackend
+            ? loading
+              ? 'Cargando comentarios desde el backend...'
+              : error
+              ? error
+              : 'Comentarios cargados desde el backend de M3.'
+            : 'Backend de M3 no configurado. Mostrando datos de ejemplo.'}
+        </Typography>
+        {useBackend && !loading && !error && (
+          <Typography sx={{ color: theme.palette.grey[400], fontSize: 12 }}>
+            Endpoint: {commentsEndpoint}
+          </Typography>
+        )}
+      </Box>
+
       <Box sx={{ mt: 2, overflowX: 'auto' }}>
         <Box sx={manageCommentsStyles.gridHeader(theme)}>
           <Typography sx={manageCommentsStyles.headerCell(theme)}>Date</Typography>
@@ -156,7 +235,7 @@ export default function ManageComments() {
           <Typography sx={{ ...manageCommentsStyles.headerCell(theme), textAlign: 'center' }}>Actions</Typography>
         </Box>
 
-        {filtered.map((c, i) => (
+        {currentPageItems.map((c, i) => (
           <Box key={c.id} sx={manageCommentsStyles.row(theme, i)}>
             <Typography sx={{ color: theme.palette.common.white }}>{c.date}</Typography>
             <Chip label={c.status} sx={{ ...manageCommentsStyles.statusCell(theme), backgroundColor: statusBg(c.status), color: '#ffffff', minWidth: 120, textAlign: 'center', display: 'flex', justifyContent: 'center' }} />
@@ -184,6 +263,46 @@ export default function ManageComments() {
             </Box>
           </Box>
         ))}
+      </Box>
+
+      <Box sx={manageCommentsStyles.paginationRow(theme)}>
+        <Typography>{`Showing ${currentPageItems.length} rows of ${filtered.length}`}</Typography>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            sx={manageCommentsStyles.pageButton(theme)}
+          >
+            Previous
+          </Button>
+
+          {Array.from({ length: pageCount }, (_, index) => (
+            <Button
+              key={index}
+              size="small"
+              variant={currentPage === index + 1 ? 'contained' : 'outlined'}
+              onClick={() => setCurrentPage(index + 1)}
+              sx={{
+                ...manageCommentsStyles.pageButton(theme),
+                ...(currentPage === index + 1 ? { backgroundColor: '#ffffff', color: '#000000' } : {}),
+              }}
+            >
+              {index + 1}
+            </Button>
+          ))}
+
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={currentPage === pageCount}
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, pageCount))}
+            sx={manageCommentsStyles.pageButton(theme)}
+          >
+            Next
+          </Button>
+        </Box>
       </Box>
     </Container>
   );

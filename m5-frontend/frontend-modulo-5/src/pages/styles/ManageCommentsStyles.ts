@@ -76,6 +76,10 @@ export const manageCommentsStyles = {
   actionsBox: (_theme: Theme): SxProps<Theme> => ({ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }),
 
   actionButton: (_theme: Theme): SxProps<Theme> => ({ height: 36, px: 2, textTransform: 'none' }),
+
+  paginationRow: (_theme: Theme): SxProps<Theme> => ({ mt: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2, color: _theme.palette.common.white }),
+
+  pageButton: (_theme: Theme): SxProps<Theme> => ({ minWidth: 36, px: 1.2, textTransform: 'none', color: _theme.palette.common.white }),
 };
 
 export default manageCommentsStyles;
