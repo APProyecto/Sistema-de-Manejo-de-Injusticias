@@ -1,7 +1,6 @@
 import {
   AppBar,
   Toolbar,
-  Typography,
   Button,
   Box,
   useTheme,
@@ -17,8 +16,8 @@ import { useState } from "react";
 import LoginWindow from "./LoginWindow";
 import { useAuth } from "../../context/authContext";
 import { useNavigate } from "react-router-dom";
-import DefaultAvatar from "../../assets/pfpDefaultImage.png";
 import { getUserProfilePictureUrl } from "../../services/uesrService";
+import Searchbar from "../common/SearchBar";
 
 interface PublicHeaderProps {
   onLoginSuccess: (userData: any) => void;
@@ -74,26 +73,7 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
         </Box>
 
         {/* Barra de Búsqueda */}
-        <TextField
-          placeholder="Search..."
-          variant="outlined"
-          size="medium"
-          sx={headerStyles.searchField(theme)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={headerStyles.searchIcon(theme)} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <Button>
-                  <TuneIcon sx={headerStyles.filterButton(theme)} />
-                </Button>
-              ),
-            },
-          }}
-        />
+        <Searchbar></Searchbar>
 
         <Box>
           {user ? (

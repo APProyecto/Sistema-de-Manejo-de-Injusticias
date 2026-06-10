@@ -1,11 +1,10 @@
 import { AppBar, Toolbar, Button, Box, useTheme, TextField, InputAdornment, Avatar } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import { headerStyles } from '../styles/HeaderStyles';
-import TuneIcon from '@mui/icons-material/Tune';
 import LogoSrc from '../../assets/logo.png';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
 import DefaultAvatar from '../../assets/pfpDefaultImage.png';
+import Searchbar from '../common/SearchBar';
 export default function UserHeader() {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -36,26 +35,7 @@ export default function UserHeader() {
         </Box>
 
         {/* Barra de Búsqueda */}
-        <TextField
-          placeholder="Search..."
-          variant="outlined"
-          size="medium"
-          sx={headerStyles.searchField(theme)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={headerStyles.searchIcon(theme)} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <Button>
-                  <TuneIcon sx={headerStyles.filterButton(theme)} />
-                </Button>
-              ),
-            },
-          }}
-        />
+        <Searchbar></Searchbar>
 
         <Box>
           <Button 
@@ -65,8 +45,8 @@ export default function UserHeader() {
             onClick={handleProfileClick}
           >
                 <Avatar
-                    src={user?.profilePicture || DefaultAvatar}
-                    alt={user?.username || 'User avatar'}
+                    src={user?.picture || DefaultAvatar}
+                    alt={user?.appUserName || 'User avatar'}
                     sx={headerStyles.profilePicture(theme)}
                 />
           </Button>
