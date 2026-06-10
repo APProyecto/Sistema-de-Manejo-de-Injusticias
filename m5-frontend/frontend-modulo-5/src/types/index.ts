@@ -11,6 +11,7 @@ export interface User {
   profilePicture?: string
   gender?: string
   region?: string
+  idAdmin?: boolean
 }
 
 export interface SimpleUser {

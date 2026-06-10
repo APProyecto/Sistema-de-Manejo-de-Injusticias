@@ -7,6 +7,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 import { useAuth } from '../../context/authContext';
 import {login as loginService} from '../../services/uesrService'
+import { useNavigate } from 'react-router-dom';
 
 interface LoginWindowProps {
   open: boolean;
@@ -21,19 +22,34 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
     const [password, setPassword] = useState('');
     const {login} = useAuth();
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async () => {
-        setError('');
-        try {
-            const response = await loginService(email, password);// llamada al servicio
-            await login(response.data.token, response.data.user);// actualización del contexto
-            if(onLoginSuccess){
-                onLoginSuccess(response.data.user);
-            }
-            onClose();
-        } catch (err: any) {
-            setError(err.message);
+    setError('');
+    try {
+        const response = await loginService(email, password);
+
+        console.log('response:', response);
+
+        const loggedUser = login(response.user);
+
+        onLoginSuccess(loggedUser);
+
+        (document.activeElement as HTMLElement)?.blur();
+
+        onClose();
+
+        if (loggedUser.role === 'admin') {
+        navigate('/admin/dashboard');
+        } else {
+        navigate('/profile');
         }
+
+    } catch (err: any) {
+        console.log('error:', err);
+        setError(err.message);
+    }
+
 
 
     /*
@@ -60,26 +76,39 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
     };
 
     const handleGoogleSuccess = async (credentialResponse: any) => {
-        try {
-        const result = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/users/google`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: credentialResponse.credential }),
-        });
-        
-        const data = await result.json();
-        
-        if (result.ok) {
-            // con la función del contexto
-            login(data.token, data.user);
-            onClose();
-        } else {
-            setError(data.error || 'Google login failed');
-        }
-        } catch (err) {
-        setError('Network error. Please try again.');
-        }
+  setError('');
+
+  try {
+    const result = await fetch(`${import.meta.env.VITE_API_MODULE1}/api/users/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: credentialResponse.credential }),
+    });
+
+    const data = await result.json();
+
+    if (result.ok) {
+      const loggedUser = login(data.user);
+
+      onLoginSuccess(loggedUser);
+
+      (document.activeElement as HTMLElement)?.blur();
+
+      onClose();
+
+      if (loggedUser.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/profile');
+      }
+    } else {
+      setError(data.error || 'Google login failed');
     }
+  } catch (err) {
+    console.log('Google login error:', err);
+    setError('Network error. Please try again.');
+  }
+};
 
     const theme = useTheme();
     return (

@@ -2,15 +2,12 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { User, UserRole } from '../types';
 
-
-
-
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   userRole: UserRole | null;
-  login: (token: string, userData: User) => Promise<User>;
+  login: (userData: User) => User;
   logout: () => void;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
@@ -22,40 +19,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Cargar sesión guardada al iniciar la app
-    const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
-    
-    if (token && userStr) {
+
+    if (userStr) {
       try {
         const userData = JSON.parse(userStr);
         setUser(userData);
       } catch (error) {
         console.error('Error parsing user:', error);
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
     }
+
     setIsLoading(false);
   }, []);
 
-  const login = async (token: string, userData: User): Promise<User> => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    return userData;
+  const login = (userData: User): User => {
+    const userWithRole: User = {
+      ...userData,
+      role: userData.idAdmin ? 'admin' : 'user'
+    };
+
+    localStorage.setItem('user', JSON.stringify(userWithRole));
+    setUser(userWithRole);
+
+    return userWithRole;
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
   };
 
-  // Función para verificar si el usuario tiene un rol específico
   const hasRole = (roles: UserRole | UserRole[]): boolean => {
     if (!user) return false;
-    
+
     const rolesArray = Array.isArray(roles) ? roles : [roles];
     return rolesArray.includes(user.role);
   };
@@ -77,8 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+
   return context;
 }

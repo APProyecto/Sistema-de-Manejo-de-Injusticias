@@ -2,11 +2,9 @@ import type { User } from '../types';
 import { authApi } from './api';
 
 interface LoginResponse {
-  success: boolean
-  data: {
-    token: string
-    user: User
-  }
+  message: string;
+  user: User;
+  token?: string;
 }
 
 interface ProfileResponse {
@@ -21,10 +19,10 @@ export const login = async (identifier: string, password: string): Promise<Login
     password
   });
   
-  if (response.data.success) {
+  if (response.data.token) {
     // Guardar token y usuario
-    localStorage.setItem('token', response.data.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.data.user));
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
   }
   console.log(response);
   return response.data;
