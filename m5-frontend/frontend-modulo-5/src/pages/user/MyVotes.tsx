@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Logout } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
 import { useAuth } from '../../context/authContext';
-import { logout as logoutService } from '../../services/uesrService';
+import { logout as logoutService } from '../../services/userService';
 import { myVotesStyles } from '../styles/MyVotesStyles';
 import type { PostCardData } from '../../types';
 import PostCard from '../../components/common/PostCard';

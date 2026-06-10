@@ -6,7 +6,7 @@ import AuthLogo from '../../assets/auth0.svg';
 import { GoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
 import { useAuth } from '../../context/authContext';
-import {login as loginService} from '../../services/uesrService'
+import {login as loginService} from '../../services/userService'
 
 interface LoginWindowProps {
   open: boolean;

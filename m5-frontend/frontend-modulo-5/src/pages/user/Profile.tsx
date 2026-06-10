@@ -1,5 +1,5 @@
 import { Container, Typography, Card, CardContent, Button, Box, useTheme, Avatar } from '@mui/material';
-import {logout as logoutService} from '../../services/uesrService';
+import {logout as logoutService} from '../../services/userService';
 import { useAuth } from '../../context/authContext';
 import { profileStyles } from '../styles/ProfileStyles';
 import EditIcon from '@mui/icons-material/Edit';
