@@ -59,10 +59,9 @@ export const login = async (identifier: string, password: string): Promise<Login
 };
 
 export const logout = async (): Promise<void> => {
-  await authApi.post('/api/logout')
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-}
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
 
 export const getUserProfile = async (id: number): Promise<ProfileResponse> => {
   const response = await authApi.get<ProfileResponse>(`/api/users/${id}`)
