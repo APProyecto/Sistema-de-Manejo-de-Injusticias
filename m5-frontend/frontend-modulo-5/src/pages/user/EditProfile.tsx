@@ -42,14 +42,25 @@ export default function EditProfile() {
   useEffect(() => {
     if (!user) return;
 
-    setUsername(user.appUserName);
-    setProfilePicture(user.picture || "");
-    setPreviewPicture(user.picture || DefaultAvatar);
-    setFirstName(user.firstName);
-    setLastName(user.lastName);
-    setEmail(user.email);
-    setGender(user.gender ? Number(user.gender) : 0);
-    setCountry(user.country ? Number(user.country) : 0);
+    const currentUser = user as any;
+
+    const userId = currentUser.appUserId ?? currentUser.userId;
+    const usernameValue = currentUser.appUserName ?? currentUser.username ?? "";
+
+    const pictureUrl = currentUser.picture
+      ? currentUser.picture
+      : userId
+        ? getUserProfilePictureUrl(userId)
+        : "";
+
+    setUsername(usernameValue);
+    setProfilePicture(pictureUrl);
+    setPreviewPicture(pictureUrl || DefaultAvatar);
+    setFirstName(currentUser.firstName ?? "");
+    setLastName(currentUser.lastName ?? "");
+    setEmail(currentUser.email ?? "");
+    setGender(currentUser.gender ? Number(currentUser.gender) : 1);
+    setCountry(currentUser.country ? Number(currentUser.country) : 1);
   }, [user]);
 
   const initials = useMemo(() => {
@@ -77,7 +88,8 @@ export default function EditProfile() {
   const handleSave = async () => {
     if (!user) return;
 
-    const userId = user.appUserId;
+    const currentUser = user as any;
+    const userId = currentUser.appUserId ?? currentUser.userId;
 
     const response = await postUserProfileModification(
       userId,
@@ -97,6 +109,7 @@ export default function EditProfile() {
 
     const updatedUser: User = {
       ...user,
+      appUserId: userId,
       appUserName: username,
       firstName,
       lastName,
@@ -105,8 +118,6 @@ export default function EditProfile() {
       country: String(country),
       picture: finalPicture,
     };
-
-    const token = localStorage.getItem("token") || "dev-token";
 
     await login(updatedUser);
 
