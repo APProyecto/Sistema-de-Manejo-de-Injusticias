@@ -7,13 +7,13 @@ export interface User {
   firstName: string
   lastName: string
   email: string
-  country: string
-  picture?: string
-  gender?: string
+  country: string | number;
+  picture?: string | null;
+  gender?: string | number | null;
   accountStatus: number
-  isSuperAdmin: boolean
-  isAdmin: boolean
-  isNormal: boolean
+  isSuperAdmin?: boolean | null;
+  isAdmin?: boolean | null;
+  isNormal?: boolean | null;
 }
 
 export interface SimpleUser {

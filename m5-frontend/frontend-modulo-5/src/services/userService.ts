@@ -14,6 +14,14 @@ interface ProfileResponse {
   data: User
 }
 
+interface UpdateUserProfileData {
+  firstName?: string;
+  lastName?: string;
+  userName?: string;
+  genderId?: number;
+  countryId?: number;
+}
+
 interface UploadPictureResponse {
   message: string;
   appUserId: number;
@@ -67,8 +75,8 @@ export const getUserProfilePicture = async (id: number): Promise<ProfileResponse
   return response.data
 }
 
-export const postUserProfileModification = async (id: number, data: User, file?: File | null) : Promise <UpdateProfileWithPictureResponse> => {
-  const profileResponse = await authApi.put<ProfileResponse>(`/api/users/updateProfile/${id}/profile`, data);
+export const postUserProfileModification = async (id: number, data: UpdateUserProfileData, file?: File | null) : Promise <UpdateProfileWithPictureResponse> => {
+  const profileResponse = await authApi.post<ProfileResponse>(`/api/users/updateProfile/${id}/profile`, data);
 
   let pictureResponse: UploadPictureResponse | null = null;
 
@@ -90,3 +98,12 @@ export const uploadUserProfilePicture = async (id: number, file: File) : Promise
 
   return response.data;
 }
+
+export const getUserProfilePictureUrl = (
+  id: number,
+  version?: string
+): string => {
+  const query = version ? `?v=${encodeURIComponent(version)}` : "";
+
+  return `${authApi.defaults.baseURL}/api/files/appUser/${id}/picture${query}`;
+};
