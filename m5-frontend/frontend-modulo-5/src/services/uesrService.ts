@@ -14,6 +14,27 @@ interface ProfileResponse {
   data: User
 }
 
+interface UploadPictureResponse {
+  message: string;
+  appUserId: number;
+  appUserName: string;
+  mongoDocumentId: string;
+  mongoFileId: string;
+  fileMetadataId: string;
+  picture: {
+    fileName: string;
+    fileSize: number;
+    contentType: string;
+    mongoFileId: string;
+    gridFsId: string;
+  };
+}
+
+interface UpdateProfileWithPictureResponse {
+  profile: ProfileResponse;
+  picture: UploadPictureResponse | null;
+}
+
 export const login = async (identifier: string, password: string): Promise<LoginResponse> => {
   const isEmail = identifier.includes('@');
   const response = await authApi.post<LoginResponse>('/api/users/login', { 
@@ -44,4 +65,28 @@ export const getUserProfile = async (id: number): Promise<ProfileResponse> => {
 export const getUserProfilePicture = async (id: number): Promise<ProfileResponse> => {
   const response = await authApi.get<ProfileResponse>(`/api/files/appUser/${id}/picture`)
   return response.data
+}
+
+export const postUserProfileModification = async (id: number, data: User, file?: File | null) : Promise <UpdateProfileWithPictureResponse> => {
+  const profileResponse = await authApi.put<ProfileResponse>(`/api/users/updateProfile/${id}/profile`, data);
+
+  let pictureResponse: UploadPictureResponse | null = null;
+
+  if(file) {
+    pictureResponse = await uploadUserProfilePicture(id, file);
+  }
+
+  return {
+      profile : profileResponse.data,
+      picture : pictureResponse,
+  };
+}
+
+export const uploadUserProfilePicture = async (id: number, file: File) : Promise<UploadPictureResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await authApi.put<UploadPictureResponse>(`/api/files/appUser/${id}/picture`, formData);
+
+  return response.data;
 }
