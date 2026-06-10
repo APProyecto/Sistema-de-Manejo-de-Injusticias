@@ -1,7 +1,10 @@
 import { prisma } from "../../config/prisma";
 import {
   createOrUpdateBoycottDocument,
+  getAppUserDocumentByUserId,
   getBoycottDocumentByMysqlId,
+  getEntityDocumentByEntityId,
+  getInjusticeTypeDocumentById,
   updateBoycottDocument,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 import type { BoycottDocument } from "../../../../m0-base-datos/src/types/mongoDocuments";
@@ -176,23 +179,149 @@ export async function crearBoycott(input: CrearBoycottInput) {
                evidencia que viven en Mongo.
   Salida: objeto con el detalle o null si no existe.
 */
-export async function obtenerBoycottPorId(id: number) {
-  const boycott = await prisma.boycott.findUnique({
-    where: { BoycottID: id },
-    select: boycottSelect,
+export async function obtenerBoycottPorId(id: number, userId: number | null = null) {
+  const boycott = await prisma.boycott.findFirst({
+    where: { BoycottID: id, DeletedByUser: false },
+    select: {
+      BoycottID: true,
+      Title: true,
+      CaseNumber: true,
+      PublicationDate: true,
+      LastUpdateDate: true,
+      VotesInFavor: true,
+      VotesAgainst: true,
+      NumberComments: true,
+      CreatorID: true,
+      AppUser_Boycott_CreatorIDToAppUser: {
+        select: { UserID: true, UserName: true },
+      },
+      Entity: {
+        select: {
+          EntityID: true,
+          EntityName: true,
+          Description: true,
+          CategoryEntity: { select: { CategoryName: true } },
+          Boycott: {
+            where: { DeletedByUser: false },
+            select: { InjusticeType: { select: { InjusticeName: true } } },
+            distinct: ["InjusticeTypeID"],
+          },
+        },
+      },
+      InjusticeType: { select: { InjusticeTypeID: true, InjusticeName: true } },
+      Country: { select: { CountryName: true } },
+      BoycottState: { select: { StateName: true } },
+      CommentBoycott: {
+        where: { DeletedByUser: false },
+        select: {
+          CommentBoycottID: true,
+          Description: true,
+          CommentDate: true,
+          VotesInFavor: true,
+          VotesAgainst: true,
+          CreatorID: true,
+          AppUser_CommentBoycott_CreatorIDToAppUser: {
+            select: { UserID: true, UserName: true },
+          },
+          ...(userId !== null && {
+            UserVotesComment: {
+              where: { UserID: userId },
+              select: { IsInFavor: true },
+            },
+          }),
+        },
+        orderBy: { CommentDate: "desc" as const },
+      },
+      ...(userId !== null && {
+        UserFavoriteBoycott: {
+          where: { UserID: userId },
+          select: { UserID: true },
+        },
+        UserVotesBoycott: {
+          where: { UserID: userId },
+          select: { IsInFavor: true },
+        },
+      }),
+    },
   });
 
-  if (!boycott) {
-    return null;
+  if (!boycott) return null;
+
+  const commentCreatorIds = [...new Set(boycott.CommentBoycott.map((c) => c.CreatorID))];
+
+  const [boycottDoc, creatorDoc, entityDoc, injusticeDoc, ...commentDocs] =
+    await Promise.all([
+      getBoycottDocumentByMysqlId(id),
+      getAppUserDocumentByUserId(boycott.CreatorID),
+      getEntityDocumentByEntityId(boycott.Entity.EntityID),
+      getInjusticeTypeDocumentById(boycott.InjusticeType.InjusticeTypeID),
+      ...commentCreatorIds.map((cid) => getAppUserDocumentByUserId(cid)),
+    ]);
+
+  const commentCreatorDocMap = new Map(
+    commentCreatorIds.map((cid, i) => [cid, commentDocs[i]])
+  );
+
+  function resolveFileId(f?: { mongoFileId?: unknown; gridFsId?: unknown }): string {
+    return String(f?.mongoFileId ?? f?.gridFsId ?? "");
   }
 
-  const documento = await getBoycottDocumentByMysqlId(id);
+  function deriveEvidenceType(contentType?: string): "pdf" | "image" | "video" | "file" {
+    if (!contentType) return "file";
+    if (contentType.startsWith("image/")) return "image";
+    if (contentType.startsWith("video/")) return "video";
+    if (contentType === "application/pdf") return "pdf";
+    return "file";
+  }
 
   return {
-    ...boycott,
-    descripcion: documento?.description ?? null,
-    creadorUsername: documento?.creatorUsername ?? null,
-    evidencia: mapearEvidencia(documento),
+    id: boycott.BoycottID,
+    user: {
+      id: boycott.CreatorID,
+      username: boycott.AppUser_Boycott_CreatorIDToAppUser.UserName,
+      profilePicture: resolveFileId(creatorDoc?.picture) || undefined,
+    },
+    indicted: {
+      id: boycott.Entity.EntityID,
+      name: boycott.Entity.EntityName,
+      picture: resolveFileId(entityDoc?.picture),
+      description: boycott.Entity.Description ?? "",
+      category: boycott.Entity.CategoryEntity.CategoryName,
+      cases: boycott.Entity.Boycott.map((b) => b.InjusticeType.InjusticeName),
+    },
+    type: boycott.InjusticeType.InjusticeName,
+    country: boycott.Country.CountryName,
+    caseNumber: boycott.CaseNumber?.toString() ?? undefined,
+    case: boycott.InjusticeType.InjusticeName,
+    case_picture: resolveFileId(injusticeDoc?.picture),
+    title: boycott.Title,
+    description: boycottDoc?.description ?? "",
+    creation_date: boycott.PublicationDate.toISOString(),
+    last_updated: (boycott.LastUpdateDate ?? boycott.PublicationDate).toISOString(),
+    votes: String(boycott.VotesInFavor - boycott.VotesAgainst),
+    voted_by_user: userId !== null ? ((boycott as any).UserVotesBoycott?.[0]?.IsInFavor ?? null) : undefined,
+    is_favorite: userId !== null ? (boycott as any).UserFavoriteBoycott?.length > 0 : undefined,
+    comment_amount: String(boycott.NumberComments),
+    comments: boycott.CommentBoycott.map((c) => ({
+      id: c.CommentBoycottID,
+      user: {
+        id: c.CreatorID,
+        username: c.AppUser_CommentBoycott_CreatorIDToAppUser.UserName,
+        profilePicture: resolveFileId(commentCreatorDocMap.get(c.CreatorID)?.picture) || undefined,
+      },
+      content: c.Description,
+      creation_date: c.CommentDate.toISOString(),
+      votes: String(c.VotesInFavor - c.VotesAgainst),
+      voted_by_user: userId !== null ? ((c as any).UserVotesComment?.[0]?.IsInFavor ?? null) : null,
+    })),
+    state: boycott.BoycottState.StateName,
+    evidences: (boycottDoc?.evidence ?? []).map((f, i) => ({
+      id: i + 1,
+      name: f.fileName,
+      type: deriveEvidenceType(f.contentType),
+      extension: f.fileName.split(".").pop() ?? "",
+      weight: f.fileSize ? `${(f.fileSize / 1024).toFixed(1)} KB` : "unknown",
+    })),
   };
 }
 

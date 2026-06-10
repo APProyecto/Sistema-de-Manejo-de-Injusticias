@@ -4,9 +4,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ImageIcon from '@mui/icons-material/Image';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import ChatBubbleOutlineIcon from '@mui/icons-material/Chat';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import { useParams, useNavigate } from 'react-router-dom';
 import { detailedPostStyles } from '../styles/DetailedPostStyles';
 import Entity from '../../components/common/Entity';
@@ -21,28 +18,36 @@ import PublicComment from '../../components/public/PublicComment';
 import { useAuth } from '../../context/authContext';
 import UserComment from '../../components/user/UserComment';
 import PostCommentBox from '../../components/user/PostCommentBox';
+import { getBoycottById } from '../../services/boycottService';
+import { formatDate, formatNumber } from '../../utils/utils';
 
 type CommentFilter = 'New' | 'Old' | 'Most Relevant' | 'Less Relevant';
 const FILTERS: CommentFilter[] = ['New', 'Old', 'Most Relevant', 'Less Relevant'];
 
 export default function DetailedPost() {
-
+  
+  const navigate = useNavigate();
+  const theme = useTheme();
   const { isAuthenticated, user } = useAuth();
   const { id } = useParams();
 
+  
+  const [data, setData] = useState<DetailedPostData>();
   const [filterNumber, setFilterNumber] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [activeFilter, setActiveFilter] = useState<CommentFilter>('New');
+  
+  
+  useEffect(() => {
+    getBoycottById(Number(id), user?.id).then(setData);
+  }, [id, user?.id]);
 
   //actualiza los comentarios cada vez que cambia el id o el número de filtro
   useEffect(() => {
     if (id) getComments(Number(id), filterNumber).then(setComments);
   }, [id, filterNumber]);
 
-
-
-  const navigate = useNavigate();
-  const theme = useTheme();
-  const [activeFilter, setActiveFilter] = useState<CommentFilter>('New');
+  if (!data) return <Box>Loading...</Box>
 
   const onCommentsClick = () => {
 
@@ -66,62 +71,6 @@ export default function DetailedPost() {
           return theme.palette.background.default;
       }
   }
-  const data: DetailedPostData = {
-    id: 1,
-    indicted: {
-      id: 1,
-      name: 'Starbucks',
-      picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781215/images_11_objw2p.png',
-      cases: ['Animal cruelty in sourcing', 'Environmental pollution', 'Over labor'],
-      category: 'Food',
-      description: 'Starbucks is a premier roaster and retailer of specialty coffee with locations in dozens of countries.',
-    },
-    type: 'Political',
-    country: 'USA',
-    case: 'War in Gaza',
-    case_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
-    title: 'starbucks supports the genocide in gaza',
-    description: "I'm deeply troubled by reports suggesting Starbucks' backing of Israel, especially given the ongoing genocide in Gaza. As patrons, our choices reflect our values, and it's disheartening to see a company seemingly prioritize political alignment over human rights.",
-    creation_date: '10/04/2026',
-    is_favorite: false,
-    votes: '23k',
-    voted_by_user: true,
-    comment_amount: '25k',
-    evidences: [
-      { id: 1, extension: 'pdf', name: 'EvidenceFile_01.pdf', type: 'pdf', weight: '20kb' },
-      { id: 2, extension: 'png', name: 'PhotoProof_01.png', type: 'image', weight: '1200kb' },
-      { id: 3, extension: 'pdf', name: 'ExtraDoc.pdf', type: 'pdf', weight: '35kb' },
-    ],
-    comments: [
-      {
-        id: 1,
-        content: "I've heard that they donate to causes that don't align with my values. It's disappointing when a company's actions don't match their public image.",
-        creation_date: '12/08/2026',
-        user: { id: 1, profilePicture: 'http://localhost:3001/api/files/appUser/1/picture', username: 'EcoWarrior7' },
-        voted_by_user: true,
-        votes: '9',
-      },
-      {
-        id: 2,
-        content: "I've heard that they've been accused of union busting. It's a shame when companies don't support their employees' rights.",
-        creation_date: '13/08/2026',
-        user: { id: 2, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'Fairness4All' },
-        voted_by_user: false,
-        votes: '5',
-      },
-      {
-        id: 3,
-        content: "I read that they've had some issues with fair trade practices. It makes me question whether they're truly committed to ethical sourcing.",
-        creation_date: '14/08/2026',
-        user: { id: 3, profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg', username: 'SourceMatters' },
-        voted_by_user: false,
-        votes: '3',
-      },
-    ],
-    last_updated: '14/04/2026',
-    user: { id: 2, username: 'Justifier_12', profilePicture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg' },
-    state: 'Active',
-  };
 
   const visibleEvidences = data.evidences.slice(0, 2);
   const extraEvidences = data.evidences.length - 2;
@@ -141,8 +90,8 @@ export default function DetailedPost() {
           <Typography sx={detailedPostStyles.username(theme)}>{data.user.username}</Typography>
         </Box>
 
-        <Typography sx={detailedPostStyles.dateText(theme)}>First posted: {data.creation_date}</Typography>
-        <Typography sx={detailedPostStyles.dateText(theme)}>Last updated: {data.last_updated}</Typography>
+        <Typography sx={detailedPostStyles.dateText(theme)}>First posted: {formatDate(data.creation_date)}</Typography>
+        <Typography sx={detailedPostStyles.dateText(theme)}>Last updated: {formatDate(data.last_updated)}</Typography>
 
         {/* Title + description */}
         <Typography sx={detailedPostStyles.postTitle(theme)}>{data.title}</Typography>
@@ -150,6 +99,18 @@ export default function DetailedPost() {
 
         {/* Attachments */}
         <Typography sx={detailedPostStyles.subtitle(theme)}>Attachments</Typography>
+
+        {/* Número de expediente */}
+        {data.caseNumber ? 
+          <Box sx={detailedPostStyles.caseNumberContainer(theme)}>
+            <Typography sx={detailedPostStyles.caseNumberText(theme)}>
+              Case number: {data.caseNumber} 
+            </Typography>  
+          </Box>
+          :
+          <Box></Box>
+        }
+
         <Box sx={detailedPostStyles.attachmentsRow(theme)}>
           {visibleEvidences.map((ev) => (
             <Box key={ev.id} sx={detailedPostStyles.attachmentCard(theme)}>
@@ -176,7 +137,8 @@ export default function DetailedPost() {
         <Box sx={detailedPostStyles.actionBar(theme)}>
           {/* Votes */}
           <VotesBox
-              votes={data.votes}
+              votes={formatNumber(data.votes)}
+              initialVote={data.voted_by_user}
               >
           </VotesBox>
 
@@ -220,11 +182,11 @@ export default function DetailedPost() {
         {/* Comments */}
         <Box sx={detailedPostStyles.commentsList(theme)}>
           {isAuthenticated ? <PostCommentBox></PostCommentBox>:<Box></Box>}
-          {comments.map((comment) => (
-            isAuthenticated
-            ? <UserComment comment={comment} loggedInUserId={user?.id}></UserComment>
-            : <PublicComment comment={comment}></PublicComment>
-          ))}
+            {comments.map((comment) => (
+              isAuthenticated
+              ? <UserComment key={comment.id} comment={comment} loggedInUserId={user?.id} />
+              : <PublicComment key={comment.id} comment={comment} />
+            ))}
         </Box>
 
       </Container>

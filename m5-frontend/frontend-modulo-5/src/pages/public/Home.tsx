@@ -1,58 +1,25 @@
 import { Container, Typography, Card, CardContent, Button, Box, useTheme } from '@mui/material';
 import type { PostCardData } from '../../types';
 import PostCard from '../../components/common/PostCard';
-import OptionMenuFeed from '../../components/user/OptionMenuFeed';
 import { homeStyles } from '../styles/HomeStyles';
+import { useEffect, useState } from 'react';
+import { getBoycotts } from '../../services/boycottService';
 
 export default function Home() {
 
   const theme = useTheme();
+  const [posts, setPosts] = useState<PostCardData[]>([]);
 
-  let data: PostCardData[] = [
-    {
-      id: 1,
-      username: 'username_123',
-      user_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781104/cool-profile-picture-87h46gcobjl5e4xu_bifpln.jpg',
-      indicted: 'Starbucksssssssssssssssssssssssssssssssssss',
-      indicted_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781215/images_11_objw2p.png',
-      case: 'War in Gazaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      case_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
-      title: 'starbucks supports the genocide in gaza',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempor.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempo',
-      creation_date: '7h ago',
-      is_favorite: false,
-      votes: '23k',
-      voted_by_user: true,
-      coments: '25k',
-      evidences: '6',
-      state: 'Active',
-    },
-    {
-      id: 2,
-      username: 'anotherUsername',
-      user_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781104/cool-profile-picture-87h46gcobjl5e4xu_bifpln.jpg',
-      indicted: 'Alice',
-      indicted_picture: 'https://collection.cloudinary.com/dewscucnp/e12ce56707ce38351028cd0d62474fb0',
-      case: 'Exploitation',
-      case_picture: 'https://res.cloudinary.com/dewscucnp/image/upload/v1778781294/round-palestinian-flag-of-palestine-vector_fvtvtg.jpg',
-      title: 'Alice exploits their workersssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
-      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum. Fusce fermentum velit vitae nulla sodales scelerisque. Cras et dolor metus. Vestibulum vitae ex nec lacus cursus volutpat a at mi. Maecenas hendrerit sodales lectus vitae scelerisque. Vivamus vehicula risus in euismod eleifend. Nulla et sapien vel eros bibendum sagittis. Cras pretium neque in mauris fringilla, vitae facilisis mi ornare. Donec semper tempor arcu id dignissim. Etiam sed ligula eu nibh sollicitudin semper. Cras quis porttitor dui. Nullam consectetur velit sit amet arcu auctor, sit amet auctor mauris tempus. nisl volutpat ac. Suspendisse accumsan dictum arcu eget tempor.',
-      creation_date: '8 days ago',
-      is_favorite: true,
-      votes: '27M',
-      voted_by_user: false,
-      coments: '205k',
-      evidences: '40',
-      state: 'Closed',
-    }
-  ]
+  useEffect(() => {
+    getBoycotts().then(setPosts);
+  }, []);
 
   return (
     <Container sx={homeStyles.container(theme)}>
-      {data.map((data) => (
+      {posts.map((post) => (
         <PostCard 
-          key={data.id}
-          data={data}
+          key={post.id}
+          data={post}
           inFeed={true}
           >
         </PostCard>

@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../../config/prisma";
+import { getAppUserDocumentByUserId, getBoycottDocumentByMysqlId, getEntityDocumentByEntityId } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+import { obtenerBoycottPorId } from "./boycott.service";
  
 /*
   Controlador: boycott.controller.ts
@@ -16,7 +18,96 @@ function obtenerPaginacion(query: Request["query"]) {
   const tamano = Math.min(100, Math.max(1, parseInt(query.pageSize as string) || 10));
   return { pagina, tamano, saltar: (pagina - 1) * tamano };
 }
- 
+
+//select reutilizable
+function buildSelect(userId: number | null) {
+  return {
+    BoycottID: true,
+    Title: true,
+    CaseNumber: true,
+    PublicationDate: true,
+    VotesInFavor: true,
+    VotesAgainst: true,
+    NumberComments: true,
+    MongoDocumentId: true,
+    CreatorID: true,
+    AppUser_Boycott_CreatorIDToAppUser: {
+      select: { UserName: true },
+    },
+    Entity: {
+      select: {
+        EntityID: true,
+        EntityName: true,
+        MongoDocumentID: true,
+        CategoryEntity: { select: { CategoryName: true } },
+        IndustryType: { select: { IndustryName: true } },
+      },
+    },
+    InjusticeType: { select: { InjusticeName: true } },
+    Country: {
+      select: { CountryName: true, Continent: { select: { ContinentName: true } } },
+    },
+    BoycottState: { select: { StateName: true } },
+    ...(userId !== null && {
+      UserFavoriteBoycott: {
+        where: { UserID: userId },
+        select: { UserID: true },
+      },
+      UserVotesBoycott: {
+        where: { UserID: userId },
+        select: { IsInFavor: true },
+      },
+    }),
+  } as const;
+}
+
+
+//mapper
+function resolveMongoFileId(
+  fileMetadata: { mongoFileId?: unknown; gridFsId?: unknown } | undefined
+): string {
+  if (!fileMetadata) return "";
+  return String(fileMetadata.mongoFileId ?? fileMetadata.gridFsId ?? "");
+}
+
+async function mapBoycottToFrontend(
+  b: any,
+  userId: number | null
+) {
+  const [boycottDoc, userDoc, entityDoc] = await Promise.all([
+    getBoycottDocumentByMysqlId(b.BoycottID),
+    getAppUserDocumentByUserId(b.CreatorID),
+    b.Entity ? getEntityDocumentByEntityId(b.Entity.EntityID) : null,
+  ]);
+
+  // case_picture: first evidence file on the boycott doc, if any
+  const casePicture = resolveMongoFileId(boycottDoc?.evidence?.[0]);
+
+  return {
+    id: b.BoycottID,
+    username: b.AppUser_Boycott_CreatorIDToAppUser?.UserName ?? "",
+    user_picture: resolveMongoFileId(userDoc?.picture),
+    indicted: b.Entity?.EntityName ?? "",
+    indicted_picture: resolveMongoFileId(entityDoc?.picture),
+    case: b.InjusticeType?.InjusticeName ?? "",
+    case_picture: casePicture,
+    title: b.Title,
+    description: boycottDoc?.description ?? "",
+    creation_date: b.PublicationDate.toISOString(),
+    votes: String(b.VotesInFavor - b.VotesAgainst),
+    voted_by_user: userId !== null
+      ? (b.UserVotesBoycott?.[0]?.IsInFavor ?? null)
+      : undefined,
+    coments: String(b.NumberComments),
+    evidences: String(boycottDoc?.evidence?.length ?? 0),
+    state: b.BoycottState?.StateName ?? "",
+    caseNumber: b.CaseNumber ?? undefined,
+    is_favorite: userId !== null
+      ? b.UserFavoriteBoycott?.length > 0
+      : undefined,
+  };
+}
+
 // ─── Listar todos los boycotts activos (paginado) ────────────────────────────
  
 /**
@@ -29,68 +120,33 @@ function obtenerPaginacion(query: Request["query"]) {
 export async function listarBoycotts(req: Request, res: Response): Promise<void> {
   try {
     const { pagina, tamano, saltar } = obtenerPaginacion(req.query);
-    const ordenarPor = (req.query.orderBy as string) ?? "createdAt";
- 
-    // Construir el criterio de ordenamiento
-    let ordenClause: object;
-    if (ordenarPor === "votes") {
-      ordenClause = { VotesInFavor: "desc" };
-    } else {
-      ordenClause = { PublicationDate: "desc" };
-    }
- 
-    // Consultar boycotts activos y el total al mismo tiempo
+    const orderBy = (req.query.orderBy as string) ?? "createdAt";
+    const userId: number | null = (req as any).user?.id ?? null;
+
+    const orderClause =
+      orderBy === "votes"
+        ? { VotesInFavor: "desc" as const }
+        : { PublicationDate: "desc" as const };
+
+    const where = { BoycottState: { StateName: "Active" }, DeletedByUser: false };
+
     const [boycotts, total] = await Promise.all([
       prisma.boycott.findMany({
-        where: {
-          BoycottState: { StateName: "Active" },
-          DeletedByUser: false,
-        },
-        select: {
-          BoycottID: true,
-          Title: true,
-          PublicationDate: true,
-          VotesInFavor: true,
-          VotesAgainst: true,
-          NumberComments: true,
-          NumberFavorites: true,
-          MongoDocumentId: true,
-          Entity: {
-            select: {
-              EntityID: true,
-              EntityName: true,
-              MongoDocumentID: true,
-              CategoryEntity: { select: { CategoryName: true } },
-              IndustryType: { select: { IndustryName: true } },
-            },
-          },
-          InjusticeType: { select: { InjusticeName: true } },
-          Country: { select: { CountryName: true, Continent: { select: { ContinentName: true } } } },
-          BoycottState: { select: { StateName: true } },
-        },
-        orderBy: ordenClause,
+        where,
+        select: buildSelect(userId),
+        orderBy: orderClause,
         skip: saltar,
         take: tamano,
       }),
-      prisma.boycott.count({
-        where: {
-          BoycottState: { StateName: "Active" },
-          DeletedByUser: false,
-        },
-      }),
+      prisma.boycott.count({ where }),
     ]);
- 
-    res.json({
-      ok: true,
-      total,
-      pagina,
-      tamano,
-      totalPaginas: Math.ceil(total / tamano),
-      data: boycotts,
-    });
+
+    const data = await Promise.all(boycotts.map((b) => mapBoycottToFrontend(b, userId)));
+
+    res.json({ ok: true, total, pagina, tamano, totalPaginas: Math.ceil(total / tamano), data });
   } catch (error) {
-    console.error("[listarBoycotts]", error);
-    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+    console.error("[listBoycotts]", error);
+    res.status(500).json({ ok: false, mensaje: "Internal server error" });
   }
 }
  
@@ -112,19 +168,12 @@ export async function listarBoycotts(req: Request, res: Response): Promise<void>
 export async function buscarBoycotts(req: Request, res: Response): Promise<void> {
   try {
     const { pagina, tamano, saltar } = obtenerPaginacion(req.query);
+    const userId: number | null = (req as any).user?.id ?? null;
     const {
-      q,
-      categoryId,
-      injusticeTypeId,
-      countryId,
-      continentId,
-      industryTypeId,
-      sectorId,
-      orderBy,
+      q, categoryId, injusticeTypeId, countryId,
+      continentId, industryTypeId, sectorId, orderBy,
     } = req.query as Record<string, string | undefined>;
- 
-    // Construir el filtro dinámico según los parámetros recibidos
-    // Construir filtro de Entity acumulando todos sus campos en un solo objeto
+
     const entityFilter: Record<string, unknown> = {};
     if (categoryId)     entityFilter.CategoryEntityID = parseInt(categoryId);
     if (industryTypeId) entityFilter.IndustryTypeID   = parseInt(industryTypeId);
@@ -151,22 +200,17 @@ export async function buscarBoycotts(req: Request, res: Response): Promise<void>
     } else if (tieneEntityFilter) {
       where.Entity = entityFilter;
     }
- 
+
     const ordenClause =
-      orderBy === "votes" ? { VotesInFavor: "desc" } : { PublicationDate: "desc" };
- 
+      orderBy === "votes"
+        ? { VotesInFavor: "desc" as const }
+        : { PublicationDate: "desc" as const };
+
     const [boycotts, total] = await Promise.all([
       prisma.boycott.findMany({
         where,
         select: {
-          BoycottID: true,
-          Title: true,
-          PublicationDate: true,
-          VotesInFavor: true,
-          VotesAgainst: true,
-          NumberComments: true,
-          NumberFavorites: true,
-          MongoDocumentId: true,
+          ...buildSelect(userId),
           Entity: {
             select: {
               EntityID: true,
@@ -174,12 +218,9 @@ export async function buscarBoycotts(req: Request, res: Response): Promise<void>
               MongoDocumentID: true,
               CategoryEntity: { select: { CategoryName: true } },
               IndustryType: { select: { IndustryName: true } },
-              Sector: { select: { SectorName: true } },
+              Sector: { select: { SectorName: true } }, // extra field only in search
             },
           },
-          InjusticeType: { select: { InjusticeName: true } },
-          Country: { select: { CountryName: true, Continent: { select: { ContinentName: true } } } },
-          BoycottState: { select: { StateName: true } },
         },
         orderBy: ordenClause,
         skip: saltar,
@@ -187,15 +228,10 @@ export async function buscarBoycotts(req: Request, res: Response): Promise<void>
       }),
       prisma.boycott.count({ where }),
     ]);
- 
-    res.json({
-      ok: true,
-      total,
-      pagina,
-      tamano,
-      totalPaginas: Math.ceil(total / tamano),
-      data: boycotts,
-    });
+
+    const data = await Promise.all(boycotts.map((b) => mapBoycottToFrontend(b, userId)));
+
+    res.json({ ok: true, total, pagina, tamano, totalPaginas: Math.ceil(total / tamano), data });
   } catch (error) {
     console.error("[buscarBoycotts]", error);
     res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
@@ -230,5 +266,29 @@ export async function obtenerFiltros(_req: Request, res: Response): Promise<void
   } catch (error) {
     console.error("[obtenerFiltros]", error);
     res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+  }
+}
+
+export async function getBoycottByIdController(req: Request, res: Response): Promise<void> {
+  try {
+    const id = parseInt(req.params.id as string);
+    const userId: number | null = (req as any).user?.id ?? null;
+
+    if (isNaN(id)) {
+      res.status(400).json({ ok: false, mensaje: "Invalid ID" });
+      return;
+    }
+
+    const data = await obtenerBoycottPorId(id, userId);
+
+    if (!data) {
+      res.status(404).json({ ok: false, mensaje: "Boycott not found" });
+      return;
+    }
+
+    res.json({ ok: true, data });
+  } catch (error) {
+    console.error("[getBoycottByIdController]", error);
+    res.status(500).json({ ok: false, mensaje: "Internal server error" });
   }
 }
