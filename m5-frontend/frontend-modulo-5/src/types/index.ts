@@ -36,6 +36,7 @@ export interface PostCardData {
   coments: string;
   evidences: string;
   state: string;
+  caseNumber?: string;
 }
 
 export interface Indicted {
@@ -61,6 +62,7 @@ export interface DetailedPostData {
   indicted: Indicted;
   type: string;
   country: string;
+  caseNumber?: string; // número de expediente en denuncia
   case: string;
   case_picture: string;
   title: string;

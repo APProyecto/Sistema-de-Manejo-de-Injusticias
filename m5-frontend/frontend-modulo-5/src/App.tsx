@@ -18,11 +18,11 @@ const theme = darkTheme;
 function App() {
 
   return (
-    <ThemeProvider theme={theme}>
-      <AuthProvider>
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
         <AppRoutes/>
-      </AuthProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

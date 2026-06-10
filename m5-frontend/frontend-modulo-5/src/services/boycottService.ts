@@ -1,5 +1,5 @@
 // src/services/boycottService.ts
-import type { ApiResponse, Boycott, CreateBoycottData } from '../types';
+import type { ApiResponse, PostCardData, CreateBoycottData, DetailedPostData } from '../types';
 import { authApi, boycottApi } from './api';
 
 // Obtener todos los boycotts (con filtros)
@@ -8,28 +8,38 @@ export const getBoycotts = async (filters?: {
   pais?: string;
   tipo_injusticia?: string;
   orden?: string;
-}): Promise<Boycott[]> => {
-  const response = await boycottApi.get<ApiResponse<Boycott[]>>('/api/boycotts', {
-    params: filters,
+}): Promise<PostCardData[]> => {
+  const response = await boycottApi.get<ApiResponse<PostCardData[]>>('/api/boycotts', {
+    params: {
+      ...filters,
+      page: 1,
+      pageSize: 10,
+      orderBy: 'votes',
+    },
   });
+  
   return response.data.data;
 };
 
+
 // Obtener un boycott por ID
-export const getBoycottById = async (id: number): Promise<Boycott> => {
-  const response = await boycottApi.get<ApiResponse<Boycott>>(`/api/boycotts/${id}`);
+export const getBoycottById = async (id: number, userId?: number): Promise<DetailedPostData> => {
+  const response = await boycottApi.get<ApiResponse<DetailedPostData>>(`/api/boycotts/${id}`, {
+    params: userId !== undefined ? { userId } : undefined,
+  });
+  console.log(response.data);
   return response.data.data;
 };
 
 // Crear un nuevo boycott
-export const createBoycott = async (data: CreateBoycottData): Promise<Boycott> => {
-  const response = await boycottApi.post<ApiResponse<Boycott>>('/api/boycotts', data);
+export const createBoycott = async (data: CreateBoycottData): Promise<PostCardData> => {
+  const response = await boycottApi.post<ApiResponse<PostCardData>>('/api/boycotts', data);
   return response.data.data;
 };
 
 // Actualizar un boycott
-export const updateBoycott = async (id: number, data: Partial<CreateBoycottData>): Promise<Boycott> => {
-  const response = await boycottApi.put<ApiResponse<Boycott>>(`/api/boycotts/${id}`, data);
+export const updateBoycott = async (id: number, data: Partial<CreateBoycottData>): Promise<PostCardData> => {
+  const response = await boycottApi.put<ApiResponse<PostCardData>>(`/api/boycotts/${id}`, data);
   return response.data.data;
 };
 
@@ -49,8 +59,8 @@ export const toggleFavorite = async (id: number): Promise<void> => {
 };
 
 // Obtener boycotts favoritos
-export const getFavorites = async (): Promise<Boycott[]> => {
-  const response = await boycottApi.get<ApiResponse<Boycott[]>>('/api/boycotts/favoritos');
+export const getFavorites = async (): Promise<PostCardData[]> => {
+  const response = await boycottApi.get<ApiResponse<PostCardData[]>>('/api/boycotts/favoritos');
   return response.data.data;
 };
 

@@ -15,14 +15,14 @@ import OptionMenu from "../user/OptionMenuFeed";
 import OptionMenuFeed from "../user/OptionMenuFeed";
 import OptionMenuMyPosts from "../user/OptionMenuMyPosts";
 import { useNavigate } from "react-router-dom";
+import { formatDate, formatNumber } from "../../utils/utils";
 
 interface PostCardProps {
     data: PostCardData,
     inFeed: boolean;
-    voteSelection?: 'positive' | 'negative' | null;
 }
 
-export default function PostCard({ data, inFeed, voteSelection = null }: PostCardProps){
+export default function PostCard({ data, inFeed}: PostCardProps){
     const theme = useTheme();
     const navigate = useNavigate();
 
@@ -82,7 +82,7 @@ export default function PostCard({ data, inFeed, voteSelection = null }: PostCar
                 </Button>
 
                 {/* Creation Date */}
-                <Typography variant="caption" align="left" >{data.creation_date}</Typography>
+                <Typography variant="caption" align="left" >{formatDate(data.creation_date)}</Typography>
 
                 <Container sx={{display: 'flex', flex: 1}}></Container>
 
@@ -131,8 +131,8 @@ export default function PostCard({ data, inFeed, voteSelection = null }: PostCar
 
                     {/* Votes */}
                     <VotesBox
-                        votes={data.votes}
-                        initialVote={voteSelection}
+                        votes={formatNumber(data.votes)}
+                        initialVote={data.voted_by_user}
                         >
                     </VotesBox>
 
