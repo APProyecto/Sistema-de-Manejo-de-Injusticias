@@ -109,7 +109,7 @@ export default function Register() {
 
           <Card sx={(theme)=>({
             background:theme.palette.grey[100], 
-            height: '30%',
+            height: 'auto',
             borderRadius:5
             })}>
             <CardContent sx={{
@@ -164,9 +164,9 @@ export default function Register() {
                 })}/>
                 
                 <Box sx={{
-                  height:'100%',
                   width:'65%',
-                  alignContent:'center'
+                  display: 'flex',
+                  alignItems:'center'
                   }}>
                   <TextField placeholder="Username"
                   onChange={(e) => setUserName(e.target.value)}
@@ -441,8 +441,9 @@ export default function Register() {
                   mb:'5%',
                   borderRadius:5,
                   mr:1
-                  }}>
-                  {/*WIP cick cancel */}
+                  }}
+                  onClick={() => handleNavigation('/')}>
+                  
                   <Typography variant='h2'>Cancel</Typography>
                 </Button>
 

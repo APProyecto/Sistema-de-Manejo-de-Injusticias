@@ -1,26 +1,23 @@
 # Dependencies
 node_modules/
 
-# Environment variables
-.env
-.env.*
+# Environment variables 
+.env 
+.env.* 
 !.env.example
 
-# Prisma generated clients
-generated/
+# Prisma generated clients 
+generated/ 
 **/generated/
 
-# Build outputs
-dist/
+# Build outputs 
+dist/ 
 build/
 
-# Logs
-*.log
+# Logs 
+*.log 
 npm-debug.log*
 
-# OS / editor
-.DS_Store
+# OS / editor 
+.DS_Store 
 .vscode/
-
-# Optional: keep VS Code settings only if the team agrees
-# .vscode/

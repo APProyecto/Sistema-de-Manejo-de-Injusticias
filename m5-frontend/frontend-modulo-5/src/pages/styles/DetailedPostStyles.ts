@@ -1,344 +1,277 @@
 import type { SxProps, Theme } from '@mui/material';
 
 export const detailedPostStyles = {
-  container: (theme: Theme): SxProps<Theme> => ({
+  mainContainer: (theme: Theme): SxProps<Theme> => ({
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'row',
     boxSizing: 'border-box',
-    flex: 1,
+    height: 'calc(100vh - 64px)', // adjust to your header height
+    overflow: 'hidden',
     width: '100%',
-    minHeight: '100%',
-    backgroundColor: theme.palette.background.default,
+    maxWidth: '100% !important',
+    padding: '0 !important',
+    background: theme.palette.background.default,
+  }),
+
+
+  indictedContainer: (theme: Theme): SxProps<Theme> => ({
+    textAlign: 'left',
+    marginBottom: '20px',
+
+  }),
+
+  centerContainer: (theme: Theme): SxProps<Theme> => ({
+    flex: 1,
     overflowY: 'auto',
     overflowX: 'hidden',
-    paddingX: { xs: '16px', md: '60px' },
-    paddingY: '18px',
-    gap: '18px',
+    height: '100%',
+    padding: '35px !important',
+    maxWidth: 'none !important',
   }),
-  pageGrid: (): SxProps<Theme> => ({
-    display: 'grid',
-    gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.65fr) minmax(280px, 0.75fr)' },
-    gap: '24px',
-    width: '100%',
-    alignItems: 'start',
+
+  rightContainer: (theme: Theme): SxProps<Theme> => ({
+    width: '25vw',
+    minWidth: '220px',
+    maxWidth: '300px',
+    flexShrink: 0,
+    minheight: '100%',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    padding: '20px !important',
+    borderLeft: `1px solid ${theme.palette.divider}`,
+    backgroundColor: 'transparent',
   }),
-  mainColumn: (): SxProps<Theme> => ({
+
+  // ── Post header ──
+  postHeader: (theme: Theme): SxProps<Theme> => ({
     display: 'flex',
-    flexDirection: 'column',
-    gap: '18px',
-    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 1,
+    mb: '20px',
   }),
-  sideColumn: (): SxProps<Theme> => ({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '18px',
-    minWidth: 0,
-  }),
+
   backButton: (theme: Theme): SxProps<Theme> => ({
-    alignSelf: 'flex-start',
     color: theme.palette.text.primary,
-    padding: 0,
-    minWidth: 'fit-content',
-    gap: '10px',
-    '&:hover': {
-      backgroundColor: 'transparent',
-    },
   }),
-  backTitle: (theme: Theme): SxProps<Theme> => ({
-    color: theme.palette.text.primary,
-    fontWeight: 700,
-    fontSize: theme.typography.h2.fontSize,
+
+  avatar: (theme: Theme): SxProps<Theme> => ({
+    width: 32,
+    height: 32,
   }),
-  postCard: (): SxProps<Theme> => ({
-    backgroundColor: '#2b2a25',
-    borderRadius: '18px',
-    padding: { xs: '18px', md: '26px' },
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '18px',
-  }),
-  postHeader: (): SxProps<Theme> => ({
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '12px',
-    width: '100%',
-  }),
-  avatar: (): SxProps<Theme> => ({
-    width: '42px',
-    height: '42px',
-  }),
-  authorName: (theme: Theme): SxProps<Theme> => ({
-    color: theme.palette.text.primary,
-    fontWeight: 700,
+
+  username: (theme: Theme): SxProps<Theme> => ({
+    fontFamily: theme.typography.body1.fontFamily,
+    fontWeight: 600,
     fontSize: theme.typography.body2.fontSize,
+    color: theme.palette.text.primary,
   }),
-  authorMeta: (): SxProps<Theme> => ({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-  }),
-  metaText: (theme: Theme): SxProps<Theme> => ({
-    color: '#c7c7c7',
+
+  dateText: (theme: Theme): SxProps<Theme> => ({
+    fontFamily: theme.typography.body1.fontFamily,
     fontSize: theme.typography.caption.fontSize,
-    fontWeight: theme.typography.caption.fontWeight,
+    color: theme.typography.caption.color,
+    display: 'block',
+    justifyContent: 'left',
+    textAlign: 'left',
   }),
-  title: (theme: Theme): SxProps<Theme> => ({
-    color: theme.palette.text.primary,
-    fontWeight: 800,
-    fontSize: { xs: '26px', md: '30px' },
-    lineHeight: 1.1,
-  }),
-  bodyText: (theme: Theme): SxProps<Theme> => ({
-    color: theme.palette.text.primary,
-    fontSize: theme.typography.body1.fontSize,
-    lineHeight: 1.45,
-  }),
-  attachmentsTitle: (theme: Theme): SxProps<Theme> => ({
-    color: theme.palette.text.primary,
-    fontWeight: 800,
-    fontSize: theme.typography.h3.fontSize,
-    marginTop: '2px',
-  }),
-  attachmentList: (): SxProps<Theme> => ({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  }),
-  postMetricsRow: (): SxProps<Theme> => ({
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '16px',
-    flexWrap: 'wrap',
-  }),
-  postMetricsLeft: (): SxProps<Theme> => ({
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '14px',
-    flexWrap: 'wrap',
-  }),
-  postMetricPill: (theme: Theme): SxProps<Theme> => ({
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: theme.palette.grey[200],
-    borderRadius: '999px',
-    padding: '8px 14px',
-    color: theme.palette.text.primary,
-  }),
-  postMetricIcon: (theme: Theme): SxProps<Theme> => ({
-    fontSize: '18px',
-    color: theme.palette.text.primary,
-  }),
-  postStatePill: (theme: Theme): SxProps<Theme> => ({
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: theme.palette.grey[200],
-    borderRadius: '999px',
-    padding: '8px 14px',
-    color: theme.palette.text.primary,
-    marginLeft: 'auto',
-  }),
-  postStateDot: (theme: Theme): SxProps<Theme> => ({
-    width: '16px',
-    height: '16px',
-    borderRadius: '50%',
-    backgroundColor: theme.palette.primary.main,
-    display: 'inline-flex',
-  }),
-  attachmentRow: (theme: Theme): SxProps<Theme> => ({
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '14px',
-    padding: '12px 16px',
-    borderRadius: '10px',
-    backgroundColor: theme.palette.grey[200],
-    color: theme.palette.text.primary,
-  }),
-  attachmentLeft: (): SxProps<Theme> => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    minWidth: 0,
-    flex: 1,
-  }),
-  attachmentIcon: (): SxProps<Theme> => ({
-    width: '26px',
-    height: '26px',
-    objectFit: 'contain',
-    flexShrink: 0,
-  }),
-  attachmentName: (theme: Theme): SxProps<Theme> => ({
-    color: theme.palette.text.primary,
+
+  // ── Title + description ──
+  postTitle: (theme: Theme): SxProps<Theme> => ({
+    fontFamily: theme.typography.h2.fontFamily,
+    fontSize: theme.typography.h6.fontSize,
     fontWeight: 700,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+    color: theme.palette.text.primary,
+    textAlign: 'left',
+    mt: 2,
+    mb: 0.75,
   }),
-  attachmentMeta: (theme: Theme): SxProps<Theme> => ({
-    color: '#ececec',
+
+  descriptionLabel: (theme: Theme): SxProps<Theme> => ({
+    fontFamily: theme.typography.body1.fontFamily,
     fontSize: theme.typography.caption.fontSize,
-    flexShrink: 0,
+    color: theme.palette.text.secondary,
+    display: 'block',
+    mb: 0.5,
   }),
-  sidebarCard: (): SxProps<Theme> => ({
-    backgroundColor: '#2b2a25',
-    borderRadius: '18px',
-    padding: '18px',
+
+  subtitle: (theme: Theme): SxProps<Theme> => ({
+    textAlign: 'left',
+    fontFamily: theme.typography.h3.fontFamily,
+    fontSize: theme.typography.h3.fontSize,
+    fontWeight: theme.typography.h3.fontWeight,
+    color: theme.typography.h3.color,
+    marginTop: '20px',
+    marginBottom: '8px',
+  }),
+
+  text: (theme: Theme): SxProps<Theme> => ({
+    textAlign: 'left',
+    fontFamily: theme.typography.body1.fontFamily,
+    fontWeight: theme.typography.body1.fontWeight,
+    color: theme.typography.body1.color,
+    marginTop: '4px',
+    lineHeight: 1.6,
+  }),
+
+  // ── Attachments ──
+  attachmentsRow: (theme: Theme): SxProps<Theme> => ({
     display: 'flex',
-    flexDirection: 'column',
-    gap: '18px',
+    flexWrap: 'wrap',
+    gap: 1,
+    mt: 1,
+    mb: 2.5,
   }),
-  companyBadge: (): SxProps<Theme> => ({
-    display: 'inline-flex',
+
+  attachmentCard: (theme: Theme): SxProps<Theme> => ({
+    backgroundColor: theme.palette.grey[200],
+    display: 'flex',
     alignItems: 'center',
-    gap: '10px',
-    alignSelf: 'flex-start',
-    backgroundColor: '#7a7a72',
-    borderRadius: '10px',
-    padding: '8px 14px',
+    gap: 1,
+    borderRadius: 2,
+    px: 1.5,
+    py: 0.75,
+    minWidth: 140,
   }),
-  companyBadgeText: (theme: Theme): SxProps<Theme> => ({
+
+  attachmentIconPdf: (theme: Theme): SxProps<Theme> => ({
+    color: theme.typography.body1.color,
+  }),
+
+  attachmentIconImg: (theme: Theme): SxProps<Theme> => ({
+    color: theme.typography.body1.color,
+  }),
+
+  attachmentInfo: (theme: Theme): SxProps<Theme> => ({
+    flex: 1,
+    overflow: 'hidden',
+  }),
+
+  attachmentName: (theme: Theme): SxProps<Theme> => ({
+    fontFamily: theme.typography.body2.fontFamily,
+    fontSize: 14,
+    fontWeight: 700,
     color: theme.palette.text.primary,
-    fontWeight: 800,
-    fontSize: theme.typography.h3.fontSize,
+    display: 'block',
   }),
-  sidebarHeading: (theme: Theme): SxProps<Theme> => ({
+
+  attachmentWeight: (theme: Theme): SxProps<Theme> => ({
+    fontFamily: theme.typography.body1.fontFamily,
+    fontSize: theme.typography.caption.fontSize,
+    color: theme.typography.caption.color,
+    display: 'block',
+    textAlign: 'left',
+  }),
+
+  downloadButton: (theme: Theme): SxProps<Theme> => ({
+    color: theme.typography.body1.color,
+  }),
+
+  extraEvidences: (theme: Theme): SxProps<Theme> => ({
+    backgroundColor: theme.palette.grey[200],
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 2,
+    px: 1.5,
+    py: 0.75,
+    minWidth: 48,
+    cursor: 'pointer',
+  }),
+
+  extraEvidencesText: (theme: Theme): SxProps<Theme> => ({
+    fontFamily: theme.typography.body1.fontFamily,
+    fontSize: theme.typography.body2.fontSize,
+    fontWeight: 600,
     color: theme.palette.text.primary,
-    fontWeight: 800,
-    fontSize: theme.typography.h3.fontSize,
   }),
-  sidebarText: (theme: Theme): SxProps<Theme> => ({
+
+  // ── Action bar ──
+  actionBar: (theme: Theme): SxProps<Theme> => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1.5,
+    mb: 2.5,
+  }),
+
+  voteChip: (theme: Theme, active: boolean | null | undefined): SxProps<Theme> => ({
+    backgroundColor: active ? theme.palette.primary.main : 'transparent',
+    color: active ? theme.palette.primary.contrastText : theme.palette.text.primary,
+    borderColor: theme.palette.divider,
+    fontWeight: 600,
+  }),
+
+  commentChip: (theme: Theme): SxProps<Theme> => ({
+    backgroundColor: 'transparent',
     color: theme.palette.text.primary,
-    fontSize: theme.typography.body1.fontSize,
-    lineHeight: 1.4,
   }),
-  commentComposer: (): SxProps<Theme> => ({
-    backgroundColor: '#50504d',
-    borderRadius: '18px',
-    padding: '18px',
+
+  openChip: (theme: Theme): SxProps<Theme> => ({
+    backgroundColor: theme.palette.warning.main,
+    color: theme.palette.warning.contrastText,
+    fontWeight: 700,
+    borderRadius: 2,
+  }),
+
+  divider: (theme: Theme): SxProps<Theme> => ({
+    mb: 2,
+    borderColor: theme.palette.divider,
+  }),
+
+  // ── Filters ──
+  filtersRow: (theme: Theme): SxProps<Theme> => ({
+    display: 'flex',
+    gap: 1,
+    flexWrap: 'wrap',
+    mb: 2.5,
+  }),
+
+  filterChip: (theme: Theme, active: boolean): SxProps<Theme> => ({
+    borderRadius: 4,
+    padding: 2,
+    fontWeight: 700,
+    backgroundColor: active ? theme.palette.action.selected : theme.palette.grey[100],
+    color: active ? theme.palette.background.default : theme.palette.text.primary,
+    cursor: 'pointer',
+  }),
+
+  // ── Comments ──
+  commentsList: (theme: Theme): SxProps<Theme> => ({
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: 2,
+    pb: 4,
   }),
-  commentFilters: (): SxProps<Theme> => ({
+
+  commentCard: (theme: Theme): SxProps<Theme> => ({
+    backgroundColor: theme.palette.action.hover,
+    borderRadius: 3,
+    p: 2,
+  }),
+
+  commentHeader: (theme: Theme): SxProps<Theme> => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 1,
+    mb: 1,
+  }),
+
+  dotSeparator: (theme: Theme): SxProps<Theme> => ({
+    fontSize: 6,
+    color: theme.palette.text.disabled,
+  }),
+
+  // ── Right sidebar bullets ──
+  bulletItem: (theme: Theme): SxProps<Theme> => ({
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: '12px',
-    flexWrap: 'wrap',
+    textAlign: 'left',
+    padding: '0 !important',
+    alignItems: 'flex-start',
   }),
-  commentFilterButton: (theme: Theme, selected = false): SxProps<Theme> => ({
-    minWidth: 'fit-content',
-    height: '40px',
-    borderRadius: '22px',
-    paddingX: '18px',
-    textTransform: 'none',
-    backgroundColor: selected ? theme.palette.grey[100] : theme.palette.grey[200],
-    color: theme.palette.text.primary,
-    '&:hover': {
-      backgroundColor: selected ? theme.palette.grey[100] : theme.palette.grey[100],
-    },
-  }),
-  commentInputRow: (): SxProps<Theme> => ({
-    display: 'flex',
-    alignItems: 'stretch',
-    gap: '12px',
-  }),
-  commentField: (theme: Theme): SxProps<Theme> => ({
-    flex: 1,
-    '& .MuiOutlinedInput-root': {
-      backgroundColor: '#50504d',
-      borderRadius: '14px',
-      color: theme.palette.text.primary,
-      '& fieldset': {
-        borderColor: 'transparent',
-      },
-      '&:hover fieldset': {
-        borderColor: theme.palette.primary.main,
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: theme.palette.primary.main,
-      },
-    },
-    '& .MuiInputBase-input': {
-      color: theme.palette.text.primary,
-      padding: '18px 18px',
-    },
-  }),
-  sendButton: (theme: Theme): SxProps<Theme> => ({
-    width: '52px',
-    minWidth: '52px',
-    height: '52px',
-    borderRadius: '50%',
-    backgroundColor: theme.palette.secondary.main,
-    color: theme.palette.background.default,
-    '&:hover': {
-      backgroundColor: theme.palette.grey[100],
-    },
-  }),
-  sendButtonIcon: (theme: Theme): SxProps<Theme> => ({
-    fontSize: '28px',
-    color: theme.palette.background.default,
-  }),
-  commentsStack: (): SxProps<Theme> => ({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '18px',
-  }),
-  commentCard: (): SxProps<Theme> => ({
-    backgroundColor: '#5a5a56',
-    borderRadius: '18px',
-    padding: '18px 20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px',
-  }),
-  commentTopRow: (): SxProps<Theme> => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    width: '100%',
-  }),
-  commentBody: (theme: Theme): SxProps<Theme> => ({
-    color: theme.palette.text.primary,
-    fontSize: theme.typography.body1.fontSize,
-    lineHeight: 1.45,
-    paddingLeft: '4px',
-  }),
-  commentActions: (): SxProps<Theme> => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    flexWrap: 'wrap',
-  }),
-  commentActionPill: (theme: Theme): SxProps<Theme> => ({
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    backgroundColor: theme.palette.grey[100],
-    borderRadius: '999px',
-    padding: '6px 10px',
-    color: theme.palette.text.primary,
-  }),
-  commentActionIcon: (theme: Theme): SxProps<Theme> => ({
-    fontSize: '24px',
-    color: theme.palette.text.primary,
-  }),
-  commentActionButton: (theme: Theme, selected = false): SxProps<Theme> => ({
-    minWidth: 'fit-content',
-    height: '36px',
-    borderRadius: '999px',
-    paddingX: '12px',
-    backgroundColor: selected ? theme.palette.grey[100] : theme.palette.grey[200],
-    color: theme.palette.text.primary,
-    '&:hover': {
-      backgroundColor: theme.palette.grey[100],
-    },
+
+  bulletPoint: (theme: Theme): SxProps<Theme> => ({
+    marginRight: '5px',
+    color: theme.palette.text.secondary,
   }),
 };

@@ -14,7 +14,7 @@ export default function PublicLayout() {
     const onLoginSuccess=(userData: User) => {
         setUser(userData);
         setSignedIn(true);
-        if (userData.rol === 'admin' || userData.rol === 'master') {
+        if (userData.role === 'admin' || userData.role === 'master') {
         navigate('/admin/dashboard');
         } else {
         navigate('/');

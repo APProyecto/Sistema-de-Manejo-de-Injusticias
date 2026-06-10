@@ -23,11 +23,13 @@ const SORT_OPTIONS: Record<number, { field: string; order: SortOrder }> = {
 
 export async function getComments(req: Request, res: Response) {
     try {
-        const { BoycottID, SortBy } = req.query;
+        const { BoycottID, SortBy, LoggedUserID } = req.query;
 
         const sortCode = parseInt(SortBy as string) || 1;
         const sortOption = SORT_OPTIONS[sortCode] ?? SORT_OPTIONS[1];
         const isInteractionSort = sortOption.field === "interactions";
+
+        const loggedUserID = LoggedUserID ? parseInt(LoggedUserID as string) : null;
 
         const comments = await prisma.commentBoycott.findMany({
             where: {
@@ -35,12 +37,20 @@ export async function getComments(req: Request, res: Response) {
                 CommentStateID: 1,
             },
             select: {
+                CommentBoycottID: true,
+                BoycottID: true,
                 Description: true,
                 CommentDate: true,
                 CreatorID: true,
                 VotesInFavor: true,
                 VotesAgainst: true,
                 CommentState: true,
+                UserVotesComment: loggedUserID
+                    ? {
+                          where: { UserID: loggedUserID },
+                          select: { IsInFavor: true },
+                      }
+                    : false,
             },
             orderBy: !isInteractionSort
                 ? { [sortOption.field]: sortOption.order }
@@ -65,16 +75,13 @@ export async function getComments(req: Request, res: Response) {
                     where: { UserID: creatorId },
                     select: {
                         UserID: true,
-                        UserName: true
+                        UserName: true,
                     },
                 });
 
-                if (!appUser) return { creatorId, userName: null};
+                if (!appUser) return { creatorId, userName: null };
 
-                return {
-                    creatorId,
-                    userName: appUser.UserName,
-                };
+                return { creatorId, userName: appUser.UserName };
             })
         );
 
@@ -84,10 +91,20 @@ export async function getComments(req: Request, res: Response) {
 
         const enrichedComments = comments.map((comment) => {
             const profile = userProfileMap.get(comment.CreatorID);
+            const vote = comment.UserVotesComment?.[0];
+
             return {
-                ...comment,
-                interactions: comment.VotesInFavor + comment.VotesAgainst,
-                userName: profile?.userName ?? null,
+                id: comment.CommentBoycottID,
+                post_id: comment.BoycottID,
+                user: {
+                    id: comment.CreatorID,
+                    username: profile?.userName ?? "",
+                    profilePicture: `http://localhost:3001/api/files/appUser/${comment.CreatorID}/picture`,
+                },
+                content: comment.Description,
+                creation_date: comment.CommentDate.toISOString(),
+                votes: `${comment.VotesInFavor + comment.VotesAgainst}`,
+                voted_by_user: vote ? vote.IsInFavor : null,
             };
         });
 

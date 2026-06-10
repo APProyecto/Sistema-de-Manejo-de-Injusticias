@@ -97,6 +97,7 @@ export const profileStyles = {
     postsContainer: (theme: Theme): SxProps<Theme> => ({
         paddingBottom: '20px',
         display: 'flex',
+        alignItems: 'center',
         flexDirection: 'column',
         boxSizing: 'border-box',
         flex: 1,
