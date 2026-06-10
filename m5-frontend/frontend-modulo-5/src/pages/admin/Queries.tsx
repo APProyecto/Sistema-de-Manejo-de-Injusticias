@@ -55,6 +55,7 @@ export default function Quereis() {
     navigate(path);
   };
 
+
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default}}>
       <QueryNavegation/>

@@ -21,7 +21,7 @@ const companies = [
 
 export default function Dashboard() {
   const [selectedCompany, setSelectedCompany] = useState('None');
-
+  const [reportes, setresportes] = useState(23);
   const theme = useTheme();
 
   return (
@@ -59,7 +59,7 @@ export default function Dashboard() {
                   Reports
                 </Typography>
                 <Typography variant="h4" color="text.secondary" gutterBottom>
-                  23 {/* WIP usar numeros reales*/}
+                  {reportes}
                 </Typography>
               </Box>
             </Card>

@@ -25,4 +25,14 @@ export const StatisticsStyles = {
     pl:5,
     pt:2
   }),
+  TopLabel: (theme: Theme): SxProps<Theme> => ({
+    color:theme.palette.grey[200],
+    ml:0
+  }),
+  TopLabelNumber: (theme: Theme): SxProps<Theme> => ({
+    fontWeight:'bold',
+    color:theme.palette.secondary.main,
+    mb:2,
+    ml:0
+  }),
 }
