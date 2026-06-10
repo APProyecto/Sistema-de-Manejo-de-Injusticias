@@ -12,7 +12,8 @@ import {
   loginUser,
   registerUser,
   userHistory,
-  pruebaToken
+  pruebaToken,
+  updateAppUserProfile,
 } from "./users.controller";
 
 const router = Router();
@@ -27,6 +28,7 @@ router.post("/toUser", convertAdminToUser);
 router.post("/register", registerUser);
 router.get("/existingEmail", existingEmail);
 router.get("/getProfile/:appUserId/profile", getAppUserProfile);
+router.post("/updateProfile/:appUserId/profile", updateAppUserProfile);
 router.post("/login", loginUser);
 router.get("/history", userHistory);
 router.post("/google", googleLogin);
