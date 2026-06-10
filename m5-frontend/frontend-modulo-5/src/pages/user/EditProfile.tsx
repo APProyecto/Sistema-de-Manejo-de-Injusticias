@@ -23,7 +23,7 @@ import type { User } from "../../types";
 import {
   postUserProfileModification,
   getUserProfilePictureUrl,
-} from "../../services/userService";
+} from "../../services/uesrService";
 
 export default function EditProfile() {
   const theme = useTheme();
@@ -108,7 +108,7 @@ export default function EditProfile() {
 
     const token = localStorage.getItem("token") || "dev-token";
 
-    await login(token, updatedUser);
+    await login(updatedUser);
 
     navigate("/my-votes");
   };
