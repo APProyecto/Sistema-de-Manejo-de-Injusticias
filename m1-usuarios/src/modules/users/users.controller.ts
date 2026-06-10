@@ -848,6 +848,17 @@ export async function getAppUserProfile(
                 appUser.UserID
             );
 
+        const isSuperAdmin = await prisma.Admin.findUnique ({
+              where: {
+                AdminID : appUserId,
+              },
+              select : {
+                IsSuperAdmin : true,
+              },
+        });
+
+        const isAdmin = isSuperAdmin ? true : false;
+
         return res.status(200).json({
             appUserId: appUser.UserID,
             firstName: 
@@ -868,6 +879,12 @@ export async function getAppUserProfile(
             picture:
                 mongoDocument
                     ?.picture ?? null,
+            
+            isSuperAdmin : isSuperAdmin?.IsSuperAdmin || false,
+
+            isAdmin : isAdmin,
+
+            isNormal : !isAdmin,
         });
 
     } catch (error) {
@@ -1089,8 +1106,17 @@ export async function updateAppUserProfile(
       message:
         "appUser updated successfully",
 
-      appUser:
-        updatedAppUser,
+        appUser: {
+          userId: updatedAppUser.UserID,
+          firstName: safeDecryptText(updatedAppUser.FirstName),
+          lastName: safeDecryptText(updatedAppUser.LastName),
+          userName: updatedAppUser.UserName,
+          email: safeDecryptText(updatedAppUser.Email),
+          genderId: updatedAppUser.GenderID,
+          countryId: updatedAppUser.CountryID,
+          accountStateId: updatedAppUser.AccountStateID,
+        },
+      
     });
 
   } catch (error) {

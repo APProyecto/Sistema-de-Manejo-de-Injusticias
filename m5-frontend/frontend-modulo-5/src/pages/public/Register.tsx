@@ -25,8 +25,6 @@ export default function Register() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-
-
   const handleNavigation = (path: string) => {
     navigate(path);
   };

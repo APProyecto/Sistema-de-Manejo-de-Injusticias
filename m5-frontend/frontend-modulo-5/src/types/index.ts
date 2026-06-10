@@ -2,15 +2,19 @@
 export type UserRole = 'user' | 'admin' | 'master';
 
 export interface User {
-  id: number
-  username: string
-  name: string
+  appUserId: number
+  appUserName: string
+  firstName: string
   lastName: string
   email: string
-  role: UserRole
-  profilePicture?: string
-  gender?: string
-  region?: string
+  country: string | number;
+  picture?: string | null;
+  gender?: string | number | null;
+  accountStatus: number
+  isSuperAdmin?: boolean | null;
+  isAdmin?: boolean | null;
+  isNormal?: boolean | null;
+  role? : UserRole;
 }
 
 export interface SimpleUser {

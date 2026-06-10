@@ -348,6 +348,13 @@ export async function getUserAppPicture(
             req.params.appUserId
         );
 
+        if (!Number.isInteger(appUserId) || appUserId <= 0) {
+        return res.status(400).json({
+            error: "Invalid appUserId",
+        });
+        }
+
+
         const appUser =
             await prisma.appUser.findUnique({
                 where: {
