@@ -36,6 +36,7 @@ export default function DetailedPost() {
   const [filterNumber, setFilterNumber] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
   const [activeFilter, setActiveFilter] = useState<CommentFilter>('New');
+
   
   
   useEffect(() => {
@@ -77,7 +78,6 @@ export default function DetailedPost() {
 
   return (
     <Container sx={detailedPostStyles.mainContainer(theme)}>
-
       {/* ── Center ── */}
       <Container sx={detailedPostStyles.centerContainer(theme)}>
 

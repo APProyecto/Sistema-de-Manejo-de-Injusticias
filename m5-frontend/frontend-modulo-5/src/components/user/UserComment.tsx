@@ -5,6 +5,8 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import VotesBox from '../public/VotesBox';
 import CommentVotesBox from '../public/CommentVoteBox';
 import { Reply, Error } from '@mui/icons-material';
+import ReportWindow from './ReportWindow';
+import { useState } from 'react';
 
 interface UserCommentProps {
   comment: Comment;
@@ -13,15 +15,24 @@ interface UserCommentProps {
 
 export default function UserComment({comment: c, loggedInUserId: loggedInUserId}:UserCommentProps) {
     const theme = useTheme();
+    const [reportCommentOpen, setReportCommentOpen] = useState(false);
     return (
+        
         <Box key={c.id} sx={commentStyles.commentCard(theme)}>
+
+            <ReportWindow open = {reportCommentOpen} onClose={() => setReportCommentOpen(false)} commentId={c.id}/>
+
             <Box sx={commentStyles.commentHeader(theme)}>
                 <Avatar src={c.user.profilePicture} alt={c.user.username} sx={commentStyles.avatar(theme)} />
                 <Typography sx={commentStyles.username(theme)}>{c.user.username}</Typography>
                 <FiberManualRecordIcon sx={commentStyles.dotSeparator(theme)} />
                 <Typography sx={commentStyles.dateText(theme)}>{new Date(c.creation_date).toLocaleDateString('es-CR')}</Typography>
                 <Box sx={{display:'flex', flex: 1}}></Box>
-                <IconButton sx={commentStyles.replyButton(theme)}>
+
+                {/*Botón de reporte*/}
+                <IconButton sx={commentStyles.replyButton(theme)}
+                    onClick={()=> setReportCommentOpen(true)}
+                >
                     <Error sx={commentStyles.errorIcon(theme)}></Error>
                 </IconButton>
             </Box>
