@@ -91,6 +91,31 @@ export interface Comment {
   voted_by_user: boolean | null;
 }
 
+export interface CreateCommentReport {
+  UserDescription: string;
+  MotiveReportID: number;
+  ReportedBy: number;
+  commentId: number;
+  Subject: string;
+}
+
+export interface CommentReport {
+  ReportID?: number;
+  UserDescription: string;
+  ReportedAt: Date;
+  ReportState: {
+    StateName: string;
+  };
+  MotiveReport: {
+    MotiveName: string;
+  };
+  ReportComment: {
+    CommentBoycott: {
+      Description: string;
+    };
+  };
+}
+
 export interface CreateBoycottData {
   nombre_entidad: string;
   categoria: string;
