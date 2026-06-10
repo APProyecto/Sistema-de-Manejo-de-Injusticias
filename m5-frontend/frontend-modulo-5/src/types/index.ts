@@ -14,6 +14,7 @@ export interface User {
   isSuperAdmin?: boolean | null;
   isAdmin?: boolean | null;
   isNormal?: boolean | null;
+  role? : UserRole;
 }
 
 export interface SimpleUser {
