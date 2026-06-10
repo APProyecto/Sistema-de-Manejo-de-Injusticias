@@ -73,6 +73,7 @@ export async function createCommentReport(req: Request, res: Response) {
 				MotiveReportID: parseInt(MotiveReportID as string),
 				ReportedBy: parseInt(ReportedBy as string),
 				ReportStateID: 1,
+				CreatedBy: parseInt(ReportedBy as string),
 			},
 		});
 
@@ -94,11 +95,14 @@ export async function createCommentReport(req: Request, res: Response) {
 */
 export async function updateReportStatus(req: Request, res: Response) {
 	try {
-		const { reportId, status } = req.body;
+		const { reportId, status, userId } = req.body;
 	
 		const updatedReport = await prisma.report.update({
 			where: { ReportID: parseInt(reportId as string) },
-			data: { ReportStateID: status }
+			data: {
+				ReportStateID: status,
+				ModifiedBy: parseInt(userId as string),
+			}
 		});
 
 		res.json({ ok: true, report: updatedReport });
