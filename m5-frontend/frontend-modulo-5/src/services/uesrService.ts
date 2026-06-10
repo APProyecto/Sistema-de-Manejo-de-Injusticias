@@ -104,5 +104,5 @@ export const getUserProfilePictureUrl = (
 ): string => {
   const query = version ? `?v=${encodeURIComponent(version)}` : "";
 
-  return `${authApi.defaults.baseURL}/api/files/appUser/${id}/picture${query}`;
+  return `${authApi.defaults.baseURL}/api/files/appUser/${id}/picture`;
 };
