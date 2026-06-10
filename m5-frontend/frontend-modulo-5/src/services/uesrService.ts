@@ -16,9 +16,9 @@ interface ProfileResponse {
 
 export const login = async (identifier: string, password: string): Promise<LoginResponse> => {
   const isEmail = identifier.includes('@');
-  const response = await authApi.post<LoginResponse>('/api/login', { 
+  const response = await authApi.post<LoginResponse>('/api/users/login', { 
     ...(isEmail ? {email:identifier} : {nombreUsuario: identifier}), 
-    password 
+    password
   });
   
   if (response.data.success) {
@@ -26,7 +26,7 @@ export const login = async (identifier: string, password: string): Promise<Login
     localStorage.setItem('token', response.data.data.token);
     localStorage.setItem('user', JSON.stringify(response.data.data.user));
   }
-  
+  console.log(response);
   return response.data;
 };
 

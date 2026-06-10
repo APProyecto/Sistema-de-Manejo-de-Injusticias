@@ -115,6 +115,29 @@ export const detailedPostStyles = {
   }),
 
   // ── Attachments ──
+
+  caseNumberContainer: (theme: Theme): SxProps<Theme> => ({
+    display: 'flex',
+    boxSizing: 'border-box',
+    justifyContent: 'flex-start',
+    backgroundColor: theme.palette.grey[100],
+    flexWrap: 'wrap',
+    flexShrink: 0,
+    padding: '5px 10px',
+    borderRadius: '10px',
+    gap: 1,
+    mt: 1,
+    mb: 2.5,
+    width: 'fit-content', // Esto también funciona
+  }),
+
+  caseNumberText: (theme: Theme): SxProps<Theme> => ({
+    color: theme.typography.body1.color,
+    fontSize: theme.typography.body1.fontSize,
+    fontWeight: theme.typography.body1.fontWeight,
+    fontWidth: theme.typography.body1.fontWidth,
+  }),
+
   attachmentsRow: (theme: Theme): SxProps<Theme> => ({
     display: 'flex',
     flexWrap: 'wrap',
@@ -124,7 +147,7 @@ export const detailedPostStyles = {
   }),
 
   attachmentCard: (theme: Theme): SxProps<Theme> => ({
-    backgroundColor: theme.palette.grey[200],
+    backgroundColor: theme.palette.grey[100],
     display: 'flex',
     alignItems: 'center',
     gap: 1,
@@ -168,7 +191,7 @@ export const detailedPostStyles = {
   }),
 
   extraEvidences: (theme: Theme): SxProps<Theme> => ({
-    backgroundColor: theme.palette.grey[200],
+    backgroundColor: theme.palette.grey[100],
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
