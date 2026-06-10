@@ -101,7 +101,7 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
                     </Typography>
                 </Button>
                 
-                <Box sx={{ position: 'relative', width: '81%' }}>
+                <Box sx={{ position: 'relative', width: '81%', minWidth: '200px' }}>
                 
                 <Box sx={{ 
                     opacity: 0, 

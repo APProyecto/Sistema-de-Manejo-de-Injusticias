@@ -44,6 +44,7 @@ export async function listarBoycotts(req: Request, res: Response): Promise<void>
       prisma.boycott.findMany({
         where: {
           BoycottState: { StateName: "Active" },
+          DeletedByUser: false,
         },
         select: {
           BoycottID: true,
@@ -72,7 +73,10 @@ export async function listarBoycotts(req: Request, res: Response): Promise<void>
         take: tamano,
       }),
       prisma.boycott.count({
-        where: { BoycottState: { StateName: "Active" } },
+        where: {
+          BoycottState: { StateName: "Active" },
+          DeletedByUser: false,
+        },
       }),
     ]);
  
@@ -120,21 +124,33 @@ export async function buscarBoycotts(req: Request, res: Response): Promise<void>
     } = req.query as Record<string, string | undefined>;
  
     // Construir el filtro dinámico según los parámetros recibidos
-    const where: object = {
+    // Construir filtro de Entity acumulando todos sus campos en un solo objeto
+    const entityFilter: Record<string, unknown> = {};
+    if (categoryId)     entityFilter.CategoryEntityID = parseInt(categoryId);
+    if (industryTypeId) entityFilter.IndustryTypeID   = parseInt(industryTypeId);
+    if (sectorId)       entityFilter.SectorID         = parseInt(sectorId);
+
+    const where: Record<string, unknown> = {
       BoycottState: { StateName: "Active" },
-      ...(q && {
-        OR: [
-          { Title: { contains: q } },
-          { Entity: { EntityName: { contains: q } } },
-        ],
-      }),
-      ...(injusticeTypeId && { InjusticeTypeID: parseInt(injusticeTypeId) }),
-      ...(countryId && { CountryID: parseInt(countryId) }),
-      ...(continentId && { Country: { ContinentID: parseInt(continentId) } }),
-      ...(categoryId && { Entity: { CategoryEntityID: parseInt(categoryId) } }),
-      ...(industryTypeId && { Entity: { IndustryTypeID: parseInt(industryTypeId) } }),
-      ...(sectorId && { Entity: { SectorID: parseInt(sectorId) } }),
+      DeletedByUser: false,
     };
+
+    if (injusticeTypeId) where.InjusticeTypeID = parseInt(injusticeTypeId);
+    if (countryId)       where.CountryID       = parseInt(countryId);
+    if (continentId)     where.Country         = { ContinentID: parseInt(continentId) };
+
+    const tieneEntityFilter = Object.keys(entityFilter).length > 0;
+
+    if (q && tieneEntityFilter) {
+      where.AND = [
+        { OR: [{ Title: { contains: q } }, { Entity: { EntityName: { contains: q } } }] },
+        { Entity: entityFilter },
+      ];
+    } else if (q) {
+      where.OR = [{ Title: { contains: q } }, { Entity: { EntityName: { contains: q } } }];
+    } else if (tieneEntityFilter) {
+      where.Entity = entityFilter;
+    }
  
     const ordenClause =
       orderBy === "votes" ? { VotesInFavor: "desc" } : { PublicationDate: "desc" };

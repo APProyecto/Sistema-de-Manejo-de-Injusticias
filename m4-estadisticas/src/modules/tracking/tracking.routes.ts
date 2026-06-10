@@ -1,7 +1,8 @@
-import {Router} from "express";
+import { Router } from "express";
 import {
-    getMostFollowedCases,
-    getUserPostAndComments
+  getMostFollowedCases,
+  getUserPostAndComments,
+  getByEntity,
 } from "./tracking.controllers";
 const router = Router();
 
@@ -12,7 +13,8 @@ router.get("/", (_req, res) => {
   });
 });
 
-router.get("/getFollowers",getMostFollowedCases);
-router.get("/getUserHistory", getUserPostAndComments)
+router.get("/getFollowers", getMostFollowedCases);
+router.get("/getUserHistory", getUserPostAndComments);
+router.get("/getByEntity", getByEntity);
 
 export default router;

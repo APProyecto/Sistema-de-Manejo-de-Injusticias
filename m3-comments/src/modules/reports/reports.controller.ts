@@ -58,7 +58,6 @@ export async function getCommentReports(req: Request, res: Response){
 
 
 /*
-	CONSULTAR A ELIECER QUÉ ES EL SUBJECT EN UN REPORTE
     Function: createCommentReport.
     Inputs: Request object containing userDescription, commentId, motiveReportId, ReportedBy, asubject in the body.
     Description: Creates a new report for a specific comment in a boycott.

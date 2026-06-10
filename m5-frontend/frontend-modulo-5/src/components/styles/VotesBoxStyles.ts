@@ -14,6 +14,17 @@ export const VotesBoxStyles = {
         padding: '0 8px',
         boxSizing: 'border-box',
     }),
+    CommentVersionContainer: (theme: Theme): SxProps<Theme> => ({
+        display: 'flex',
+        flex: 0,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        maxWidth: '100px',
+        borderRadius: '20px',
+        boxSizing: 'border-box',
+        gap: '5px',
+    }),
     
     votesText: (theme: Theme): SxProps<Theme> => ({
         color: theme.palette.text.primary,

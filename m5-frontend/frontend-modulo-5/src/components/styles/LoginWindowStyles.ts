@@ -18,7 +18,8 @@ export const loginWindowStyles = {
     }),
     typography : (theme: Theme): SxProps<Theme> => ({
         textAlign:'left', 
-        width: '81%'
+        width: '81%',
+        minWidth: '200px',
     }),
 
     dialog: (theme: Theme): SxProps<Theme> => ({
@@ -44,12 +45,14 @@ export const loginWindowStyles = {
     }),
     auth0Button : (theme: Theme): SxProps<Theme> => ({
         width: '81%',
+        minWidth: '200px',
         backgroundColor: 'white',
         borderRadius: '15px',
     }),
 
     googleButton : (theme: Theme): SxProps<Theme> => ({
         width: '100%',
+        minWidth: '200px',
         backgroundColor: 'white',
         borderRadius: '15px',
     }),
@@ -62,6 +65,7 @@ export const loginWindowStyles = {
 
     secundaryButton : (theme: Theme): SxProps<Theme> => ({
         width: '81%',
+        minWidth: '200px',
         backgroundColor: '#4B4F52',
         borderRadius: '15px',
         color: theme.palette.primary.main
@@ -70,6 +74,7 @@ export const loginWindowStyles = {
     textField: (theme: Theme): SxProps<Theme> => ({
     backgroundColor: '#1E1E1E',
     width: '81%',
+    minWidth: '200px',
     borderRadius: '10px',
     '& .MuiFilledInput-root': {
         borderRadius: '10px',                          

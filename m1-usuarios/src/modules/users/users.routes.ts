@@ -12,6 +12,7 @@ import {
   loginUser,
   registerUser,
   userHistory,
+  pruebaToken,
   updateAppUserProfile,
 } from "./users.controller";
 
@@ -31,5 +32,5 @@ router.post("/updateProfile/:appUserId/profile", updateAppUserProfile);
 router.post("/login", loginUser);
 router.get("/history", userHistory);
 router.post("/google", googleLogin);
-
+router.get("/pruebatoken", pruebaToken);
 export default router;
