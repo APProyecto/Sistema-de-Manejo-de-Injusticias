@@ -7,7 +7,7 @@ import {
 const router = Router();
 
 router.get("/getAll", getCommentReports);
-router.post("/createComment", createCommentReport);
+router.post("/createCommentReport", createCommentReport);
 router.put("/updateStatus", updateReportStatus);
 
 
