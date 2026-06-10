@@ -1,6 +1,9 @@
 import { Router } from "express";
+
+import dashboardRoutes from "../modules/metrics/dashboard.routes";
 import trackingRouter from "../modules/tracking/tracking.routes";
 import auditsRoutes from "../modules/audits/audits.routes";
+
 const router = Router();
 
 router.get("/", (_req, res) => {
@@ -10,6 +13,8 @@ router.get("/", (_req, res) => {
   });
 });
 
+router.use("/metrics", dashboardRoutes);
 router.use("/tracking", trackingRouter);
 router.use("/audits", auditsRoutes);
+
 export default router;
