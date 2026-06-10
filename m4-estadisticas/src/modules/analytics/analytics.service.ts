@@ -1,5 +1,8 @@
 import { prisma } from "../../config/prisma";
 
+// 1. Usuarios agrupados por continente
+// Cuenta la cantidad de usuarios registrados por continente
+// AppUser.CountryID > Country.ContinentID
 export async function getUsersByContinent() {
   const result = await prisma.$queryRaw<
     { continent: string; total: bigint }[]
@@ -18,6 +21,9 @@ export async function getUsersByContinent() {
   }));
 }
 
+// 2. Países con más boycotts marcados como favoritos
+// Cuenta los registros de favoritos agrupados por el país del boycott
+// UserFavoriteBoycott.BoycottID > Boycott.CountryID.
 export async function getCountriesWithMoreFavorites() {
   const result = await prisma.$queryRaw<
     { country: string; total: bigint }[]
@@ -36,6 +42,9 @@ export async function getCountriesWithMoreFavorites() {
   }));
 }
 
+// 3. Boycotts según el continente del creador
+// Cuenta los boycotts agrupándolos por el continente del usuario que los creó
+// Boycott.CreatorID > AppUser.CountryID > Country.ContinentID.
 export async function getBoycottsByUserContinent() {
   const result = await prisma.$queryRaw<
     { continent: string; total: bigint }[]
@@ -55,6 +64,9 @@ export async function getBoycottsByUserContinent() {
   }));
 }
 
+// 4. Boycotts por categoría de injusticia
+// Calcula la cantidad y el porcentaje de boycotts para cada tipo de injusticia
+// El porcentaje se calcula segun el total de boycotts registrados
 export async function getBoycottsByInjusticeCategory() {
   const result = await prisma.$queryRaw<
     { category: string; total: bigint; percentage: number }[]
@@ -79,6 +91,10 @@ export async function getBoycottsByInjusticeCategory() {
   }));
 }
 
+// 5. Boycotts por categoría de injusticia y género
+// Calcula la cantidad y el porcentaje de boycotts por tipo de injusticia considerando únicamente usuarios del género indicado
+// considerando únicamente usuarios del género indicado
+// El filtro se aplica mediante AppUser.GenderID.
 export async function getBoycottsByInjusticeCategoryAndGender(genderId: number) {
   const result = await prisma.$queryRaw<
     { category: string; total: bigint; percentage: number }[]
@@ -110,6 +126,9 @@ export async function getBoycottsByInjusticeCategoryAndGender(genderId: number) 
   }));
 }
 
+// 6. Resumen de boycotts por categoría de injusticia
+// Devuelve la distribución de boycotts por categoría junto con su porcentaje
+// El porcentaje se calcula respecto al total de boycotts registrados
 export async function getBoycottsSummaryByInjusticeCategory() {
   const result = await prisma.$queryRaw<
     { category: string; total: bigint; percentage: number }[]
@@ -134,7 +153,9 @@ export async function getBoycottsSummaryByInjusticeCategory() {
   }));
 }
 
-// 1. Companies ranked by boycott count (descending)
+// 7. Empresas ordenadas por cantidad de boycotts
+// Cuenta cuántos boycotts están asociados a cada org
+// Los resultados se ordenan de mayor a menor cantidad
 export async function getCompaniesByBoycottCount() {
   const result = await prisma.$queryRaw<
     { company: string; total: bigint }[]
@@ -151,7 +172,7 @@ export async function getCompaniesByBoycottCount() {
   }));
 }
 
-// 2. Boycotts grouped by industry (LEFT JOIN porque IndustryTypeID es opcional)
+// 8. Boycotts agrupados por industria
 export async function getBoycottsByIndustry() {
   const result = await prisma.$queryRaw<
     { industry: string; total: bigint }[]
@@ -170,7 +191,9 @@ export async function getBoycottsByIndustry() {
   }));
 }
 
-// 3. Boycott rankings by vote score (best and worst)
+// 9. Se hace el ranking de boycotts según porcentaje de aprobación
+// Calcula el porcentaje de votos a favor sobre el total de votos.
+// Solo considera boycotts que han recibido al menos un voto.
 export async function getBoycottRankings() {
   const result = await prisma.$queryRaw<
     {
@@ -208,8 +231,9 @@ export async function getBoycottRankings() {
   }));
 }
 
-// 4. Leading industry per continent
-// Boycott.CountryID → Country.ContinentID (relación directa en el schema)
+// 10. Industria líder por continente
+// Obtiene la industria con mayor cantidad de boycotts en cada continente
+// Boycott.CountryID > Country.ContinentID.
 export async function getLeadingIndustryByContinent() {
   const result = await prisma.$queryRaw<
     { continent: string; industry: string; total: bigint }[]
@@ -247,8 +271,8 @@ export async function getLeadingIndustryByContinent() {
   }));
 }
 
-// 5. Rejected boycott reports grouped by motive
-// ReportBoycott.ReportBoycottID = Report.ReportID (clave compartida en el schema)
+// 11. Reportes rechazados por el admin agrupados por motivo
+// ReportBoycott.ReportBoycottID = Report.ReportID.
 export async function getRejectedReportsByMotive() {
   const result = await prisma.$queryRaw<
     { motive: string; total: bigint }[]
@@ -268,7 +292,8 @@ export async function getRejectedReportsByMotive() {
   }));
 }
 
-// 6. Top 5 users by boycott count (CreatorID es la FK del creador)
+// 12. Top 5 usuarios con más boycotts creados
+// Boycott.CreatorID referencia AppUser.UserID.
 export async function getTop5UsersByBoycotts() {
   const result = await prisma.$queryRaw<
     { userId: number; username: string; total: bigint }[]
@@ -287,7 +312,9 @@ export async function getTop5UsersByBoycotts() {
   }));
 }
 
-// 7. Average resolution time (Report.ReportedAt → Report.CheckedAt, en días)
+// 13. Tiempo promedio de resolución de reportes
+// Calcula la cantidad promedio de días entre la creación y revisión de un reporte
+// Utiliza las fechas ReportedAt y CheckedAt
 export async function getAvgResolutionTimeBoycottReports() {
   const result = await prisma.$queryRaw<
     { avgDays: number | null }[]
@@ -304,7 +331,8 @@ export async function getAvgResolutionTimeBoycottReports() {
   };
 }
 
-// 8. Totals by report state (Approved / Rejected / Pending)
+// 14. Totales de reportes por estado
+// Cuenta la cantidad de reportes agrupados por estado de moderación como Aprobado, Rechazado y Pendiente
 export async function getBoycottReportStatusTotals() {
   const result = await prisma.$queryRaw<
     { status: string; total: bigint }[]

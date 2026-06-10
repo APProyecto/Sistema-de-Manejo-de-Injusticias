@@ -13,8 +13,13 @@ router.get("/", (_req, res) => {
   });
 });
 
+//GET http://localhost:3004/api/tracking/getFollowers
 router.get("/getFollowers", getMostFollowedCases);
+
+//GET http://localhost:3004/api/tracking/getUserHistory
 router.get("/getUserHistory", getUserPostAndComments);
+
+//GET http://localhost:3004/api/tracking/getByEntity
 router.get("/getByEntity", getByEntity);
 
 export default router;
