@@ -3,7 +3,7 @@ import { Container, Typography, Card, CardContent, Button, Box } from '@mui/mate
 
 export default function Logs() {
   return (
-    <Container sx={{backgroundColor: '#ffee00'}}>
+    <Container sx={{backgroundColor: '#000000'}}>
       <Typography>Logs</Typography>
       
     </Container>

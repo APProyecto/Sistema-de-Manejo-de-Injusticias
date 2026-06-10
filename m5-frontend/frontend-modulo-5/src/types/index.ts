@@ -13,6 +13,12 @@ export interface User {
   region?: string
 }
 
+export interface SimpleUser {
+  id: number,
+  username: string,
+  profilePicture?: string,
+}
+
 export interface PostCardData {
   id: number;
   username: string;
@@ -32,34 +38,52 @@ export interface PostCardData {
   state: string;
 }
 
-export interface Comentario {
+export interface Indicted {
   id: number;
-  boycott_id: number;
-  usuario_id: number;
-  contenido: string;
-  fecha_creacion: string;
-  votos: number;
-  nombre_usuario?: string;
+  name: string;
+  picture: string;
+  description: string;
+  category: string;
+  cases: string[]; //las injusticias en las que ha estado involucrado
 }
 
-// src/types/index.ts
-export interface Boycott {
+export interface Evidence {
   id: number;
-  nombre_entidad: string;
-  categoria: string;
-  logo?: string;
-  industria: string;
-  pais: string;
-  tipo_injusticia: string;
-  descripcion: string;
-  estado: 'activo' | 'eliminado' | 'en_revision' | 'editado';
-  usuario_creador_id: number;
-  fecha_creacion: string;
-  fecha_actualizacion: string;
-  votos_positivos?: number;
-  votos_negativos?: number;
-  es_favorito?: boolean;
-  voto_usuario?: boolean | null;
+  name: string;
+  type: 'pdf' | 'image' | 'video' | 'file'
+  extension: string;
+  weight: string;
+}
+
+export interface DetailedPostData {
+  id: number;
+  user: SimpleUser;
+  indicted: Indicted;
+  type: string;
+  country: string;
+  case: string;
+  case_picture: string;
+  title: string;
+  description: string;
+  creation_date: string;
+  last_updated: string;
+  is_favorite?: boolean;
+  votes: string;
+  voted_by_user?: boolean | null;
+  comment_amount: string;
+  comments: Comment[];
+  state: string;
+  evidences: Evidence[];
+}
+
+export interface Comment {
+  id: number;
+  post_id: number;
+  user: SimpleUser;
+  content: string;
+  creation_date: string;
+  votes: string;
+  voted_by_user: boolean | null;
 }
 
 export interface CreateBoycottData {
