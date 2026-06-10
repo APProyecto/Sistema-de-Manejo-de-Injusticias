@@ -76,7 +76,6 @@ export default function UserHistory() {
       .then(response => response.json())
       .then(data => setUserS(data))
       .catch(error => console.error('Error:', error));
-      console.log(user?.username);
     };
 
   const handleStateColor = (state: string) => {
