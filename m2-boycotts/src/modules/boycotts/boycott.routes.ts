@@ -1,5 +1,12 @@
 import { Router } from "express";
 import { listarBoycotts, buscarBoycotts, obtenerFiltros } from "./boycott.controller";
+import {
+  actualizarBoycottHandler,
+  cambiarEstadoBoycottHandler,
+  crearBoycottHandler,
+  misBoycottsHandler,
+  obtenerBoycottHandler,
+} from "./boycott.crud.controller";
 
 /*
   Rutas:boycott.routes.ts
@@ -17,5 +24,23 @@ router.get("/filters", obtenerFiltros);
 
 // GET /api/boycotts/search    — búsqueda con filtros combinados
 router.get("/search", buscarBoycotts);
+
+// rutas del CRUD principal (Persona 1)
+// las rutas estaticas van antes que /:id para que no las capture como id
+
+// GET /api/boycotts/mine      — boycotts creados por el usuario
+router.get("/mine", misBoycottsHandler);
+
+// POST /api/boycotts          — crear un boycott
+router.post("/", crearBoycottHandler);
+
+// GET /api/boycotts/:id       — detalle de un boycott
+router.get("/:id", obtenerBoycottHandler);
+
+// PUT /api/boycotts/:id       — editar un boycott (solo el creador)
+router.put("/:id", actualizarBoycottHandler);
+
+// PATCH /api/boycotts/:id/state — eliminacion logica o restaurar (solo el creador)
+router.patch("/:id/state", cambiarEstadoBoycottHandler);
 
 export default router;

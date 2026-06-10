@@ -3,23 +3,9 @@ import { useState } from 'react';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { QueriesStyles } from '../styles/QueriesStyles';
 import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
-
-const Categories = [
-  {id:0,name:'Category'},
-  {id:1,name:'Politics'},
-  {id:2,name:'Health'},
-  {id:3,name:'Labor practices'},
-];
-const EntityType = [
-  {id:0,name:'Entity'},
-  {id:1,name:'Company'},
-  {id:2,name:'Organization'},
-  {id:3,name:'Person'},
-  {id:4,name:'Brand'},
-  {id:5,name:'Product'},
-  {id:6,name:'Goverment'},
-  {id:7,name:'Institution'},
-];
+import { Categories } from '../../data/Categories';
+import { EntityType } from '../../data/EntityType';
+import QueryNavegation from './QueryNavigation';
 
 const Queries = [
     {
@@ -39,28 +25,7 @@ export default function MostFollowedCases() {
 
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default}}>
-      <Box sx={{alignItems:'center', display:'flex'}}>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Reports</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Company Boycotts</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>User History</Typography>
-          </Button>
-        </Box>
-        <Box sx={{width:'25%'}}>
-          <Button sx={QueriesStyles.TopButton(theme)}>
-            <Typography variant='body2' sx={{color:theme.palette.background.default}}>Most Followed Cases</Typography>
-          </Button>
-        </Box>
-      </Box>
+      <QueryNavegation/>
 
       <Box sx={{display:'flex', alignItems:'center', mt:5,mb:0}}>
         <Box sx={{width:'25%'}}>

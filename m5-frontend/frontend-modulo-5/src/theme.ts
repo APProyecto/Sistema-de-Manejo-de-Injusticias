@@ -68,10 +68,11 @@ export const darkTheme = createTheme({
     secondary: {main: '#d5dcdc'},
     background: { default: '#292924', paper: '#d5dcdc'},
     text: {primary: '#ffffff'},
-    action: {hover: '#ffffff3b'},
+    action: {hover: '#ffffff3b', selected: '#d5dcdc'},
     grey: {"100": '#3e3e3a', "200": '#848787'},
     success: {main: '#eeca3c'},
     error: {main: '#640d0d'},
+    divider: '#d5dcdc',
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',

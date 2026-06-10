@@ -6,7 +6,7 @@ export const EntityStyles = {
         borderRadius: '10px',
         paddingX: '10px',
         paddingY: '8px',
-        maxWidth: '45%',
+        maxWidth: '100%',
         justifyContent: 'left',
         overflow: 'hidden',
     }),

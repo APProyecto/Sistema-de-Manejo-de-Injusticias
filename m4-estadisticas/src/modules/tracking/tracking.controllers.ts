@@ -11,43 +11,40 @@ import {
 
 /*
     Function: getMostFollowedCases.
-    Inputs: Request object containing indictedFilter and injusticeFilter in the body. Default values for indictedFilter and injusticeFilter are "Category".
+    Inputs: Request object containing indictedFilter and injusticeFilter in the query. Default values for indictedFilter and injusticeFilter are "Category".
     Description: get the most followed cases in the app.
     Outputs: JSON response with a list of cases or an error message.
 */
 export async function getMostFollowedCases(req: Request, res: Response) {
   try {
-    const { indictedFilter, injusticeFilter } = req.body;
+    const indictedFilter = req.query.indictedFilter?.toString();
+    const injusticeFilter = req.query.injusticeFilter?.toString();
 
     const followersCount = await prisma.userFavoriteBoycott.groupBy({
-      by: ["BoycottID"],
+      by: ['BoycottID'],
       _count: {
-        _all: true,
-      },
+        _all: true
+      }
     });
 
     const FindCases = await prisma.boycott.findMany({
-      distinct: ["BoycottID"],
+      distinct: ['BoycottID'],
       where: {
         InjusticeType: {
-          ...(injusticeFilter !== "Category"
-            ? { InjusticeName: injusticeFilter }
-            : {}),
+          ...(injusticeFilter !== "Category" ? { InjusticeName: injusticeFilter } : {}),
         },
         Entity: {
           CategoryEntity: {
-            ...(indictedFilter !== "Category"
-              ? { CategoryName: indictedFilter }
-              : {}),
+            ...(indictedFilter !== "Category" ? { CategoryName: indictedFilter }: {}),
           },
-        },
+        }
       },
       select: {
         BoycottID: true,
         InjusticeType: {
           select: {
             InjusticeName: true,
-          },
+          }
         },
         Entity: {
           select: {
@@ -55,7 +52,7 @@ export async function getMostFollowedCases(req: Request, res: Response) {
             EntityName: true,
           },
         },
-      },
+      }
     });
 
     const summary = [];
@@ -67,7 +64,7 @@ export async function getMostFollowedCases(req: Request, res: Response) {
             entityPicture: getEntityPicture(FindCases[j].Entity.EntityID),
             injusticeType: FindCases[j].InjusticeType.InjusticeName,
             followers: followersCount[i]._count,
-          };
+          }
           summary.push(element);
         }
       }
@@ -147,7 +144,7 @@ async function getBoycottDesc(boycottId: number) {
 
 /*
     Function: getUserPostAndComments.
-    Inputs: Request object containing the userName and Categoryfilter in the body. Defalut value for CategoryFilter is "Category".
+    Inputs: Request object containing the userName and Categoryfilter in the query. Defalut value for CategoryFilter is "Category".
     Description: get the users post, comments in other users post and the entities it follows.
     Outputs: JSON response with the username,a list of post with title, description and state of the boycott; a list of comments with description, 
     title and the user name creator of the boycott; and a list of entities or an error message.
@@ -155,7 +152,7 @@ async function getBoycottDesc(boycottId: number) {
 
 export async function getUserPostAndComments(req: Request, res: Response) {
   try {
-    const { userName, CategoryFilter } = req.body;
+    const { userName, CategoryFilter } = req.query;
 
     const userId = await prisma.appUser.findFirst({
       where: {
