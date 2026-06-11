@@ -56,15 +56,15 @@ interface CatalogueConfig {
 }
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "genders", label: "Géneros" },
-  { key: "countries", label: "Países" },
-  { key: "categories", label: "Categorías de entidad" },
-  { key: "injustices", label: "Tipos de injusticia" },
+  { key: "genders", label: "Genders" },
+  { key: "countries", label: "Countries" },
+  { key: "categories", label: "Entity Categories" },
+  { key: "injustices", label: "Injustice Types" },
 ];
 
 const CONFIG: Record<TabKey, CatalogueConfig> = {
   genders: {
-    label: "Géneros",
+    label: "Genders",
     idField: "GenderID",
     nameField: "GenderName",
     bodyField: "genderName",
@@ -75,7 +75,7 @@ const CONFIG: Record<TabKey, CatalogueConfig> = {
   },
 
   countries: {
-    label: "Países",
+    label: "Countries",
     idField: "CountryID",
     nameField: "CountryName",
     bodyField: "countryName",
@@ -86,7 +86,7 @@ const CONFIG: Record<TabKey, CatalogueConfig> = {
   },
 
   categories: {
-  label: "Categorías de entidad",
+  label: "Entity Categories",
   idField: "CategoryEntityID",
   nameField: "CategoryName",
   bodyField: "categoryName",
@@ -96,7 +96,7 @@ const CONFIG: Record<TabKey, CatalogueConfig> = {
   remove: deleteCategoryEntity,
 },
     injustices: {
-    label: "Tipos de injusticia",
+    label: "Injustice Types",
     idField: "InjusticeTypeID",
     nameField: "InjusticeName",
     bodyField: "injusticeName",
@@ -157,7 +157,7 @@ export default function Catalogues() {
     const trimmed = newName.trim();
 
     if (!trimmed) {
-      setAddError("El nombre no puede estar vacío.");
+      setAddError("The name can't be empty");
       return;
     }
 
@@ -174,7 +174,7 @@ export default function Catalogues() {
       setNewName("");
       await fetchRows();
     } catch (err: any) {
-      const msg = err.response?.data?.error || "Error al crear el registro.";
+      const msg = err.response?.data?.error || "Error in the register";
       setAddError(msg);
     } finally {
       setAdding(false);
@@ -197,7 +197,7 @@ export default function Catalogues() {
     const trimmed = editName.trim();
 
     if (!trimmed) {
-      setEditError("El nombre no puede estar vacío.");
+      setEditError("The name can't be empty");
       return;
     }
 
@@ -215,7 +215,7 @@ export default function Catalogues() {
       await fetchRows();
     } catch (err: any) {
       const msg =
-        err.response?.data?.error || "Error al actualizar el registro.";
+        err.response?.data?.error || "Error in the update";
       setEditError(msg);
     }
   };
@@ -226,7 +226,7 @@ export default function Catalogues() {
       await fetchRows();
     } catch (err: any) {
       const msg =
-        err.response?.data?.error || "No se pudo eliminar el registro.";
+        err.response?.data?.error || "Error deleting the register";
       setError(msg);
     }
   };
@@ -278,7 +278,7 @@ export default function Catalogues() {
             disabled={adding}
             startIcon={<AddIcon />}
           >
-            Agregar
+            Add
           </Button>
         </Box>
 
@@ -294,7 +294,7 @@ export default function Catalogues() {
           </Typography>
 
           <Typography sx={{ ...s.headerText(theme), flex: 1 }}>
-            Nombre
+            Name
           </Typography>
 
           <Typography
@@ -304,12 +304,12 @@ export default function Catalogues() {
               textAlign: "right",
             }}
           >
-            Acciones
+            Actions
           </Typography>
         </Box>
 
         {loading && (
-          <Typography sx={s.emptyText(theme)}>Cargando...</Typography>
+          <Typography sx={s.emptyText(theme)}>Loading...</Typography>
         )}
 
         {!loading && error && (
@@ -318,7 +318,7 @@ export default function Catalogues() {
 
         {!loading && !error && rows.length === 0 && (
           <Typography sx={s.emptyText(theme)}>
-            No hay registros. Agregá uno arriba.
+            There is not registers
           </Typography>
         )}
 
