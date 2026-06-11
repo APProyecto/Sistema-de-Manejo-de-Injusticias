@@ -17,10 +17,27 @@ export interface User {
   role? : UserRole;
 }
 
+export interface Category {
+  id: number,
+  name: string,
+}
+
+export interface FilterValues {
+  countryId: number | null;
+  industryId: number | null;
+  injusticeId: number | null;
+  orderById: number | null;
+}
+
 export interface SimpleUser {
   id: number,
   username: string,
   profilePicture?: string,
+}
+
+export interface SearchResult {
+  status: number,
+  data: PostCardData[],
 }
 
 export interface PostCardData {
@@ -124,6 +141,13 @@ export interface CreateBoycottData {
   pais: string;
   tipo_injusticia: string;
   descripcion: string;
+}
+
+export interface FilterCategories {
+  countries: Category[],
+  industries: Category[],
+  injustices: Category[],
+  orderOptions: Category[],
 }
 
 export interface ApiResponse<T> {

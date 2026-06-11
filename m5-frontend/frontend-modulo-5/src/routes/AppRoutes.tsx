@@ -5,6 +5,7 @@ import ProtectedRoute from './ProtectedRoute';
 import Home from '../pages/public/Home';
 import DetailedPost from '../pages/public/DetailedPost';
 import Evidences from '../pages/public/Evidences';
+import Search from '../pages/public/Search';
 
 // Páginas de usuario
 import Profile from '../pages/user/Profile';
@@ -38,6 +39,7 @@ export default function AppRoutes() {
       {/* Rutas públicas (sin inciar sesión) */}
       <Route element={<DynamicLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/search/" element={<Search />} />
         <Route path="/detailed-post/:id" element={<DetailedPost />} />
         <Route path="/detailed-post/:id/evidences" element={<Evidences />} />
 
