@@ -109,3 +109,29 @@ export async function getAuditPublications(req: Request, res: Response) {
     return res.status(500).json({ error: "Internal server error" });
   }
 }
+
+export async function getFilterOptions(req: Request, res: Response) {
+  try {
+    const [entities, injusticeTypes, countries] = await Promise.all([
+      prisma.entity.findMany({
+        select: { EntityID: true, EntityName: true },
+        orderBy: { EntityName: "asc" },
+      }),
+      prisma.injusticeType.findMany({
+        select: { InjusticeTypeID: true, InjusticeName: true },
+        orderBy: { InjusticeName: "asc" },
+      }),
+      prisma.country.findMany({
+        select: { CountryID: true, CountryName: true },
+        orderBy: { CountryName: "asc" },
+      }),
+    ]);
+
+    return res.json({
+      data: { entities, injusticeTypes, countries },
+    });
+  } catch (error) {
+    console.error("getFilterOptions error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
