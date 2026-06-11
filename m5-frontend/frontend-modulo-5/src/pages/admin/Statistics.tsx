@@ -7,6 +7,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarIcon from '@mui/icons-material/Star';
+import { useState } from 'react';
 
 export default function Statistics() {
   const theme = useTheme();
@@ -16,7 +17,11 @@ export default function Statistics() {
   const blue = '#3498DB';
   const orange = '#E67E22';
   const green = '#1ABC9C';
+  const lightGreen = '#27AE60';
 
+
+  {/* WIP : Son datos en duro, lo que hay que cambiar son las siguientes variables
+    de la "a" a la "m" y las graficas deberian de funcionar correctamente con eso */}
 
   {/* a */}
   let UsersByRegions =[
@@ -69,6 +74,12 @@ export default function Statistics() {
     {top:5,Industry:'Cocacola',value:16},
   ];
 
+  {/* g */}
+  const [approved, setApproved] = useState(0);
+  const [rejected, setRejected] = useState(0);
+  const [Pending, setPending] = useState(0);
+  const [averageResolutionTime, setAverageResolutionTime] = useState(0);
+
   {/* h */}
   let TopReasonsReportRejection =[
     {reason:'False information',value:20},
@@ -80,12 +91,12 @@ export default function Statistics() {
 
   {/* i */}
   let BoycottsByInjusticeCategory =[
-    {label:'False information',value:20},
-    {label:'duplicate content',value:10},
-    {label:'lack of evidence',value:40},
-    {label:'inappropriate language',value:5},
-    {label:'out of context',value:6},
-    {label:'others',value:60}
+    {label:'support for wars',value:342, percentage:18.5},
+    {label:'animal abuse',value:298, percentage:16.1},
+    {label:'environmental damage',value:456, percentage:24.7},
+    {label:'discrimination',value:389, percentage:21},
+    {label:'Labor exploitation',value:267, percentage:14.4},
+    {label:'Others',value:98, percentage:5.3}
   ];
 
   {/* j */}
@@ -112,7 +123,7 @@ export default function Statistics() {
     {boycott:'Nestlé and bottled water',indicted:'Nestlé',date:'2026-03-22',stars:4.6}
   ];
 
-  {/* k */}
+  {/* m */}
   let TopBoycottsWithWorstRating =[
     {boycott:'Rumors without evidence about TechCo',indicted:'TechCo',date:'2026-04-01',stars:1.2},
     {boycott:'Baseless accusation against LocalShop',indicted:'LocalShop',date:'2026-03-28',stars:1.5},
@@ -352,6 +363,52 @@ export default function Statistics() {
           </Card>
         </Grid>
 
+        {/* Graphic : g. Moderation Statistics */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card sx={StatisticsStyles.CardGraphic(theme)}>
+            <Box sx={StatisticsStyles.BoxGraphic(theme)}>
+              <Box sx={{...StatisticsStyles.LabelBox(theme),pl:2,mb:2}}>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>g. Moderation statistics</Typography>
+              </Box>
+              <Box sx={StatisticsStyles.ElementMapBox(theme)}>
+
+                <Grid container spacing={1}>
+                
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <Box sx={{...StatisticsStyles.SubGridBox(theme),background:lightGreen}}>
+                      <Typography variant='h4' sx={StatisticsStyles.SubGridBoxText(theme)}>{approved}</Typography>
+                      <Typography variant='body1' sx={StatisticsStyles.SubGridBoxValue(theme)}>Approved</Typography>
+                    </Box>
+                  </Grid>
+                
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <Box sx={{...StatisticsStyles.SubGridBox(theme),background:red}}>
+                      <Typography variant='h4' sx={StatisticsStyles.SubGridBoxText(theme)}>{rejected}</Typography>
+                      <Typography variant='body1' sx={{color:theme.palette.secondary.main}}>Rejected</Typography>
+                    </Box>
+                  </Grid>
+                
+                  <Grid size={{ xs: 12, md: 4 }}>
+                    <Box sx={{...StatisticsStyles.SubGridBox(theme),background:theme.palette.primary.main}}>
+                      <Typography variant='h4' sx={StatisticsStyles.SubGridBoxText(theme)}>{Pending}</Typography>
+                      <Typography variant='body1' sx={{color:theme.palette.secondary.main}}>Pending</Typography>
+                    </Box>
+                  </Grid> 
+                
+                  <Grid size={{ xs: 12, md: 12 }}>
+                    <Box sx={{...StatisticsStyles.SubGridBox(theme),background:theme.palette.background.default}}>
+                      <Typography variant='body1' sx={{color:theme.palette.secondary.main}}>Average Resolution Time</Typography>
+                      <Typography variant='h4' sx={StatisticsStyles.SubGridBoxText(theme)}>{averageResolutionTime} Hours</Typography>
+                    </Box>
+                  </Grid> 
+                
+                </Grid>
+
+              </Box>
+            </Box>
+          </Card>
+        </Grid>
+
         {/* Graphic : h. Top Reasons for Report Rejection */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
@@ -374,7 +431,7 @@ export default function Statistics() {
         </Grid>
 
         {/*  Graphic : i. Boycotts by Injustice Category */}
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 12 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={StatisticsStyles.LabelBox(theme)}>
@@ -385,7 +442,7 @@ export default function Statistics() {
                   {
                     data: BoycottsByInjusticeCategory,
                     outerRadius: 100,
-                    arcLabel: (item) => `${item.label}`
+                    arcLabel: (item:any) => `${item.value}(${item.percentage}%)`
                   },
                 ]}
                 sx={{
@@ -463,7 +520,7 @@ export default function Statistics() {
                           <Typography variant='body2' sx={{ml:1,my:'auto',textAlign:'left'}}>{Boycott.boycott}</Typography>
                         </Box>
                         <Box sx={{display:'flex'}}>
-                          <Typography variant='caption' sx={{ml:1,my:'auto',color:theme.palette.grey[200],textAlign:'left'}}>{Boycott.indicted}</Typography>
+                          <Typography variant='caption' sx={StatisticsStyles.TopBoycottSubLabel(theme)}>{Boycott.indicted}</Typography>
                         </Box>
                       </Box>
 
@@ -499,7 +556,7 @@ export default function Statistics() {
                           <Typography variant='body2' sx={{ml:1,my:'auto',textAlign:'left'}}>{Boycott.boycott}</Typography>
                         </Box>
                         <Box sx={{display:'flex'}}>
-                          <Typography variant='caption' sx={{ml:1,my:'auto',color:theme.palette.grey[200],textAlign:'left'}}>{Boycott.indicted}</Typography>
+                          <Typography variant='caption' sx={StatisticsStyles.TopBoycottSubLabel(theme)}>{Boycott.indicted}</Typography>
                         </Box>
                       </Box>
 

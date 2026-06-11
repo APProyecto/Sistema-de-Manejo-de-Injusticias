@@ -45,4 +45,23 @@ export const StatisticsStyles = {
     mx:2, 
     overflowY:'auto'
   }),
+  SubGridBox: (theme: Theme): SxProps<Theme> => ({
+    p:1,
+    borderRadius:3,
+    m:0
+  }),
+  SubGridBoxText: (theme: Theme): SxProps<Theme> => ({
+    color:theme.palette.secondary.main,
+    mx:'Auto',
+    my:1
+  }),
+  SubGridBoxValue: (theme: Theme): SxProps<Theme> => ({
+    color:theme.palette.secondary.main
+  }),
+  TopBoycottSubLabel: (theme: Theme): SxProps<Theme> => ({
+    ml:1,
+    my:'auto',
+    color:theme.palette.grey[200],
+    textAlign:'left'
+  }),
 }
