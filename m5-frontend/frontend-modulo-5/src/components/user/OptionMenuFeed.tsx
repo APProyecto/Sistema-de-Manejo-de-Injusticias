@@ -19,6 +19,7 @@ export default function OptionMenuFeed({ favorite, boycottId, onFavoriteChanged 
   const open = Boolean(anchorEl);
   const theme = useTheme();
   const { user, isAuthenticated } = useAuth();
+  const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -53,7 +54,7 @@ export default function OptionMenuFeed({ favorite, boycottId, onFavoriteChanged 
     setIsFavoriteLoading(true);
 
     try {
-      await setFavorite(boycottId, newFavoriteState, user?.appUserId);
+      await setFavorite(boycottId, newFavoriteState, resolvedUserId);
       onFavoriteChanged?.(newFavoriteState);
     } catch (error) {
       console.error('Error al actualizar favorito:', error);
@@ -92,7 +93,7 @@ export default function OptionMenuFeed({ favorite, boycottId, onFavoriteChanged 
       await reportBoycott(
         boycottId,
         { reason: reportReason.trim(), description: reportReason.trim() },
-        user?.appUserId
+        resolvedUserId
       );
       handleCloseReport();
       globalThis.alert('Reporte enviado correctamente.');

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { User, UserRole } from "../types";
 
@@ -14,19 +14,33 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+function normalizeUser(userData: User): User {
+  const rawUser = userData as User & {
+    id?: number;
+    userId?: number;
+    username?: string;
+    appUserName?: string;
+  };
+
+  return {
+    ...userData,
+    appUserId: userData.appUserId ?? rawUser.userId ?? rawUser.id ?? 0,
+    appUserName: userData.appUserName ?? rawUser.username ?? "User",
+  };
+}
+
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Cargar sesión guardada al iniciar la app
-    const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
 
     if (userStr) {
       try {
         const userData = JSON.parse(userStr);
-        setUser(userData);
+        setUser(normalizeUser(userData));
       } catch (error) {
         console.error("Error parsing user:", error);
         localStorage.removeItem("user");
@@ -36,9 +50,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (userData: User): User => {
+    const normalizedUser = normalizeUser(userData);
     const userWithRole: User = {
-      ...userData,
-      role: userData.isAdmin ? "admin" : "user",
+      ...normalizedUser,
+      role: normalizedUser.isAdmin ? "admin" : "user",
     };
 
     localStorage.setItem("user", JSON.stringify(userWithRole));
@@ -59,18 +74,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return rolesArray.includes(user?.role || "user");
   };
 
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      isLoading,
+      userRole: user?.role || null,
+      login,
+      logout,
+      hasRole,
+    }),
+    [user, isLoading],
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        userRole: user?.role || null,
-        login,
-        logout,
-        hasRole,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

@@ -10,6 +10,7 @@ export default function Favorites() {
 
   const theme = useTheme();
   const { user } = useAuth();
+  const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
   const [data, setData] = useState<PostCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +20,7 @@ export default function Favorites() {
       setLoading(true);
       setError(null);
       try {
-        const userId = user?.appUserId;
+        const userId = resolvedUserId;
         const favorites = await getFavorites(userId);
         setData(favorites);
       } catch (err) {
@@ -31,7 +32,7 @@ export default function Favorites() {
     };
 
     fetchFavorites();
-  }, [user?.appUserId]);
+  }, [resolvedUserId]);
 
   return (
     <Container sx={myPostsStyles.mainContainer(theme)}>
