@@ -22,7 +22,7 @@ import PostInteracionButton from "../../components/common/PostInteractionButton"
 import InsertCommentIcon from "@mui/icons-material/InsertComment";
 import { PostCardStyles } from "../../components/styles/PostCardStyles";
 import { Circle } from "@mui/icons-material";
-import { getComments } from "../../services/commentsService";
+import { getComments, createComment } from "../../services/commentsService";
 import PublicComment from "../../components/public/PublicComment";
 import { useAuth } from "../../context/authContext";
 import UserComment from "../../components/user/UserComment";
@@ -53,7 +53,6 @@ export default function DetailedPost() {
     getBoycottById(Number(id), user?.userId).then(setData);
   }, [id, user?.userId]);
 
-  console.log("user auth:", user);
   //actualiza los comentarios cada vez que cambia el id o el número de filtro
   useEffect(() => {
     if (id) {
@@ -66,7 +65,6 @@ export default function DetailedPost() {
   const onCommentsClick = () => {};
 
   const handleFilterClick = (filter: CommentFilter) => {
-    console.log("filter");
     setActiveFilter(filter);
     switch (filter) {
       case "New":
@@ -94,6 +92,31 @@ export default function DetailedPost() {
 
   const visibleEvidences = data.evidences.slice(0, 2);
   const extraEvidences = data.evidences.length - 2;
+
+  const refreshComments = async () => {
+    if (!id) return;
+
+    const updatedComments = await getComments(
+      Number(id),
+      filterNumber,
+      user?.userId,
+    );
+
+    setComments(updatedComments);
+  };
+
+  const handleCreateComment = async (description: string) => {
+    if (!id || !user?.userId) return;
+
+    try {
+      await createComment(description, Number(id), user.userId);
+      setActiveFilter("New");
+      setFilterNumber(0);
+      await getComments(Number(id), 0, user.userId).then(setComments);
+    } catch (error) {
+      console.error("Error creating comment:", error);
+    }
+  };
 
   return (
     <Container sx={detailedPostStyles.mainContainer(theme)}>
@@ -234,7 +257,11 @@ export default function DetailedPost() {
 
         {/* Comments */}
         <Box sx={detailedPostStyles.commentsList(theme)}>
-          {isAuthenticated ? <PostCommentBox></PostCommentBox> : <Box></Box>}
+          {isAuthenticated ? (
+            <PostCommentBox onSubmit={handleCreateComment} />
+          ) : (
+            <Box></Box>
+          )}
           {comments.map((comment) =>
             isAuthenticated ? (
               <UserComment

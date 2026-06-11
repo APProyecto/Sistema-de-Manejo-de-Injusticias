@@ -21,6 +21,21 @@ export const getComments = async (
   return response.data.comments ?? [];
 };
 
+// Crear comentarios
+export const createComment = async (
+  description: string,
+  boycottId: number,
+  creatorId: number,
+) => {
+  const response = await commentApi.post("/api/comments/create", {
+    Description: description,
+    BoycottID: boycottId,
+    CreatorId: creatorId,
+  });
+
+  return response.data.comment;
+};
+
 // Votos en comentarios
 export const voteComment = async (
   userId: number,
