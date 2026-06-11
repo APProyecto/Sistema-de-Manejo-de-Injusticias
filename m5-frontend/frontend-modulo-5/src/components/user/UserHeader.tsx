@@ -5,14 +5,24 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/authContext';
 import DefaultAvatar from '../../assets/pfpDefaultImage.png';
 import Searchbar from '../common/SearchBar';
+import {
+  getUserProfilePictureUrl,
+} from "../../services/uesrService";
 export default function UserHeader() {
   const theme = useTheme();
   const navigate = useNavigate();
   const handleProfileClick = () => {
     navigate('/my-votes');
   };
-  const {user} = useAuth()
-
+  const { user} = useAuth();
+  if (!user) return null;
+  console.log("USUARIO", user);
+  const currentUser = user as any;
+  const userId = currentUser.appUserId ?? currentUser.userId;
+  const profilePicture =
+      currentUser.picture ??
+      currentUser.profilePicture ??
+      (userId ? getUserProfilePictureUrl(userId) : undefined);
 
 
   return (
@@ -45,7 +55,7 @@ export default function UserHeader() {
             onClick={handleProfileClick}
           >
                 <Avatar
-                    src={user?.picture || DefaultAvatar}
+                    src={profilePicture || DefaultAvatar}
                     alt={user?.appUserName || 'User avatar'}
                     sx={headerStyles.profilePicture(theme)}
                 />
