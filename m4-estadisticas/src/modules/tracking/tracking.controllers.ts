@@ -50,6 +50,11 @@ export async function getMostFollowedCases(req: Request, res: Response) {
           select: {
             EntityID: true,
             EntityName: true,
+            CategoryEntity:{
+                select:{
+                    CategoryName:true,
+                }
+            }
           },
         },
       }
@@ -62,8 +67,9 @@ export async function getMostFollowedCases(req: Request, res: Response) {
           let element = {
             entityname: FindCases[j].Entity.EntityName,
             entityPicture: getEntityPicture(FindCases[j].Entity.EntityID),
+            entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
             injusticeType: FindCases[j].InjusticeType.InjusticeName,
-            followers: followersCount[i]._count,
+            followers: followersCount[i]._count._all,
           }
           summary.push(element);
         }
@@ -150,9 +156,11 @@ async function getBoycottDesc(boycottId: number) {
     title and the user name creator of the boycott; and a list of entities or an error message.
 */
 
-export async function getUserPostAndComments(req: Request, res: Response) {
-  try {
-    const { userName, CategoryFilter } = req.query;
+export async function getUserPostAndComments(req:Request, res:Response){
+    try {
+    const userName = req.query.userName?.toString();
+    const CategoryFilter =req.query.CategoryFilter?.toString();
+
 
     const userId = await prisma.appUser.findFirst({
       where: {
@@ -191,7 +199,7 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       let post = {
         Title: UserPost[i].Title,
         State: UserPost[i].BoycottState.StateName,
-        Description: getBoycottDesc(UserPost[i].BoycottID),
+        Description: getBoycottDesc(UserPost[i].BoycottID)!==null?getBoycottDesc(UserPost[i].BoycottID) : '',
       };
       enrichPost.push(post);
     }
