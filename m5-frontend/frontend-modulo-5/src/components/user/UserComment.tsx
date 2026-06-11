@@ -23,15 +23,17 @@ import DeleteCommentConfirmation from "./DeleteCommentConfirmation";
 interface UserCommentProps {
   comment: Comment;
   loggedInUserId?: Number;
+  onDeleted?: () => void;
 }
 
 export default function UserComment({
   comment: c,
   loggedInUserId: loggedInUserId,
+  onDeleted,
 }: UserCommentProps) {
   const theme = useTheme();
   const [reportCommentOpen, setReportCommentOpen] = useState(false);
-  const [delelteCommentOpen, setDeleteCommentOpen] = useState(false);
+  const [deleteCommentOpen, setDeleteCommentOpen] = useState(false);
   const [votes, setVotes] = useState<number>(Number(c.votes));
   const [currentVote, setCurrentVote] = useState<boolean | null>(
     c.voted_by_user ?? null,
@@ -82,9 +84,10 @@ export default function UserComment({
         commentId={c.id}
       />
       <DeleteCommentConfirmation
-        open={delelteCommentOpen}
+        open={deleteCommentOpen}
         onClose={() => setDeleteCommentOpen(false)}
         commentId={c.id}
+        onDeleted={onDeleted}
       />
 
       <Box sx={commentStyles.commentHeader(theme)}>
@@ -102,8 +105,7 @@ export default function UserComment({
         </Typography>
         <Box sx={{ display: "flex", flex: 1 }}></Box>
 
-
-        {loggedInUserId == c.user.id ?
+        {loggedInUserId == c.user.id ? (
           /* Botón de eliminar */
           <IconButton
             sx={commentStyles.replyButton(theme)}
@@ -111,7 +113,7 @@ export default function UserComment({
           >
             <Delete sx={commentStyles.errorIcon(theme)}></Delete>
           </IconButton>
-          :
+        ) : (
           /*Botón de reporte*/
           <IconButton
             sx={commentStyles.replyButton(theme)}
@@ -119,7 +121,7 @@ export default function UserComment({
           >
             <Error sx={commentStyles.errorIcon(theme)}></Error>
           </IconButton>
-        }
+        )}
       </Box>
       <Typography sx={commentStyles.text(theme)}>{c.content}</Typography>
       <Box sx={commentStyles.interactionBox(theme)}>

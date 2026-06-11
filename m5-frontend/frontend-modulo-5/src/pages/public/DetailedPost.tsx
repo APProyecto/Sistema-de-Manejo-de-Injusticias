@@ -44,7 +44,8 @@ export default function DetailedPost() {
   const theme = useTheme();
   const { isAuthenticated, user } = useAuth();
   const { id } = useParams();
-  const resolvedUserId = user?.appUserId ?? user?.appUserId ?? (user as any)?.id;
+  const resolvedUserId =
+    user?.appUserId ?? user?.appUserId ?? (user as any)?.id;
 
   const [data, setData] = useState<DetailedPostData>();
   const [filterNumber, setFilterNumber] = useState(0);
@@ -271,7 +272,12 @@ export default function DetailedPost() {
               <UserComment
                 key={comment.id}
                 comment={comment}
-                loggedInUserId={user?.appUserId}
+                loggedInUserId={resolvedUserId}
+                onDeleted={() => {
+                  setComments((prevComments) =>
+                    prevComments.filter((item) => item.id !== comment.id),
+                  );
+                }}
               />
             ) : (
               <PublicComment key={comment.id} comment={comment} />

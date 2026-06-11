@@ -36,6 +36,17 @@ export const createComment = async (
   return response.data.comment;
 };
 
+// Borrar comentarios
+export const deleteComment = async (commentId: number) => {
+  const response = await commentApi.delete("/api/comments/delete", {
+    params: {
+      CommentID: commentId,
+    },
+  });
+
+  return response.data;
+};
+
 // Votos en comentarios
 export const voteComment = async (
   userId: number,
