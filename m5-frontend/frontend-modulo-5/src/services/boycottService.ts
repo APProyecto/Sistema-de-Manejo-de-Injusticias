@@ -1,6 +1,6 @@
 // src/services/boycottService.ts
 import { mockEntities } from '../data/mockEntities';
-import type { ApiResponse, PostCardData, CreateBoycottData, DetailedPostData, FilterCategories, simpleEntity } from '../types';
+import type { ApiResponse, PostCardData, DetailedPostData, FilterCategories, simpleEntity, CreateBoycottData } from '../types';
 import { authApi, boycottApi } from './api';
 
 type HttpMethod = 'get' | 'post' | 'delete';
@@ -45,7 +45,7 @@ export const getBoycotts = async (filters?: {
       ...(userId === undefined ? {} : { userId }),
       page: 1,
       pageSize: 10,
-      orderBy: 'votes',
+      orderBy: 'votes'
     },
   });
   
@@ -75,24 +75,39 @@ export const searchBoycotts = async (
   return response.data.data;
 };
 
+const getEntityPicture = async (id: number): Promise<string | null> => {
+  try {
+    const response = await authApi.get(`/api/files/entities/${id}/picture`, {
+      responseType: 'blob',
+    });
+    return URL.createObjectURL(response.data);
+  } catch (error) {
+    console.log(`No picture found for entity ${id}`);
+    return null;
+  }
+}
+
 export const searchEntities = async (
   inputValue: string,
   categoryId: number,
 ): Promise<simpleEntity[]> => {
-
-  const response = await boycottApi.get<ApiResponse<simpleEntity[]>>(`/api/entities?`, {
+  const response = await boycottApi.get<ApiResponse<simpleEntity[]>>(`/api/entities`, {
     params: {
       q: inputValue,
       categoryEntityId: categoryId
     },
   });
-  return response.data.data;
 
-  return mockEntities.filter(
-    (e) =>
-      e.categoryId === categoryId &&
-      e.name.toLowerCase().includes(inputValue.toLowerCase())
+  const entitiesWithPictures = await Promise.all(
+    response.data.data.map(async (entity) => ({
+      id: entity.id,
+      categoryId: entity.categoryId,
+      name: entity.name,
+      picture: await getEntityPicture(entity.id), 
+    }))
   );
+
+  return entitiesWithPictures;
 };
 
 export const getFilterCategories = async (): Promise<FilterCategories> => {
@@ -121,9 +136,35 @@ export const getBoycottById = async (id: number, userId?: number): Promise<Detai
   return response.data.data;
 };
 
-// Crear un nuevo boycott
-export const createBoycott = async (data: CreateBoycottData): Promise<PostCardData> => {
-  const response = await boycottApi.post<ApiResponse<PostCardData>>('/api/boycotts', data);
+/**
+ * Función: createBoycott
+ * Descripción: Crea un nuevo boycott sin evidencias
+ * Inputs: Datos del boycott del formulario
+ * Outputs: Boycott creado
+ */
+// src/services/boycottService.ts
+
+export const createBoycott = async (data: {
+  title: string;
+  description: string;
+  creatorId: number; // ← Cambiar de createdBy a creatorId
+  entityId: number;
+  countryId: number;
+  injusticeTypeId: number;
+  boycottStateId?: number;
+  creatorUsername?: string;
+  caseNumber?: number;
+}): Promise<PostCardData> => {
+  const payload = {
+    ...data,
+    boycottStateId: data.boycottStateId || 1, // Valor por defecto
+  };
+
+  const response = await boycottApi.post<ApiResponse<PostCardData>>(
+    '/api/boycotts',
+    payload
+  );
+  
   return response.data.data;
 };
 

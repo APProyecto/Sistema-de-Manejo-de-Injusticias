@@ -21,7 +21,7 @@ export interface simpleEntity {
   id: number;
   categoryId: number; // 1: Company, 2: Organization, 3: Person, 4: Institution, 5: Government, 6: Other
   name: string;
-  picture: string;
+  picture: string | null;
 }
 
 export const entityCategories = {
@@ -75,6 +75,21 @@ export interface PostCardData {
   state: string;
   caseNumber?: string;
 }
+
+// src/types/index.ts
+
+export type CreateBoycottData = {
+  title: string;
+  description: string;
+  entityId: number;
+  injusticeTypeId: number;
+  countryId: number;
+  createdBy: number; // Este se mapeará a creatorId
+  creatorUsername?: string; // Opcional
+  caseNumber?: number; // Opcional
+  industryId?: number;
+  evidence?: File[];
+};
 
 export interface Indicted {
   id: number;
@@ -148,17 +163,6 @@ export interface CommentReport {
     };
   };
 }
-
-export interface CreateBoycottData {
-  nombre_entidad: string;
-  categoria: string;
-  logo?: string;
-  industria: string;
-  pais: string;
-  tipo_injusticia: string;
-  descripcion: string;
-}
-
 export interface FilterCategories {
   countries: Category[],
   industries: Category[],
