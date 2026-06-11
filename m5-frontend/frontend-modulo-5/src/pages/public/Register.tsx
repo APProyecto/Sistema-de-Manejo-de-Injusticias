@@ -23,9 +23,9 @@ import pfpSrc from "../../assets/pfpDefaultImage.png";
 import CreateIcon from "@mui/icons-material/Create";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { countries } from "../../data/countries";
-import { genders } from "../../data/genders";
+import { useState, useEffect } from "react";
+import type { Gender, Country } from "../../types";
+import { getGenders, getCountries } from '../../services/catalogueService';
 
 export default function Register() {
   const theme = useTheme();
@@ -34,8 +34,10 @@ export default function Register() {
   const [firstName, setFirstName] = useState("");
   const [userName, setUserName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [country, setCountry] = useState(40);
+  const [countryOptions, setCountryOptions] = useState<Country[]>([]);
+  const [country, setCountry] = useState<Country | null>(null);
   const [gender, setGender] = useState(1);
+  const [genderOptions, setGenderOptions] = useState<Gender[]>([]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
@@ -45,6 +47,32 @@ export default function Register() {
   const handleNavigation = (path: string) => {
     navigate(path);
   };
+
+  useEffect(() => {
+    const loadGenders = async () => {
+      try {
+        const data = await getGenders();
+        setGenderOptions(data);
+      } catch (error) {
+        setError("Error loading genders");
+      }
+    };
+
+    loadGenders();
+  }, []);
+
+  useEffect(() => {
+  const loadCountries = async () => {
+    try {
+      const data = await getCountries();
+      setCountryOptions(data);
+    } catch (error) {
+      setError("Error loading countries");
+    }
+  };
+
+  loadCountries();
+}, []);
 
   const handleRegister = async () => {
     const registerResult = await fetch(
@@ -59,7 +87,7 @@ export default function Register() {
           email,
           password,
           genderId: gender,
-          countryId: country,
+          countryId: country?.CountryID,
         }),
       },
     );
@@ -345,10 +373,15 @@ export default function Register() {
                       background: theme.palette.background.paper,
                     },
                   }}
-                  options={countries}
-                  getOptionLabel={(option) => option.name}
-                  defaultValue={countries.find((c) => c.id === 40)}
-                  onChange={(_, value) => setCountry(value?.id ?? 0)}
+                  options={countryOptions}
+                  value={country}
+                  getOptionLabel={(option) => option.CountryName}
+                  isOptionEqualToValue={(option, value) =>
+                    option.CountryID === value.CountryID
+                  }
+                  onChange={(_, newValue) => {
+                    setCountry(newValue);
+                  }}
                   renderInput={(params) => (
                     <TextField {...params} variant="filled" hiddenLabel />
                   )}
@@ -416,9 +449,9 @@ export default function Register() {
                     },
                   }}
                 >
-                  {genders.map((g) => (
-                    <MenuItem key={g.id} value={g.id}>
-                      {g.name}
+                  {genderOptions.map((g) => (
+                    <MenuItem key={g.GenderID} value={g.GenderID}>
+                      {g.GenderName}
                     </MenuItem>
                   ))}
                 </Select>
