@@ -142,7 +142,7 @@ export default function Catalogues() {
       setRows(toRows(activeTab, data));
     } catch (err: any) {
       const msg =
-        err.response?.data?.error || "No se pudieron cargar los datos.";
+        err.response?.data?.error || "Error";
       setError(msg);
     } finally {
       setLoading(false);
@@ -174,7 +174,7 @@ export default function Catalogues() {
       setNewName("");
       await fetchRows();
     } catch (err: any) {
-      const msg = err.response?.data?.error || "Error in the register";
+      const msg = err.response?.data?.error || "Error creating the record";
       setAddError(msg);
     } finally {
       setAdding(false);
@@ -215,7 +215,7 @@ export default function Catalogues() {
       await fetchRows();
     } catch (err: any) {
       const msg =
-        err.response?.data?.error || "Error in the update";
+        err.response?.data?.error || "Error updating the record.";
       setEditError(msg);
     }
   };
@@ -226,7 +226,7 @@ export default function Catalogues() {
       await fetchRows();
     } catch (err: any) {
       const msg =
-        err.response?.data?.error || "Error deleting the register";
+        err.response?.data?.error || "Error deleting the record";
       setError(msg);
     }
   };
@@ -261,7 +261,7 @@ export default function Catalogues() {
       <Box sx={s.panel(theme)}>
         <Box sx={s.addRow(theme)}>
           <TextField
-            placeholder={`Nuevo ${CONFIG[activeTab].label.toLowerCase()}`}
+            placeholder={`New ${CONFIG[activeTab].label.toLowerCase()}`}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => {
