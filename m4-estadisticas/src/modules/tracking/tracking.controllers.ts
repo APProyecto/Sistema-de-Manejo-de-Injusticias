@@ -134,12 +134,7 @@ async function getBoycottDesc(boycottId: number) {
   try {
     const CurrentMongoDocument = await getBoycottDocumentByMysqlId(boycottId);
 
-    if (!CurrentMongoDocument?.description) {
-      console.error("getBoycottDesc description not found");
-      return null;
-    }
-
-    const description = CurrentMongoDocument.description;
+    const description = CurrentMongoDocument?.description.toString() ?? "";
 
     return description;
   } catch (error) {
@@ -171,7 +166,7 @@ export async function getUserPostAndComments(req:Request, res:Response){
       },
     });
 
-    const AppUserPicture = getAppUserPicture(Number(userId));
+    const AppUserPicture = await getAppUserPicture(Number(userId));
 
     const UserPost = await prisma.boycott.findMany({
       where: {
@@ -196,10 +191,11 @@ export async function getUserPostAndComments(req:Request, res:Response){
     const enrichPost = [];
 
     for (let i = 0; i < UserPost.length; i++) {
+      const desc = await getBoycottDesc(UserPost[i].BoycottID);
       let post = {
         Title: UserPost[i].Title,
         State: UserPost[i].BoycottState.StateName,
-        Description: getBoycottDesc(UserPost[i].BoycottID)!==null?getBoycottDesc(UserPost[i].BoycottID) : '',
+        Description: desc,
       };
       enrichPost.push(post);
     }
@@ -260,13 +256,13 @@ export async function getUserPostAndComments(req:Request, res:Response){
       },
     });
 
-    interface entityInter {EntityName: string; EntityPicture:Promise<Buffer<ArrayBufferLike> | null>}
+    interface entityInter {EntityName: string; EntityPicture:Buffer<ArrayBufferLike> | null}
     let enrichEntities: entityInter[] = [];
 
     for (let i = 0; i < entityFollowing.length; i++) {
       let entity = {
         EntityName: entityFollowing[i].Boycott.Entity.EntityName,
-        EntityPicture: getEntityPicture(
+        EntityPicture: await getEntityPicture(
           entityFollowing[i].Boycott.Entity.EntityID,
         ),
       };

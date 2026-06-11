@@ -1,10 +1,11 @@
 import { Container, Typography, Button, Box, useTheme, Divider, Avatar, Select, MenuItem } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { QueriesStyles } from '../styles/QueriesStyles';
 import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
 import { Categories } from '../../data/Categories';
 import { EntityType } from '../../data/EntityType';
+import { statsApi } from "../../services/api";
 import QueryNavegation from './QueryNavigation';
 
 
@@ -18,15 +19,6 @@ interface followsQuery{
     followers:number;
   }];
 }
-let Queries: followsQuery[] = [];/**[
-    {
-        indictedPFP: StarbucksLogo,
-        indicted: 'Starbucks',
-        EntityType:'Politics',
-        injustice:'Health',
-        amountFollowers:8
-    }
-  ];**/
 
 export default function MostFollowedCases() {
   const theme = useTheme();
@@ -35,11 +27,24 @@ export default function MostFollowedCases() {
   const [caseSelected, setCase] = useState('None');
   const [EntityTypeSelected, setEntityTypeSelected] = useState(0);
 
-  const getFollows = async () => {
-    //const key = EntityTypeSelected as keyof typeof EntityType;
+  const [injusticeTypes, setInjusticeTypes] = useState<
+      { InjusticeTypeID: number; InjusticeName: string }[]
+    >([]);
+
+  const getFollows = async (entityid:number, catid:number) => {
+    let entityname = 'Category';
+    let catname = 'Category';
+    if(entityid && entityid !== 0){
+      entityname = EntityType.find(item => item.id === EntityTypeSelected)?.name ?? 'Category';
+    }
+    if(catid && catid !== 0){
+      catname = injusticeTypes.find(item => item.InjusticeTypeID === Category)?.InjusticeName ?? 'Category';
+    }
+
+    console.log(entityname, catname);//borrar luego -------------------------------------------
     const parameters = new URLSearchParams({
-      indictedFilter: EntityType.find(item => item.id === EntityTypeSelected)?.name ?? 'Category',
-      injusticeFilter: Categories.find(item => item.id === Category)?.name ?? 'Category'
+      indictedFilter: entityname,
+      injusticeFilter: catname
     });
     try{
       const response = await fetch(`http://localhost:3004/api/tracking/getFollowers?${parameters.toString()}`);
@@ -54,7 +59,20 @@ export default function MostFollowedCases() {
       console.error('Error fetching user history:', error);
     }
   }
-  //getFollows();
+  const addDefaultCategory = () =>{
+    const defaultvalue =  { InjusticeTypeID: 0, InjusticeName: 'Category' };
+    setInjusticeTypes([defaultvalue, ...injusticeTypes]);
+  }
+  
+  useEffect(()=>{
+    getFollows(EntityTypeSelected, Category);
+
+    statsApi.get("/api/audits/filter-options").then((res) => {
+          setInjusticeTypes(res.data.data.injusticeTypes);
+        });
+     addDefaultCategory();
+  },[])
+
 
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default}}>
@@ -73,7 +91,7 @@ export default function MostFollowedCases() {
             value={EntityTypeSelected}
             onChange={(etc) => {
               setEntityTypeSelected(etc.target.value);
-              getFollows();
+              getFollows(Number(etc.target.value), Category);
             }}
             disableUnderline
             variant="filled"
@@ -102,7 +120,7 @@ export default function MostFollowedCases() {
             value={Category}
             onChange={(c) => {
               setCategory(c.target.value)
-              getFollows();
+              getFollows(EntityTypeSelected, c.target.value);
             }}
             disableUnderline
             variant="filled"
@@ -115,9 +133,9 @@ export default function MostFollowedCases() {
             }}
             sx={QueriesStyles.Select(theme)}
             >
-                {Categories.map((c) => (
-                    <MenuItem key={c.id} value={c.id}>
-                        {c.name}
+                {injusticeTypes.map((c) => (
+                    <MenuItem key={c.InjusticeTypeID} value={c.InjusticeTypeID}>
+                        {c.InjusticeName}
                     </MenuItem>
                 ))}
             </Select>
@@ -130,8 +148,8 @@ export default function MostFollowedCases() {
       <Divider orientation='horizontal' flexItem sx={{...QueriesStyles.Divider(theme),m:0}}/>
       
       {followed?.map((Case) =>(
-        Case.mostFollowed?.map((Query) =>(
-          <Box key={Query.injusticeType} sx={{'&:hover':{background:theme.palette.grey[100]},display:'flex'}}
+        Case.mostFollowed?.map((Query, index) =>(
+          <Box key={`${Query.injusticeType}-${index}`} sx={{'&:hover':{background:theme.palette.grey[100]},display:'flex'}}
           onClick={()=>{setCase(Query.injusticeType);}}
           >
           <Box sx={{width:'25%',display:'flex',my:1}}>
