@@ -10,6 +10,7 @@ import {
     uploadEntityPicture,
     syncEntitiesToMongo,
     getEntityPicture,
+    getEntityPictureByBoycottId
 } from "./files.controller"
 
 const router = Router();
@@ -52,6 +53,11 @@ router.get(
 router.get(
     "/entities/:entityId/picture",
     getEntityPicture
+);
+
+router.get(
+    "/entityBoycott/:boycottId/picture",
+    getEntityPictureByBoycottId
 );
 
 router.get(
