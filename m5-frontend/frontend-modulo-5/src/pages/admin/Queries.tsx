@@ -47,7 +47,7 @@ export default function Quereis() {
   const [countryId, setCountryId] = useState(0);
   const [indictedId, setIndictedId] = useState(0);
   const [orderByVotes, setOrderByVotes] = useState("inFavorDesc");
-  const [filesOrder, setFilesOrder] = useState<"desc" | "asc">("desc");
+  const [filesOrder, setFilesOrder] = useState<"none" | "desc" | "asc">("none");
   const [entities, setEntities] = useState<
     { EntityID: number; EntityName: string }[]
   >([]);
@@ -101,6 +101,21 @@ export default function Quereis() {
 
   const handleNavigation = (path: string) => {
     navigate(path);
+  };
+
+  const sortedRows =
+    filesOrder === "none"
+      ? rows
+      : [...rows].sort((a, b) =>
+          filesOrder === "desc"
+            ? b.filesCount - a.filesCount
+            : a.filesCount - b.filesCount,
+        );
+
+  const cycleFilesOrder = () => {
+    setFilesOrder((prev) =>
+      prev === "none" ? "desc" : prev === "desc" ? "asc" : "none",
+    );
   };
 
   return (
@@ -233,12 +248,13 @@ export default function Quereis() {
           flexItem
           sx={QueriesStyles.Divider(theme)}
         />
-        <Box sx={{ width: "10%" }}>
+        <Box sx={{ width: "10%", cursor: "pointer" }} onClick={cycleFilesOrder}>
           <Typography
             variant="body2"
             sx={{ color: theme.palette.secondary.main }}
           >
-            Files
+            Files{" "}
+            {filesOrder === "none" ? "↕" : filesOrder === "desc" ? "↓" : "↑"}
           </Typography>
         </Box>
         <Divider
