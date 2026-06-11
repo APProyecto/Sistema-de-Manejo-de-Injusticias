@@ -178,16 +178,46 @@ export interface ApiResponse<T> {
     pages: number;
   };
 }
-export interface Gender { 
-  GenderID: number, 
-  GenderName: String, 
-  CreatedAt: String | null, 
-  CreatedBy: String | null, 
-  ModifiedAt: String | null, 
-  ModifiedBy: String | null, 
+export interface AuditFields {
+  CreatedAt: string | null;
+  CreatedBy: string | null;
+  ModifiedAt: string | null;
+  ModifiedBy: string | null;
 }
 
-export interface Country {
+export interface Gender extends AuditFields {
+  GenderID: number;
+  GenderName: string;
+}
+
+export interface Continent extends AuditFields {
+  ContinentID: number;
+  ContinentName: string;
+}
+
+export interface Country extends AuditFields {
   CountryID: number;
   CountryName: string;
+  ContinentID: number;
+  Continent?: Continent;
+}
+
+export interface CategoryEntity {
+  CategoryEntityID: number;
+  CategoryName: string;
+  CreatedAt?: string | null;
+  CreatedBy?: string | null;
+  ModifiedAt?: string | null;
+  ModifiedBy?: string | null;
+}
+
+export interface InjusticeType {
+  InjusticeTypeID: number;
+  InjusticeName: string;
+  MongoDocumentID?: string | null;
+  NumberBoycotts?: number;
+  CreatedAt?: string | null;
+  CreatedBy?: string | null;
+  ModifiedAt?: string | null;
+  ModifiedBy?: string | null;
 }

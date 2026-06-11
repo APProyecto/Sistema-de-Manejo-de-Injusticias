@@ -6,7 +6,7 @@ import StarBorderPurple500OutlinedIcon from '@mui/icons-material/StarBorderPurpl
 import CreateIcon from '@mui/icons-material/Create';
 import MarkunreadOutlinedIcon from '@mui/icons-material/MarkunreadOutlined';
 import { useNavigate } from 'react-router-dom';
-import { AreaChart, Assessment, Balance, PeopleAlt, QueryStats, QuestionAnswer, ReportProblem, Source } from '@mui/icons-material';
+import { AreaChart, Assessment, Balance, PeopleAlt, QueryStats, QuestionAnswer, ReportProblem, Source, Category } from '@mui/icons-material';
 
 interface AdminDahsboardSideMenu {
     onSwitchToNormalMode: () => void; 
@@ -111,6 +111,15 @@ export default function AdminDahsboardSideMenu({ onSwitchToNormalMode, currentMo
         >
             <Source sx={sideMenuStyles.buttonIcon(theme)}></Source>
             <Typography sx={sideMenuStyles.buttonText(theme)}>Logs</Typography>
+        </Button>
+
+        {/* Catalogue */}
+        <Button 
+            sx={sideMenuStyles.navButton(theme)}
+            onClick={() => handleNavigation('admin/catalogues')}
+        >
+            <Category sx={sideMenuStyles.buttonIcon(theme)}></Category>
+            <Typography sx={sideMenuStyles.buttonText(theme)}>Catalogues</Typography>
         </Button>
 
     </Container>
