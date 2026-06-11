@@ -40,7 +40,9 @@ export default function VotesBox({ votes, initialVote = null }: VotesBoxProps) {
         disableRipple
         disableTouchRipple
       >
-        <CancelIcon sx={VotesBoxStyles.buttonIcon(theme)}></CancelIcon>
+        <CheckCircleIcon
+          sx={VotesBoxStyles.buttonIcon(theme)}
+        ></CheckCircleIcon>
       </ToggleButton>
 
       {/*Votes*/}
@@ -55,9 +57,9 @@ export default function VotesBox({ votes, initialVote = null }: VotesBoxProps) {
         disableRipple
         disableTouchRipple
       >
-        <CheckCircleIcon
-          sx={VotesBoxStyles.buttonIcon(theme)}
-        ></CheckCircleIcon>
+        <CancelIcon sx={VotesBoxStyles.buttonIcon(theme)}></CancelIcon>
+
+
       </ToggleButton>
     </Container>
   );
