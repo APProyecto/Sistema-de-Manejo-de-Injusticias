@@ -8,6 +8,7 @@ import {
   TextField,
   Button,
   Box,
+  Alert,
 } from "@mui/material";
 import { loginWindowStyles } from "../styles/LoginWindowStyles";
 import CloseIcon from "@mui/icons-material/Close";
@@ -34,6 +35,7 @@ export default function LoginWindow({
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
@@ -46,7 +48,7 @@ export default function LoginWindow({
       onLoginSuccess(loggedUser);
 
       (document.activeElement as HTMLElement)?.blur();
-
+      setSuccess("User registered successfully!");
       onClose();
 
       if (loggedUser.isAdmin) {
@@ -55,8 +57,7 @@ export default function LoginWindow({
         navigate("/profile");
       }
     } catch (err: any) {
-      console.log("error:", err);
-      setError(err.message);
+      setError("Incorrect credentials");
     }
 
     /*
@@ -178,7 +179,7 @@ export default function LoginWindow({
           sx={loginWindowStyles.textField(theme)}
           onChange={(e) => setEmail(e.target.value)}
           required
-          label="Email or username"
+          label="Email"
           variant="filled"
           size="small"
         />
@@ -196,6 +197,34 @@ export default function LoginWindow({
         <Typography sx={loginWindowStyles.typography(theme)} variant="body1">
           Don't have an account? Sign Up
         </Typography>
+        {success && (
+          <Alert
+            severity="success"
+            onClose={() => setSuccess("")}
+            sx={{
+              position: "fixed",
+              bottom: 20,
+              right: 20,
+              zIndex: 9999,
+            }}
+          >
+            {success}
+          </Alert>
+        )}
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError("")}
+            sx={{
+              position: "fixed",
+              bottom: 20,
+              right: 20,
+              zIndex: 9999,
+            }}
+          >
+            {error}
+          </Alert>
+        )}
         <Button
           sx={loginWindowStyles.secundaryButton(theme)}
           onClick={handleLogin}
