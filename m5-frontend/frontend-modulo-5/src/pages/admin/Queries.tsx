@@ -46,7 +46,7 @@ export default function Quereis() {
   const [dateTo, setDateTo] = useState("");
   const [countryId, setCountryId] = useState(0);
   const [indictedId, setIndictedId] = useState(0);
-  const [orderByVotes, setOrderByVotes] = useState("inFavorDesc");
+  const [orderByVotes, setOrderByVotes] = useState("none");
   const [filesOrder, setFilesOrder] = useState<"none" | "desc" | "asc">("none");
   const [entities, setEntities] = useState<
     { EntityID: number; EntityName: string }[]
@@ -118,9 +118,26 @@ export default function Quereis() {
     );
   };
 
+  const clearFilters = () => {
+    setAuthorInput("");
+    setIndictedId(0);
+    setCategory(0);
+    setDateFrom("");
+    setDateTo("");
+    setCountryId(0);
+    setOrderByVotes("none");
+    setFilesOrder("none");
+    fetchPublications("", 0, 0, "", "", 0, "none");
+  };
+
   return (
     <Container sx={{ p: 5, backgroundColor: theme.palette.background.default }}>
       <QueryNavegation />
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+        <Button variant="outlined" onClick={clearFilters}>
+          Clear Filters
+        </Button>
+      </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", mt: 5, mb: 0 }}>
         <Box sx={{ width: "14%" }}>
@@ -188,7 +205,7 @@ export default function Quereis() {
             }}
             sx={QueriesStyles.Select(theme)}
           >
-            <MenuItem value={0}>Entity</MenuItem>
+            <MenuItem value={0}>All</MenuItem>
             {entities.map((e) => (
               <MenuItem key={e.EntityID} value={e.EntityID}>
                 {e.EntityName}
@@ -235,7 +252,7 @@ export default function Quereis() {
             }}
             sx={QueriesStyles.Select(theme)}
           >
-            <MenuItem value={0}>Category</MenuItem>
+            <MenuItem value={0}>All</MenuItem>
             {injusticeTypes.map((c) => (
               <MenuItem key={c.InjusticeTypeID} value={c.InjusticeTypeID}>
                 {c.InjusticeName}
@@ -348,7 +365,7 @@ export default function Quereis() {
             }}
             sx={QueriesStyles.Select(theme)}
           >
-            <MenuItem value={0}>Country</MenuItem>
+            <MenuItem value={0}>All</MenuItem>
             {countries.map((c) => (
               <MenuItem key={c.CountryID} value={c.CountryID}>
                 {c.CountryName}

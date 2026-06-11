@@ -18,7 +18,7 @@ export async function getAuditPublications(req: Request, res: Response) {
       author,
       indicted,
       entityId,
-      orderByVotes = "inFavor", // Opciones: "inFavor", "against", o "desc" para descendente
+      orderByVotes = "none",
     } = req.query;
 
     const where: any = {};
@@ -77,13 +77,15 @@ export async function getAuditPublications(req: Request, res: Response) {
         },
       },
       orderBy:
-        orderByVotes === "inFavorAsc"
-          ? { VotesInFavor: "asc" }
-          : orderByVotes === "againstDesc"
-            ? { VotesAgainst: "desc" }
-            : orderByVotes === "againstAsc"
-              ? { VotesAgainst: "asc" }
-              : { VotesInFavor: "desc" }, // default: "inFavorDesc"
+        orderByVotes === "inFavorDesc"
+          ? { VotesInFavor: "desc" }
+          : orderByVotes === "inFavorAsc"
+            ? { VotesInFavor: "asc" }
+            : orderByVotes === "againstDesc"
+              ? { VotesAgainst: "desc" }
+              : orderByVotes === "againstAsc"
+                ? { VotesAgainst: "asc" }
+                : { PublicationDate: "desc" }, // default: "inFavorDesc"
     });
 
     const enrichedData = await Promise.all(
