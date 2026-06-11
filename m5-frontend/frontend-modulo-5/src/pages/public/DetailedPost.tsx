@@ -27,7 +27,7 @@ import PublicComment from "../../components/public/PublicComment";
 import { useAuth } from "../../context/authContext";
 import UserComment from "../../components/user/UserComment";
 import PostCommentBox from "../../components/user/PostCommentBox";
-import { getBoycottById } from "../../services/boycottService";
+import { getBoycottById, voteBoycott } from "../../services/boycottService";
 import { formatDate, formatNumber } from "../../utils/utils";
 
 type CommentFilter = "New" | "Old" | "Most Relevant" | "Less Relevant";
@@ -90,20 +90,21 @@ export default function DetailedPost() {
     }
   };
 
+  const handleVoteChange = async (newVote: boolean | null) => {
+    if (!isAuthenticated) {
+      globalThis.alert("Debes iniciar sesión para votar.");
+      throw new Error("Not authenticated");
+    }
+
+    if (newVote === null || !id) {
+      return;
+    }
+
+    await voteBoycott(Number(id), newVote, user?.appUserId);
+  };
+
   const visibleEvidences = data.evidences.slice(0, 2);
   const extraEvidences = data.evidences.length - 2;
-
-  const refreshComments = async () => {
-    if (!id) return;
-
-    const updatedComments = await getComments(
-      Number(id),
-      filterNumber,
-      user?.userId,
-    );
-
-    setComments(updatedComments);
-  };
 
   const handleCreateComment = async (description: string) => {
     if (!id || !user?.userId) return;
@@ -220,6 +221,7 @@ export default function DetailedPost() {
           <VotesBox
             votes={formatNumber(data.votes)}
             initialVote={data.voted_by_user}
+            onVoteChange={handleVoteChange}
           ></VotesBox>
 
           {/* Comments */}
