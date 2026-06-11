@@ -114,14 +114,14 @@ function clampPageSize(size: number) {
 
 function buildOrderBy(sort: AdminBoycottSort) {
   if (sort === "activity") {
-    return [{ NumberReports: "desc" }, { NumberComments: "desc" }];
+    return [{ NumberReports: "desc" as const }, { NumberComments: "desc" as const }];
   }
 
   if (sort === "relevance") {
-    return [{ NumberFavorites: "desc" }, { VotesInFavor: "desc" }];
+    return [{ NumberFavorites: "desc" as const }, { VotesInFavor: "desc" as const }];
   }
 
-  return [{ CreatedAt: "desc" }];
+  return [{ CreatedAt: "desc" as const }];
 }
 
 function buildWhere(params: AdminBoycottListParams) {

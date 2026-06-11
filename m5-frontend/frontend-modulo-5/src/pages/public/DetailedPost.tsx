@@ -18,7 +18,7 @@ import PublicComment from '../../components/public/PublicComment';
 import { useAuth } from '../../context/authContext';
 import UserComment from '../../components/user/UserComment';
 import PostCommentBox from '../../components/user/PostCommentBox';
-import { getBoycottById } from '../../services/boycottService';
+import { getBoycottById, voteBoycott } from '../../services/boycottService';
 import { formatDate, formatNumber } from '../../utils/utils';
 
 type CommentFilter = 'New' | 'Old' | 'Most Relevant' | 'Less Relevant';
@@ -71,6 +71,19 @@ export default function DetailedPost() {
       }else{
           return theme.palette.background.default;
       }
+  }
+
+  const handleVoteChange = async (newVote: boolean | null) => {
+    if (!isAuthenticated) {
+      globalThis.alert('Debes iniciar sesión para votar.');
+      throw new Error('Not authenticated');
+    }
+
+    if (newVote === null || !id) {
+      return;
+    }
+
+    await voteBoycott(Number(id), newVote, user?.appUserId);
   }
 
   const visibleEvidences = data.evidences.slice(0, 2);
@@ -139,6 +152,7 @@ export default function DetailedPost() {
           <VotesBox
               votes={formatNumber(data.votes)}
               initialVote={data.voted_by_user}
+              onVoteChange={handleVoteChange}
               >
           </VotesBox>
 
@@ -209,8 +223,8 @@ export default function DetailedPost() {
         <Typography sx={detailedPostStyles.text(theme)}>{data.country}</Typography>
 
         <Typography sx={detailedPostStyles.subtitle(theme)}>Other Company Cases</Typography>
-        {data.indicted.cases.map((item, index) => (
-          <Container key={index} sx={detailedPostStyles.bulletItem(theme)}>
+        {data.indicted.cases.map((item) => (
+          <Container key={item} sx={detailedPostStyles.bulletItem(theme)}>
             <Typography sx={detailedPostStyles.bulletPoint(theme)}>{'\u2022'}</Typography>
             <Typography sx={detailedPostStyles.text(theme)}>{item}</Typography>
           </Container>

@@ -2,6 +2,35 @@
 import type { ApiResponse, PostCardData, CreateBoycottData, DetailedPostData } from '../types';
 import { authApi, boycottApi } from './api';
 
+type HttpMethod = 'get' | 'post' | 'delete';
+
+const tryEndpoints = async <T>(
+  endpoints: Array<{ method: HttpMethod; url: string; data?: unknown; params?: Record<string, unknown> }>
+): Promise<T> => {
+  let lastError: unknown;
+
+  for (const endpoint of endpoints) {
+    try {
+      if (endpoint.method === 'get') {
+        const response = await boycottApi.get<T>(endpoint.url, { params: endpoint.params });
+        return response.data;
+      }
+
+      if (endpoint.method === 'delete') {
+        const response = await boycottApi.delete<T>(endpoint.url, { params: endpoint.params });
+        return response.data;
+      }
+
+      const response = await boycottApi.post<T>(endpoint.url, endpoint.data, { params: endpoint.params });
+      return response.data;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+};
+
 // Obtener todos los boycotts (con filtros)
 export const getBoycotts = async (filters?: {
   industria?: string;
@@ -25,7 +54,7 @@ export const getBoycotts = async (filters?: {
 // Obtener un boycott por ID
 export const getBoycottById = async (id: number, userId?: number): Promise<DetailedPostData> => {
   const response = await boycottApi.get<ApiResponse<DetailedPostData>>(`/api/boycotts/${id}`, {
-    params: userId !== undefined ? { userId } : undefined,
+    params: userId === undefined ? undefined : { userId },
   });
   console.log(response.data);
   return response.data.data;
@@ -49,19 +78,62 @@ export const deleteBoycott = async (id: number): Promise<void> => {
 };
 
 // Votar por un boycott
-export const voteBoycott = async (id: number, voto: boolean): Promise<void> => {
-  await boycottApi.post(`/api/boycotts/${id}/voto`, { voto });
+export const voteBoycott = async (id: number, voto: boolean, userId?: number): Promise<void> => {
+  await tryEndpoints([
+    { method: 'post', url: `/api/boycotts/${id}/vote`, data: { isInFavor: voto, userId }, params: userId ? { userId } : undefined },
+    { method: 'post', url: `/api/boycotts/${id}/voto`, data: { voto } },
+    { method: 'post', url: `/api/boycotts/${id}/votes`, data: { inFavor: voto } },
+  ]);
 };
 
 // Marcar/desmarcar favorito
-export const toggleFavorite = async (id: number): Promise<void> => {
-  await boycottApi.post(`/api/boycotts/${id}/favorito`);
+export const setFavorite = async (id: number, isFavorite: boolean, userId?: number): Promise<void> => {
+  if (isFavorite) {
+    await tryEndpoints([
+      { method: 'post', url: `/api/boycotts/${id}/favorite`, params: userId ? { userId } : undefined },
+      { method: 'post', url: `/api/boycotts/${id}/favorito` },
+      { method: 'post', url: `/api/admin/boycotts/${id}/favorites`, params: userId ? { userId } : undefined },
+    ]);
+    return;
+  }
+
+  await tryEndpoints([
+    { method: 'delete', url: `/api/boycotts/${id}/favorite`, params: userId ? { userId } : undefined },
+    { method: 'delete', url: `/api/boycotts/${id}/favorito` },
+    { method: 'delete', url: `/api/admin/boycotts/${id}/favorites`, params: userId ? { userId } : undefined },
+  ]);
 };
 
 // Obtener boycotts favoritos
-export const getFavorites = async (): Promise<PostCardData[]> => {
-  const response = await boycottApi.get<ApiResponse<PostCardData[]>>('/api/boycotts/favoritos');
-  return response.data.data;
+export const getFavorites = async (userId?: number): Promise<PostCardData[]> => {
+  const data = await tryEndpoints<ApiResponse<PostCardData[]> | { success: boolean; data: PostCardData[] }>([
+    { method: 'get', url: '/api/boycotts/favorites', params: userId ? { userId } : undefined },
+    { method: 'get', url: '/api/boycotts/favoritos' },
+    { method: 'get', url: '/api/admin/boycotts/favorites', params: userId ? { userId } : undefined },
+  ]);
+
+  return (data as any).data ?? [];
+};
+
+// Reportar un boycott
+export const reportBoycott = async (
+  id: number,
+  payload: { reason: string; description?: string },
+  userId?: number
+): Promise<void> => {
+  await tryEndpoints([
+    {
+      method: 'post',
+      url: `/api/boycotts/${id}/report`,
+      data: { ...payload, userId },
+    },
+    {
+      method: 'post',
+      url: `/api/admin/boycotts/${id}/report`,
+      data: payload,
+      params: userId ? { userId } : undefined,
+    },
+  ]);
 };
 
 // Prueba temporal: obtener cantidad de usuarios desde M1

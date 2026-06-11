@@ -2,37 +2,33 @@ import {
   Avatar,
   Button,
   Container,
-  Menu,
-  ToggleButton,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { PostCardStyles } from "../styles/PostCardStyles";
-import { useTheme } from "@mui/material";
-import type { PostCardData, User } from "../../types";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import { useState } from "react";
+import type { PostCardData } from "../../types";
 import Entity from "./Entity";
 import VotesBox from "../public/VotesBox";
 import PostInteracionButton from "./PostInteractionButton";
 import DocumentScannerIcon from "@mui/icons-material/DocumentScanner";
 import InsertCommentIcon from "@mui/icons-material/InsertComment";
-import CircleIcon from "@mui/icons-material/Circle";
 import { Circle } from "@mui/icons-material";
-import OptionMenu from "../user/OptionMenuFeed";
 import OptionMenuFeed from "../user/OptionMenuFeed";
 import OptionMenuMyPosts from "../user/OptionMenuMyPosts";
 import { useNavigate } from "react-router-dom";
 import { formatDate, formatNumber } from "../../utils/utils";
+import { useAuth } from "../../context/authContext";
+import { voteBoycott } from "../../services/boycottService";
 
 interface PostCardProps {
   data: PostCardData;
   inFeed: boolean;
-  voteSelection?: "positive" | "negative";
 }
 
-export default function PostCard({ data, inFeed }: PostCardProps) {
+export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
   const theme = useTheme();
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
 
   const onPostClick = () => {
     navigate(`/detailed-post/${data.id}`);
@@ -64,6 +60,19 @@ export default function PostCard({ data, inFeed }: PostCardProps) {
     }
   };
 
+  const handleVoteChange = async (newVote: boolean | null) => {
+    if (!isAuthenticated) {
+      globalThis.alert("Debes iniciar sesión para votar.");
+      throw new Error("Not authenticated");
+    }
+
+    if (newVote === null) {
+      return;
+    }
+
+    await voteBoycott(data.id, newVote, user?.appUserId);
+  };
+
   return (
     <Button sx={PostCardStyles.container(theme)} onClick={onPostClick}>
       <Container sx={PostCardStyles.topContainer(theme)}>
@@ -92,7 +101,8 @@ export default function PostCard({ data, inFeed }: PostCardProps) {
         {/* Options */}
         {inFeed ? (
           <OptionMenuFeed
-            favorite={data.is_favorite ? true : false}
+            favorite={!!data.is_favorite}
+            boycottId={data.id}
           ></OptionMenuFeed>
         ) : (
           <OptionMenuMyPosts></OptionMenuMyPosts>
@@ -139,6 +149,7 @@ export default function PostCard({ data, inFeed }: PostCardProps) {
           <VotesBox
             votes={formatNumber(data.votes)}
             initialVote={data.voted_by_user}
+            onVoteChange={handleVoteChange}
           ></VotesBox>
 
           {/* Comments */}
