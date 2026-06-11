@@ -41,8 +41,6 @@ export default function LoginWindow({
     try {
       const response = await loginService(email, password);
 
-      console.log("response:", response);
-
       const loggedUser = login(response.user);
 
       onLoginSuccess(loggedUser);
@@ -51,7 +49,7 @@ export default function LoginWindow({
 
       onClose();
 
-      if (loggedUser.role === "admin") {
+      if (loggedUser.isAdmin) {
         navigate("/admin/dashboard");
       } else {
         navigate("/profile");
@@ -108,7 +106,7 @@ export default function LoginWindow({
 
         onClose();
 
-        if (loggedUser.role === "admin") {
+        if (loggedUser.isAdmin) {
           navigate("/admin/dashboard");
         } else {
           navigate("/profile");

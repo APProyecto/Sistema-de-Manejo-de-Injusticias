@@ -939,7 +939,7 @@ export async function googleLogin(req: Request, res: Response) {
 
     let appUser = null;
 
-    if (userSearch.found) {
+    if (userSearch.appUserId > -1) {
       appUser = await prisma.appUser.findUnique({
         where: {
           UserID: userSearch.appUserId,
@@ -948,12 +948,12 @@ export async function googleLogin(req: Request, res: Response) {
     }
 
 
-    if (!appUser) {
+    if (userSearch.appUserId === -1) {
       appUser = await prisma.appUser.create({
         data: {
           FirstName: encryptText(given_name || ""),
           LastName: encryptText(family_name || ""),
-          UserName: name || email.split("@")[0],
+          UserName: email,
           Email: encryptText(cleanEmail),
           Password: "", 
           IsAdmin: false, 
@@ -1032,6 +1032,8 @@ export async function googleLogin(req: Request, res: Response) {
         username: appUser.UserName,
         email: safeDecryptText(appUser.Email),
         isAdmin: appUser.IsAdmin,
+        isSuperAdmin : false,
+        isNormal : !appUser.isAdmin,
         mongoDocumentId: appUser.MongoDocumentID,
       },
     });
