@@ -1,6 +1,6 @@
 import { Container, ToggleButton, Typography, useTheme } from "@mui/material";
 import { VotesBoxStyles } from "../styles/VotesBoxStyles";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CancelIcon from "@mui/icons-material/Cancel";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
@@ -18,6 +18,10 @@ export default function VotesBox({
   const theme = useTheme();
   const [vote, setVote] = useState<boolean | null>(initialVote);
   const [isSendingVote, setIsSendingVote] = useState(false);
+
+  useEffect(() => {
+    setVote(initialVote);
+  }, [initialVote]);
 
   const handleVote = async (newVote: boolean, event: React.MouseEvent) => {
     event.stopPropagation();
