@@ -1,6 +1,6 @@
 import type { SxProps, Theme } from '@mui/material';
 
-export const reportWindowStyles = {
+export const commentDialogStyles = {
     dialogContent: (theme: Theme): SxProps<Theme> => ({
         backgroundColor: '#3C3C3C',
         display: 'flex',
@@ -43,6 +43,15 @@ export const reportWindowStyles = {
         minWidth: '200px',
         marginTop: '10px',
         fontWeight: 'bold'
+    }),
+
+    body: (theme: Theme): SxProps<Theme> => ({
+        color: 'white',
+        textAlign: 'center',
+        width: '81%',
+        minWidth: '200px',
+        marginTop: '10px',
+        fontWeight: theme.typography.body1.fontWeight,
     }),
 
     textField: (theme: Theme): SxProps<Theme> => ({
@@ -137,6 +146,17 @@ export const reportWindowStyles = {
             backgroundColor: theme.palette.grey[600],
             color: theme.palette.grey[400]
         }
+    }),
+
+    deleteButton: (theme: Theme): SxProps<Theme> => ({
+        flex: 1,
+        backgroundColor: theme.palette.error.main,
+        color: theme.palette.text.primary,
+        borderRadius: '15px',
+        padding: '10px',
+        '&:hover': {
+            backgroundColor: theme.palette.primary.dark,
+        },
     }),
 
     cancelButton: (theme: Theme): SxProps<Theme> => ({

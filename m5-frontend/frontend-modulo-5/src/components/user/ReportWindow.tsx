@@ -1,5 +1,5 @@
 import {useTheme, Dialog, DialogContent, IconButton, Typography, TextField, Button, Box, MenuItem, Select, FormControl, InputLabel} from '@mui/material';
-import { reportWindowStyles } from '../styles/ReportWindowStyles';
+import { commentDialogStyles } from '../styles/CommentDialogStyles';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
 
@@ -42,34 +42,34 @@ export default function ReportWindow({ open, onClose, commentId }: ReportWindowP
     };
 
     return (
-        <Dialog sx={reportWindowStyles.dialog(theme)} open={open} onClose={onClose}>
-            <DialogContent sx={reportWindowStyles.dialogContent(theme)}>
+        <Dialog sx={commentDialogStyles.dialog(theme)} open={open} onClose={onClose}>
+            <DialogContent sx={commentDialogStyles.dialogContent(theme)}>
 
-                <Typography variant='h2' sx={reportWindowStyles.title(theme)}>Report Comment</Typography>
+                <Typography variant='h2' sx={commentDialogStyles.title(theme)}>Report Comment</Typography>
                 
-                <Typography variant='body1' sx={reportWindowStyles.label(theme)}>Description</Typography>
+                <Typography variant='body1' sx={commentDialogStyles.label(theme)}>Description</Typography>
                 <TextField
                     multiline
                     rows={4}
                     placeholder="Please provide a detailed description of the issue..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    sx={reportWindowStyles.textField(theme)}
+                    sx={commentDialogStyles.textField(theme)}
                     variant="filled"
                 />
 
-                <Typography variant='body1' sx={reportWindowStyles.label(theme)}>Reason</Typography>
-                <FormControl sx={reportWindowStyles.formControl(theme)}>
+                <Typography variant='body1' sx={commentDialogStyles.label(theme)}>Reason</Typography>
+                <FormControl sx={commentDialogStyles.formControl(theme)}>
                     <InputLabel sx={{ color: theme.palette.grey[400] }}>Select a reason</InputLabel>
                     <Select
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
                         label="Select a reason"
-                        sx={reportWindowStyles.select(theme)}
+                        sx={commentDialogStyles.select(theme)}
                         MenuProps={{
                             slotProps: {
                                 paper:{
-                                    sx: reportWindowStyles.menuPaper(theme)
+                                    sx: commentDialogStyles.menuPaper(theme)
                                 }
                             }
                         }}
@@ -82,9 +82,9 @@ export default function ReportWindow({ open, onClose, commentId }: ReportWindowP
                     </Select>
                 </FormControl>
 
-                <Box sx={reportWindowStyles.buttonContainer(theme)}>
+                <Box sx={commentDialogStyles.buttonContainer(theme)}>
                     <Button 
-                        sx={reportWindowStyles.sendButton(theme)} 
+                        sx={commentDialogStyles.sendButton(theme)} 
                         onClick={handleSendReport}
                         variant="contained"
                         disabled={!description.trim() || !reason}
@@ -93,7 +93,7 @@ export default function ReportWindow({ open, onClose, commentId }: ReportWindowP
                     </Button>
                     
                     <Button 
-                        sx={reportWindowStyles.cancelButton(theme)} 
+                        sx={commentDialogStyles.cancelButton(theme)} 
                         onClick={handleCancel}
                         variant="outlined"
                     >
