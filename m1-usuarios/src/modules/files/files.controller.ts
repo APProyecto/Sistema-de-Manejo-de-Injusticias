@@ -330,3 +330,90 @@ export async function syncInjusticeTypesToMongo(_req: Request , res: Response) {
         })
     }
 }
+
+/**
+ 
+Function: getUserAppPicture,
+Inputs: appUserId from request params,
+Description: Retrieves the user picture metadata from MongoDB,
+and downloads the image stored in GridFS.,
+Outputs: Image buffer or error message.*/
+
+export async function getUserAppPicture(
+    req: Request,
+    res: Response
+) {
+    try {
+        const appUserId = Number(
+            req.params.appUserId
+        );
+
+        if (!Number.isInteger(appUserId) || appUserId <= 0) {
+        return res.status(400).json({
+            error: "Invalid appUserId",
+        });
+        }
+
+
+        const appUser =
+            await prisma.appUser.findUnique({
+                where: {
+                    UserID: appUserId,
+                },
+            });
+
+        if (!appUser) {
+            return res.status(404).json({
+                error: "appUser not found",
+            });
+        }
+
+        const currentMongoDocument =
+            await getAppUserDocumentByUserId(
+                appUser.UserID
+            );
+
+        if (
+            !currentMongoDocument
+                ?.picture
+                ?.mongoFileId
+        ) {
+            return res.status(404).json({
+                error:
+                    "appUser picture not found",
+            });
+        }
+
+        const fileBuffer =
+            await downloadFileFromGridFS(
+                currentMongoDocument
+                    .picture
+                    .mongoFileId
+                    .toString()
+            );
+
+        res.setHeader(
+            "Content-Type",
+            currentMongoDocument.picture.contentType ?? "application/octet-stream"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `inline; filename="${currentMongoDocument.picture.fileName}`
+        );
+
+
+        return res.send(fileBuffer);
+
+    } catch (error) {
+        console.error(
+            "getUserAppPicture error:",
+            error
+        );
+
+        return res.status(500).json({
+            error:
+                "Internal server error",
+        });
+    }
+}

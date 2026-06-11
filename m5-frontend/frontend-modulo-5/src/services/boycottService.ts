@@ -1,5 +1,5 @@
 // src/services/boycottService.ts
-import type { ApiResponse, Boycott, CreateBoycottData } from '../types';
+import type { ApiResponse, PostCardData, CreateBoycottData, DetailedPostData, FilterCategories } from '../types';
 import { authApi, boycottApi } from './api';
 
 // Obtener todos los boycotts (con filtros)
@@ -8,28 +8,75 @@ export const getBoycotts = async (filters?: {
   pais?: string;
   tipo_injusticia?: string;
   orden?: string;
-}): Promise<Boycott[]> => {
-  const response = await boycottApi.get<ApiResponse<Boycott[]>>('/api/boycotts', {
-    params: filters,
+}): Promise<PostCardData[]> => {
+  const response = await boycottApi.get<ApiResponse<PostCardData[]>>('/api/boycotts', {
+    params: {
+      ...filters,
+      page: 1,
+      pageSize: 10,
+      orderBy: 'votes',
+    },
   });
+  
   return response.data.data;
 };
 
+export const searchBoycotts = async (
+  q: string,
+  filters?: {
+    industryTypeId?: number;
+    countryId?: number;
+    injusticeTypeId?: number;
+    orderBy?: string;
+  }
+): Promise<PostCardData[]> => {
+  const response = await boycottApi.get<ApiResponse<PostCardData[]>>(`/api/boycotts/search`, {
+    params: {
+      q,
+      ...filters,
+      page: 1,
+      pageSize: 10,
+    },
+  });
+  console.log(response);
+  return response.data.data;
+};
+
+export const getFilterCategories = async (): Promise<FilterCategories> => {
+  const response = await boycottApi.get(`/api/boycotts/filters`);
+  const { paises, industrias, tiposInjusticia } = response.data.data;
+  
+  return {
+    countries: paises.map((p: any) => ({ id: p.CountryID, name: p.CountryName })),
+    industries: industrias.map((i: any) => ({ id: i.IndustryTypeID, name: i.IndustryName })),
+    injustices: tiposInjusticia.map((t: any) => ({ id: t.InjusticeTypeID, name: t.InjusticeName })),
+    orderOptions: [
+      { id: 0, name: "Most Recent" },
+      { id: 1, name: "Oldest" },
+      { id: 2, name: "Most relevant" },
+      { id: 3, name: "Less relevant" },
+    ],
+  };
+};
+
 // Obtener un boycott por ID
-export const getBoycottById = async (id: number): Promise<Boycott> => {
-  const response = await boycottApi.get<ApiResponse<Boycott>>(`/api/boycotts/${id}`);
+export const getBoycottById = async (id: number, userId?: number): Promise<DetailedPostData> => {
+  const response = await boycottApi.get<ApiResponse<DetailedPostData>>(`/api/boycotts/${id}`, {
+    params: userId !== undefined ? { userId } : undefined,
+  });
+  console.log(response.data);
   return response.data.data;
 };
 
 // Crear un nuevo boycott
-export const createBoycott = async (data: CreateBoycottData): Promise<Boycott> => {
-  const response = await boycottApi.post<ApiResponse<Boycott>>('/api/boycotts', data);
+export const createBoycott = async (data: CreateBoycottData): Promise<PostCardData> => {
+  const response = await boycottApi.post<ApiResponse<PostCardData>>('/api/boycotts', data);
   return response.data.data;
 };
 
 // Actualizar un boycott
-export const updateBoycott = async (id: number, data: Partial<CreateBoycottData>): Promise<Boycott> => {
-  const response = await boycottApi.put<ApiResponse<Boycott>>(`/api/boycotts/${id}`, data);
+export const updateBoycott = async (id: number, data: Partial<CreateBoycottData>): Promise<PostCardData> => {
+  const response = await boycottApi.put<ApiResponse<PostCardData>>(`/api/boycotts/${id}`, data);
   return response.data.data;
 };
 
@@ -49,8 +96,8 @@ export const toggleFavorite = async (id: number): Promise<void> => {
 };
 
 // Obtener boycotts favoritos
-export const getFavorites = async (): Promise<Boycott[]> => {
-  const response = await boycottApi.get<ApiResponse<Boycott[]>>('/api/boycotts/favoritos');
+export const getFavorites = async (): Promise<PostCardData[]> => {
+  const response = await boycottApi.get<ApiResponse<PostCardData[]>>('/api/boycotts/favoritos');
   return response.data.data;
 };
 

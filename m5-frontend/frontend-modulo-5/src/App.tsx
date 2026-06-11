@@ -1,107 +1,46 @@
+import { ThemeProvider } from "@mui/system";
+import { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import Guide from './pages/Guide';
-import Header from './components/Header';
-import SideMenu from './components/SideMenu'
-import Home from './pages/Home';
-import Favorites from './pages/Favorites';
-import MyPosts from './pages/MyPosts';
-import Suggestions from './pages/Suggestions';
-import { Container, ThemeProvider } from '@mui/system';
-import { darkTheme, lightTheme } from './theme';
-import { useState } from 'react';
-import { Outlet, Route, Routes } from 'react-router-dom';
-import CerateBoycott from './pages/CreateBoycott';
-import SideMenuUnsigned from './components/SideMenuUnsigned';
-import Register from './pages/Register';
-import { useEffect } from 'react';
-import { syncUser } from './services/authService';
+
+import { darkTheme } from "./theme";
+import AppRoutes from "./routes/AppRoutes";
+import { AuthProvider } from "./context/authContext";
+import { SearchProvider } from "./context/SearchContext";
+import { syncUser } from "./services/authService";
 
 const theme = darkTheme;
-//const singedIn = false;
 
 function App() {
-  const {
-    isAuthenticated,
-    getAccessTokenSilently,
-    user,
-  } = useAuth0();
+  const { isAuthenticated, getAccessTokenSilently, user } = useAuth0();
 
   useEffect(() => {
-
     async function syncAuthUser() {
-
       try {
-
         if (!isAuthenticated) return;
 
         const token = await getAccessTokenSilently();
 
-        console.log("TOKEN:", token);
-
-        // GUARDAR TOKEN
         localStorage.setItem("token", token);
 
-        console.log("TOKEN:", token);
-
-        await syncUser(
-          token,
-          user?.email || "",
-          user?.name || "User",
-        );
+        await syncUser(token, user?.email || "", user?.name || "User");
 
         console.log("Usuario sincronizado:", user);
-
       } catch (error) {
-
         console.error(error);
       }
     }
 
     syncAuthUser();
-
-  }, [isAuthenticated]);
+  }, [isAuthenticated, getAccessTokenSilently, user]);
 
   return (
-    <ThemeProvider theme={theme}>
-      <Routes>
-        <Route
-          element={
-            <Container>
-              <Header />
-              <Container sx={
-                {display:'flex', 
-                flexDirection:'row', 
-                height: 'calc(100vh - 90px)',
-                overflow: 'hidden'
-                }}>
-                {isAuthenticated?
-                  <SideMenu />:
-                  <SideMenuUnsigned />
-                }
-                <Outlet/>
-              </Container>
-            </Container>
-          }
-        >
-      
-      {/*ESTAS SON LAS RUTAS QUE CONTIENEN SIDEBARS */}
-      
-          <Route path="/" element={<Guide />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/create" element={<CerateBoycott />} />
-          <Route path="/my-posts" element={<MyPosts />} />
-          <Route path="/suggestions" element={<Suggestions />} />
-        
-        </Route>
-      
-      {/*ESTAS SON LAS RUTAS QUE NO CONTIENEN SIDEBARS */}
-      
-        <Route path="/register" element={<Register />} />
-  
-      </Routes>
-
-    </ThemeProvider>
+    <SearchProvider>
+      <AuthProvider>
+        <ThemeProvider theme={theme}>
+          <AppRoutes />
+        </ThemeProvider>
+      </AuthProvider>
+    </SearchProvider>
   );
 }
 
