@@ -21,7 +21,7 @@ import ManageUsers from '../pages/admin/ManageUsers';
 import ManageReports from '../pages/admin/ManageReports';
 import Statistics from '../pages/admin/Statistics';
 import Queries from '../pages/admin/Queries';
-import CompanyBoycotts from '../pages/admin/companyBoycotts';
+import CompanyBoycotts from '../pages/admin/CompanyBoycotts';
 import UserHistory from '../pages/admin/UserHistory';
 import MostFollowedCases from '../pages/admin/MostFollowedCases';
 import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
