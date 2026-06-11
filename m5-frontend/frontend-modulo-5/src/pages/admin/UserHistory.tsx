@@ -19,7 +19,7 @@ interface userQuery {ok:boolean;
   posts:[{
     Title:string;
     State:string;
-    description:string;
+    Description:string;
   }];
   Comments:[{
     Title:string;
@@ -141,7 +141,7 @@ export default function UserHistory() {
                     <Typography variant='h5' sx={UserHistoryStyles.subTextBold(theme)}>{Post.Title}</Typography>
                   </Box>
                   <Box sx={{display:'flex'}}>
-                    <Typography variant='h6' sx={UserHistoryStyles.subText(theme)}>{Post.description}</Typography>
+                    <Typography variant='h6' sx={UserHistoryStyles.subText(theme)}>{Post.Description}</Typography>
                   </Box>
                 </Box>
            
@@ -161,8 +161,8 @@ export default function UserHistory() {
             <Box sx={{display:'flex'}}>
               <Typography variant='h5' sx={UserHistoryStyles.subTitle(theme)}>User Comments</Typography>
             </Box>
-            {Query.Comments?.map((Comment) =>(
-              <Box key={Comment.Title} sx={UserHistoryStyles.Box(theme)}
+            {Query.Comments?.map((Comment, index) =>(
+              <Box key={`${Comment.Title}-${index}`} sx={UserHistoryStyles.Box(theme)}
               onClick={()=>{setCommentSelected(Comment.Description);}}>
               {/* WIP : Falta hacer que al clickear el comentario haga algo */}
            
