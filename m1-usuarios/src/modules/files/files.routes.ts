@@ -10,7 +10,8 @@ import {
     uploadEntityPicture,
     syncEntitiesToMongo,
     getEntityPicture,
-    getEntityPictureByBoycottId
+    getEntityPictureByBoycottId,
+    getInjusticeTypePictureByBoycott
 } from "./files.controller"
 
 const router = Router();
@@ -33,6 +34,11 @@ router.post(
 router.put("/injustice-types/:injusticeTypeId/picture",
     upload.single("file"),
     uploadInjusticeTypePicture
+);
+
+router.get(
+    "/injustice-typesBoycott/:boycottId/picture",
+    getInjusticeTypePictureByBoycott
 );
 
 router.put("/entities/:entityId/picture",
