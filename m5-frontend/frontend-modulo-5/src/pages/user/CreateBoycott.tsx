@@ -1,25 +1,39 @@
 import { Box, Button, Container, MenuItem, TextField, Typography, useTheme } from '@mui/material';
-import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { createBoycottStyles } from '../styles/CreateBoycottStyles';
+import { getFilterCategories } from '../../services/boycottService';
+import type { FilterCategories, simpleEntity } from '../../types';
+import EntitySearchBar from '../../components/user/EntitySearchBar';
+import { mockEntities } from '../../data/mockEntities';
 
 type Step = 1 | 2;
 
 const entityOptions = ['Company', 'Organization', 'Person', 'Institution', 'Government', 'Other'];
-const categoryOptions = ['Other', 'Labor abuse', 'Environmental damage', 'Discrimination', 'Corruption'];
-const countryOptions = ['Country', 'Palestine', 'United States', 'Mexico', 'Spain', 'Other'];
-const complaintTypes = ['Type of injustice..', 'Labor exploitation', 'Harassment', 'Fraud', 'Environmental harm'];
 
 export default function CreateBoycott() {
   const theme = useTheme();
   const evidenceInputRef = useRef<HTMLInputElement | null>(null);
   const [step, setStep] = useState<Step>(1);
   const [entity, setEntity] = useState('Other');
-  const [category, setCategory] = useState('Other');
-  const [title, setTitle] = useState('Boycott name...');
-  const [type, setType] = useState('Type of injustice..');
-  const [country, setCountry] = useState('Country');
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [industryId, setIndustryId] = useState<number | null>(null);
+  const [countryId, setCountryId] = useState<number | null>(null);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const [isDraggingEvidence, setIsDraggingEvidence] = useState(false);
+  const [selectedEntity, setSelectedEntity] = useState<simpleEntity | null>(null);
+  const [searchCategoryId, setSearchCategoryId] = useState<number | null>(null);
+
+  const [filterCategories, setFilterCategories] = useState<FilterCategories>();
+  
+  useEffect(() => {
+    getFilterCategories().then(setFilterCategories);
+  }, []);
+
+  const countries = filterCategories?.countries ?? [];
+  const industries = filterCategories?.industries ?? [];
+  const injustices = filterCategories?.injustices ?? [];
 
   const isFirstStep = step === 1;
 
@@ -63,11 +77,50 @@ export default function CreateBoycott() {
     }
   };
 
+  const getCategoryName = (id: number | null): string => {
+    if (!id) return '';
+    return injustices.find(c => c.id === id)?.name || '';
+  };
+
+  const getIndustryName = (id: number | null): string => {
+    if (!id) return '';
+    return industries.find(i => i.id === id)?.name || '';
+  };
+
+  const getCountryName = (id: number | null): string => {
+    if (!id) return '';
+    return countries.find(c => c.id === id)?.name || '';
+  };
+
+const getCategoryIdFromName = (categoryName: string): number | null => {
+  const categoryMap: Record<string, number> = {
+    'Company': 1,
+    'Organization': 2,
+    'Person': 3,
+    'Institution': 4,
+    'Government': 5,
+    'Other': 6,
+  };
+  return categoryMap[categoryName] || null;
+};
+
+const getCategoryNameFromId = (categoryId: number): string => {
+  const categoryMap: Record<number, string> = {
+    1: 'Company',
+    2: 'Organization',
+    3: 'Person',
+    4: 'Institution',
+    5: 'Government',
+    6: 'Other',
+  };
+  return categoryMap[categoryId] || 'Unknown';
+};
+
   return (
     <Container sx={createBoycottStyles.mainContainer(theme)}>
       <Container sx={createBoycottStyles.panel(theme)}>
         <Typography sx={createBoycottStyles.breadcrumb()}>
-          Create boycott <Box component="span" sx={{ color: '#ffffff' }}> &gt; </Box>
+          Create <Box component="span" sx={{ color: '#ffffff' }}> &gt; </Box>
           <Box component="span" sx={isFirstStep ? createBoycottStyles.breadcrumbActive(theme) : { color: '#ffffff' }}>General</Box>
           {!isFirstStep && (
             <>
@@ -85,23 +138,14 @@ export default function CreateBoycott() {
             </Typography>
 
             <Box sx={createBoycottStyles.formSection()}>
-              <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Title</Typography>
-                <TextField
-                  fullWidth
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  sx={createBoycottStyles.textField(theme)}
-                />
-              </Box>
-
+              {/* Category (Injustice) */}
               <Box>
                 <Typography sx={createBoycottStyles.fieldLabel()}>Category</Typography>
                 <TextField
                   select
                   fullWidth
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value)}
+                  value={categoryId ?? ''}
+                  onChange={(event) => setCategoryId(event.target.value ? Number(event.target.value) : null)}
                   sx={createBoycottStyles.textField(theme)}
                   slotProps={{
                     select: {
@@ -115,27 +159,73 @@ export default function CreateBoycott() {
                     },
                   }}
                 >
-                  {categoryOptions.map((option) => (
-                    <MenuItem key={option} value={option} sx={createBoycottStyles.selectMenuItem()}>
-                      {option}
+                  <MenuItem value="">None</MenuItem>
+                  {injustices.map((injustice) => (
+                    <MenuItem key={injustice.id} value={injustice.id}>
+                      {injustice.name}
                     </MenuItem>
                   ))}
                 </TextField>
               </Box>
 
+              {/* Industry */}
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Entity</Typography>
-                <Box sx={createBoycottStyles.entityGrid}>
-                  {entityOptions.map((option) => (
-                    <Button
-                      key={option}
-                      onClick={() => setEntity(option)}
-                      sx={createBoycottStyles.entityButton(theme, entity === option)}
-                    >
-                      {option}
-                    </Button>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Industry</Typography>
+                <TextField
+                  select
+                  fullWidth
+                  value={industryId ?? ''}
+                  onChange={(event) => setIndustryId(event.target.value ? Number(event.target.value) : null)}
+                  sx={createBoycottStyles.textField(theme)}
+                  slotProps={{
+                    select: {
+                      MenuProps: {
+                        slotProps: {
+                          paper: {
+                            sx: createBoycottStyles.selectMenuPaper(),
+                          },
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <MenuItem value="">None</MenuItem>
+                  {industries.map((industry) => (
+                    <MenuItem key={industry.id} value={industry.id}>
+                      {industry.name}
+                    </MenuItem>
                   ))}
-                </Box>
+                </TextField>
+              </Box>
+
+              {/* Country */}
+              <Box>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Country</Typography>
+                <TextField
+                  select
+                  fullWidth
+                  value={countryId ?? ''}
+                  onChange={(event) => setCountryId(event.target.value ? Number(event.target.value) : null)}
+                  sx={createBoycottStyles.textField(theme)}
+                  slotProps={{
+                    select: {
+                      MenuProps: {
+                        slotProps: {
+                          paper: {
+                            sx: createBoycottStyles.selectMenuPaper(),
+                          },
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <MenuItem value="">None</MenuItem>
+                  {countries.map((country) => (
+                    <MenuItem key={country.id} value={country.id}>
+                      {country.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: '18px' }}>
@@ -155,33 +245,66 @@ export default function CreateBoycott() {
               Please provide all necessary details before creating the boycott.
             </Typography>
 
+            <Box>
+              <Typography sx={createBoycottStyles.fieldLabel()}>Entity Type</Typography>
+              <Box sx={createBoycottStyles.entityGrid}>
+                {entityOptions.map((option) => {
+                  const categoryId = getCategoryIdFromName(option);
+                  return (
+                    <Button
+                      key={option}
+                      onClick={() => {
+                        setTimeout(() => {
+                          setSearchCategoryId(categoryId);
+                          setSelectedEntity(null);
+                        }, 0);
+                      }}
+                      sx={createBoycottStyles.entityButton(theme, searchCategoryId === categoryId)}
+                    >
+                      {option}
+                    </Button>
+                  );
+                })}
+              </Box>
+            </Box>
+
+            <Box sx={{ mt: 2 }}>
+              <Typography sx={createBoycottStyles.fieldLabel()}>Search Entity</Typography>
+                {searchCategoryId && (
+                  <EntitySearchBar
+                    selectedEntity={selectedEntity}
+                    onEntityChange={setSelectedEntity}
+                    categoryId={searchCategoryId}
+                    placeholder="Search in this category..."
+                  />
+                )}
+                {!searchCategoryId && (
+                  <TextField
+                    fullWidth
+                    disabled
+                    placeholder="Select an entity type first"
+                    sx={createBoycottStyles.textField(theme)}
+                  />
+                )}
+              {selectedEntity && (
+                <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                    Selected: {selectedEntity.name} ({getCategoryNameFromId(selectedEntity.categoryId)})
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+
             <Box sx={createBoycottStyles.formSection()}>
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Type</Typography>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Title</Typography>
                 <TextField
-                  select
                   fullWidth
-                  value={type}
-                  onChange={(event) => setType(event.target.value)}
-                  sx={createBoycottStyles.textField(theme)}
-                  slotProps={{
-                    select: {
-                      MenuProps: {
-                        slotProps: {
-                          paper: {
-                            sx: createBoycottStyles.selectMenuPaper(),
-                          },
-                        },
-                      },
-                    },
-                  }}
-                >
-                  {complaintTypes.map((option) => (
-                    <MenuItem key={option} value={option} sx={createBoycottStyles.selectMenuItem()}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  placeholder='Title'
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  sx={createBoycottStyles.textarea(theme)}
+                />
               </Box>
 
               <Box>
@@ -191,42 +314,16 @@ export default function CreateBoycott() {
                   multiline
                   minRows={6}
                   placeholder="Type a detailed description of the injustice.."
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
                   sx={createBoycottStyles.textarea(theme)}
                 />
               </Box>
 
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Country</Typography>
-                <TextField
-                  select
-                  fullWidth
-                  value={country}
-                  onChange={(event) => setCountry(event.target.value)}
-                  sx={{ ...createBoycottStyles.textField(theme), maxWidth: { xs: '100%', md: '270px' } }}
-                  slotProps={{
-                    select: {
-                      MenuProps: {
-                        slotProps: {
-                          paper: {
-                            sx: createBoycottStyles.selectMenuPaper(),
-                          },
-                        },
-                      },
-                    },
-                  }}
-                >
-                  {countryOptions.map((option) => (
-                    <MenuItem key={option} value={option} sx={createBoycottStyles.selectMenuItem()}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-
-                <Box>
                 <Typography sx={createBoycottStyles.fieldLabel()}>Evidence</Typography>
-              <Box
-                    sx={isDraggingEvidence ? createBoycottStyles.uploadBoxActive(theme) : createBoycottStyles.uploadBox()}
+                <Box
+                  sx={isDraggingEvidence ? createBoycottStyles.uploadBoxActive(theme) : createBoycottStyles.uploadBox()}
                   onClick={handleEvidenceClick}
                   onDragOver={handleEvidenceDragOver}
                   onDragLeave={handleEvidenceDragLeave}
@@ -277,7 +374,7 @@ export default function CreateBoycott() {
                 </Button>
 
                 <Button sx={createBoycottStyles.postButton(theme)}>
-                  Post Boycott
+                  Post
                 </Button>
               </Box>
             </Box>

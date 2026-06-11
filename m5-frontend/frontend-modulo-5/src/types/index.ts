@@ -17,6 +17,22 @@ export interface User {
   role? : UserRole;
 }
 
+export interface simpleEntity {
+  id: number;
+  categoryId: number; // 1: Company, 2: Organization, 3: Person, 4: Institution, 5: Government, 6: Other
+  name: string;
+  picture: string;
+}
+
+export const entityCategories = {
+  Company: 1,
+  Organization: 2,
+  Person: 3,
+  Institution: 4,
+  Government: 5,
+  Other: 6
+};
+
 export interface Category {
   id: number,
   name: string,

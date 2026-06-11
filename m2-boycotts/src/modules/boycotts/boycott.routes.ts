@@ -11,6 +11,7 @@ import {
   reportarBoycottHandler,
   votarBoycottHandler,
 } from "./boycott.crud.controller";
+import { obtenerEntidadHandler } from "../entities/entity.crud.controller";
 
 /*
   Rutas:boycott.routes.ts
@@ -62,4 +63,11 @@ router.put("/:id", actualizarBoycottHandler);
 // PATCH /api/boycotts/:id/state — eliminacion logica o restaurar (solo el creador)
 router.patch("/:id/state", cambiarEstadoBoycottHandler);
 
+
+// ____________________________________________
+// Entidades 
+// ____________________________________________
+
+// GET /api/boycotts/entities/:id — entidades (indicted)
+router.get("/entities/:id", obtenerEntidadHandler);
 export default router;
