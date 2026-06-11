@@ -25,6 +25,7 @@ import Queries from '../pages/admin/Queries';
 import UserHistory from '../pages/admin/UserHistory';
 import MostFollowedCases from '../pages/admin/MostFollowedCases';
 import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
+import Catalogues from '../pages/admin/Catalogues';
 import Logs from '../pages/admin/Logs';
 import ManageComments from '../pages/admin/ManageComments';
 import DynamicLayout from '../layouts/DynamicLayout';
@@ -129,6 +130,11 @@ export default function AppRoutes() {
         <Route path="/admin/cases-of-injustice" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <CasesOfInjustice />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/catalogues" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <Catalogues />
           </ProtectedRoute>
         } />
         <Route path="/admin/logs" element={
