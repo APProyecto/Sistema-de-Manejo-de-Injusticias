@@ -102,7 +102,7 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
         {/* Options */}
         {inFeed ? (
           <OptionMenuFeed
-            favorite={!!data.is_favorite}
+            favorite={!data.is_favorite}
             boycottId={data.id}
           ></OptionMenuFeed>
         ) : (
