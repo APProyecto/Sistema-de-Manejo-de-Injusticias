@@ -15,50 +15,11 @@ import {
 import { useState, useEffect } from "react";
 import DescriptionIcon from "@mui/icons-material/Description";
 import { QueriesStyles } from "../styles/QueriesStyles";
-import UserPFP from "../../assets/pfpDefaultImage.png";
-import StarbucksLogo from "../../assets/StarbucksLogo.jpg";
+//import UserPFP from "../../assets/pfpDefaultImage.png";
+//import StarbucksLogo from "../../assets/StarbucksLogo.jpg";
 import { useNavigate } from "react-router-dom";
-import { Categories } from "../../data/Categories";
 import QueryNavegation from "./QueryNavigation";
-
-import SearchIcon from "@mui/icons-material/Search";
 import { statsApi } from "../../services/api";
-
-const Queries = [
-  {
-    authorPFP: UserPFP,
-    author: "User123",
-    indictedPFP: StarbucksLogo,
-    indicted: "Starbucks",
-    injustice: "Politics",
-    files: 5,
-    date: "04-19-2026",
-    country: "Global",
-    votes: "21K",
-  },
-  {
-    authorPFP: UserPFP,
-    author: "User123",
-    indictedPFP: StarbucksLogo,
-    indicted: "Starbucks",
-    injustice: "Health",
-    files: 5,
-    date: "04-19-2026",
-    country: "USA",
-    votes: "25K",
-  },
-  {
-    authorPFP: UserPFP,
-    author: "User123",
-    indictedPFP: StarbucksLogo,
-    indicted: "Starbucks",
-    injustice: "Labor practices",
-    files: 5,
-    date: "04-19-2026",
-    country: "France",
-    votes: "5K",
-  },
-];
 
 interface AuditPublication {
   boycottId: number;
@@ -77,50 +38,57 @@ interface AuditPublication {
 export default function Quereis() {
   const theme = useTheme();
   const navigate = useNavigate();
-
   const [Category, setCategory] = useState(0);
   const [reportSelected, setReport] = useState("None");
-
   const [authorInput, setAuthorInput] = useState("");
   const [indictedInput, setIndictedInput] = useState("");
-  const [injusticeTypes, setInjusticeTypes] = useState<
-    { InjusticeTypeID: number; InjusticeName: string }[]
-  >([]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [countryId, setCountryId] = useState(0);
+  const [indictedId, setIndictedId] = useState(0);
+  const [orderByVotes, setOrderByVotes] = useState("inFavorDesc");
+  const [filesOrder, setFilesOrder] = useState<"desc" | "asc">("desc");
+  const [entities, setEntities] = useState<
+    { EntityID: number; EntityName: string }[]
+  >([]);
   const [countries, setCountries] = useState<
     { CountryID: number; CountryName: string }[]
   >([]);
-  const [countryId, setCountryId] = useState(0);
+  const [injusticeTypes, setInjusticeTypes] = useState<
+    { InjusticeTypeID: number; InjusticeName: string }[]
+  >([]);
 
   const [rows, setRows] = useState<AuditPublication[]>([]);
 
   useEffect(() => {
-    fetchPublications("", "", 0, "", "", 0);
+    fetchPublications("", 0, 0, "", "", 0);
 
     statsApi.get("/api/audits/filter-options").then((res) => {
       setInjusticeTypes(res.data.data.injusticeTypes);
       setCountries(res.data.data.countries);
+      setEntities(res.data.data.entities);
     });
   }, []);
 
   const fetchPublications = async (
     author: string,
-    indicted: string,
+    entityId?: number,
     injusticeTypeId?: number,
     dateFrom?: string,
     dateTo?: string,
     countryId?: number,
+    orderByVotes?: string,
   ) => {
     try {
       const params: Record<string, string> = {};
       if (author.trim()) params.author = author.trim();
-      if (indicted.trim()) params.indicted = indicted.trim();
+      if (entityId && entityId !== 0) params.entityId = String(entityId);
       if (injusticeTypeId && injusticeTypeId !== 0)
         params.injusticeTypeId = String(injusticeTypeId);
       if (dateFrom) params.dateFrom = dateFrom;
       if (dateTo) params.dateTo = dateTo;
       if (countryId && countryId !== 0) params.countryId = String(countryId);
+      if (orderByVotes) params.orderByVotes = orderByVotes;
 
       const response = await statsApi.get("/api/audits/publications", {
         params,
@@ -139,94 +107,6 @@ export default function Quereis() {
     <Container sx={{ p: 5, backgroundColor: theme.palette.background.default }}>
       <QueryNavegation />
 
-      <Box sx={{ display: "flex", alignItems: "center", mt: 5, mb: 1, gap: 1 }}>
-        <TextField
-          size="small"
-          placeholder="Search by author..."
-          value={authorInput}
-          onChange={(e) => setAuthorInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter")
-              fetchPublications(
-                authorInput,
-                indictedInput,
-                Category,
-                dateFrom,
-                dateTo,
-                countryId,
-              );
-          }}
-        />
-        <TextField
-          size="small"
-          placeholder="Search by indicted..."
-          value={indictedInput}
-          onChange={(e) => setIndictedInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter")
-              fetchPublications(
-                authorInput,
-                indictedInput,
-                Category,
-                dateFrom,
-                dateTo,
-                countryId,
-              );
-          }}
-        />
-        <TextField
-          size="small"
-          type="date"
-          label="From"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          onBlur={() =>
-            fetchPublications(
-              authorInput,
-              indictedInput,
-              Category,
-              dateFrom,
-              dateTo,
-              countryId,
-            )
-          }
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-
-        <TextField
-          size="small"
-          type="date"
-          label="To"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          onBlur={() =>
-            fetchPublications(
-              authorInput,
-              indictedInput,
-              Category,
-              dateFrom,
-              dateTo,
-              countryId,
-            )
-          }
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-        <IconButton
-          onClick={() =>
-            fetchPublications(
-              authorInput,
-              indictedInput,
-              Category,
-              dateFrom,
-              dateTo,
-              countryId,
-            )
-          }
-        >
-          <SearchIcon />
-        </IconButton>
-      </Box>
-
       <Box sx={{ display: "flex", alignItems: "center", mt: 5, mb: 0 }}>
         <Box sx={{ width: "14%" }}>
           <Typography
@@ -235,6 +115,24 @@ export default function Quereis() {
           >
             Author
           </Typography>
+          <TextField
+            size="small"
+            placeholder="Search by author..."
+            value={authorInput}
+            onChange={(e) => setAuthorInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter")
+                fetchPublications(
+                  authorInput,
+                  indictedId,
+                  Category,
+                  dateFrom,
+                  dateTo,
+                  countryId,
+                  orderByVotes,
+                );
+            }}
+          />
         </Box>
         <Divider
           orientation="vertical"
@@ -248,6 +146,40 @@ export default function Quereis() {
           >
             Indicted
           </Typography>
+          <Select
+            size="small"
+            hiddenLabel
+            value={indictedId}
+            onChange={(e) => {
+              setIndictedId(Number(e.target.value));
+              fetchPublications(
+                authorInput,
+                Number(e.target.value),
+                Category,
+                dateFrom,
+                dateTo,
+                countryId,
+                orderByVotes,
+              );
+            }}
+            disableUnderline
+            variant="filled"
+            MenuProps={{
+              sx: {
+                "& .MuiMenuItem-root": {
+                  color: "black !important",
+                },
+              },
+            }}
+            sx={QueriesStyles.Select(theme)}
+          >
+            <MenuItem value={0}>Entity</MenuItem>
+            {entities.map((e) => (
+              <MenuItem key={e.EntityID} value={e.EntityID}>
+                {e.EntityName}
+              </MenuItem>
+            ))}
+          </Select>
         </Box>
         <Divider
           orientation="vertical"
@@ -269,8 +201,12 @@ export default function Quereis() {
               setCategory(c.target.value);
               fetchPublications(
                 authorInput,
-                indictedInput,
+                indictedId,
                 Number(c.target.value),
+                dateFrom,
+                dateTo,
+                countryId,
+                orderByVotes,
               );
             }}
             disableUnderline
@@ -297,7 +233,7 @@ export default function Quereis() {
           flexItem
           sx={QueriesStyles.Divider(theme)}
         />
-        <Box sx={{ width: "14%" }}>
+        <Box sx={{ width: "10%" }}>
           <Typography
             variant="body2"
             sx={{ color: theme.palette.secondary.main }}
@@ -310,13 +246,52 @@ export default function Quereis() {
           flexItem
           sx={QueriesStyles.Divider(theme)}
         />
-        <Box sx={{ width: "14%" }}>
+        <Box sx={{ width: "18%" }}>
           <Typography
             variant="body2"
             sx={{ color: theme.palette.secondary.main }}
           >
             Date
           </Typography>
+          <TextField
+            size="small"
+            type="date"
+            label="From"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            onBlur={() =>
+              fetchPublications(
+                authorInput,
+                indictedId,
+                Category,
+                dateFrom,
+                dateTo,
+                countryId,
+                orderByVotes,
+              )
+            }
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+
+          <TextField
+            size="small"
+            type="date"
+            label="To"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            onBlur={() =>
+              fetchPublications(
+                authorInput,
+                indictedId,
+                Category,
+                dateFrom,
+                dateTo,
+                countryId,
+                orderByVotes,
+              )
+            }
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
         </Box>
         <Divider
           orientation="vertical"
@@ -338,11 +313,12 @@ export default function Quereis() {
               setCountryId(Number(e.target.value));
               fetchPublications(
                 authorInput,
-                indictedInput,
+                indictedId,
                 Category,
                 dateFrom,
                 dateTo,
                 Number(e.target.value),
+                orderByVotes,
               );
             }}
             disableUnderline
@@ -376,6 +352,38 @@ export default function Quereis() {
           >
             Votes
           </Typography>
+          <Select
+            size="small"
+            hiddenLabel
+            value={orderByVotes}
+            onChange={(e) => {
+              setOrderByVotes(e.target.value);
+              fetchPublications(
+                authorInput,
+                indictedId,
+                Category,
+                dateFrom,
+                dateTo,
+                countryId,
+                e.target.value,
+              );
+            }}
+            disableUnderline
+            variant="filled"
+            MenuProps={{
+              sx: {
+                "& .MuiMenuItem-root": {
+                  color: "black !important",
+                },
+              },
+            }}
+            sx={QueriesStyles.Select(theme)}
+          >
+            <MenuItem value="inFavorDesc">Most votes in favor</MenuItem>
+            <MenuItem value="inFavorAsc">Least votes in favor</MenuItem>
+            <MenuItem value="againstDesc">Most votes against</MenuItem>
+            <MenuItem value="againstAsc">Least votes against</MenuItem>
+          </Select>
         </Box>
       </Box>
       <Divider
@@ -438,7 +446,7 @@ export default function Quereis() {
             sx={QueriesStyles.Divider(theme)}
           />
 
-          <Box sx={{ width: "14%", display: "flex", my: 1 }}>
+          <Box sx={{ width: "10%", display: "flex", my: 1 }}>
             <DescriptionIcon sx={{ my: "Auto", ml: "Auto" }} />
             <Typography variant="body2" sx={{ my: "Auto", mr: "Auto" }}>
               {row.filesCount}
@@ -450,7 +458,7 @@ export default function Quereis() {
             sx={QueriesStyles.Divider(theme)}
           />
 
-          <Box sx={{ width: "14%", display: "flex", my: 1 }}>
+          <Box sx={{ width: "18%", display: "flex", my: 1 }}>
             <Typography variant="body2" sx={{ m: "Auto" }}>
               {row.date}
             </Typography>
@@ -473,8 +481,11 @@ export default function Quereis() {
           />
 
           <Box sx={{ width: "14%", display: "flex", my: 1 }}>
-            <Typography variant="body2" sx={{ m: "Auto" }}>
+            <Typography variant="body2" sx={{ m: "Auto", color: "green" }}>
               {row.votesInFavor}
+            </Typography>
+            <Typography variant="body2" sx={{ m: "Auto", color: "red" }}>
+              {row.votesAgainst}
             </Typography>
           </Box>
         </Box>
