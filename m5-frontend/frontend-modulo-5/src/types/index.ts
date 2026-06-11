@@ -186,13 +186,22 @@ export interface Country extends AuditFields {
   Continent?: Continent;
 }
 
-export interface CategoryEntity extends AuditFields {
+export interface CategoryEntity {
   CategoryEntityID: number;
-  CategoryEntityName: string;
+  CategoryName: string;
+  CreatedAt?: string | null;
+  CreatedBy?: string | null;
+  ModifiedAt?: string | null;
+  ModifiedBy?: string | null;
 }
 
-export interface InjusticeType extends AuditFields {
+export interface InjusticeType {
   InjusticeTypeID: number;
-  InjusticeTypeName: string;
-  Description?: string | null;
+  InjusticeName: string;
+  MongoDocumentID?: string | null;
+  NumberBoycotts?: number;
+  CreatedAt?: string | null;
+  CreatedBy?: string | null;
+  ModifiedAt?: string | null;
+  ModifiedBy?: string | null;
 }
