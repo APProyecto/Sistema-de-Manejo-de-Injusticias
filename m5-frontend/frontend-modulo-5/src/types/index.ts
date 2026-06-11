@@ -162,16 +162,37 @@ export interface ApiResponse<T> {
     pages: number;
   };
 }
-export interface Gender { 
-  GenderID: number, 
-  GenderName: String, 
-  CreatedAt: String | null, 
-  CreatedBy: String | null, 
-  ModifiedAt: String | null, 
-  ModifiedBy: String | null, 
+export interface AuditFields {
+  CreatedAt: string | null;
+  CreatedBy: string | null;
+  ModifiedAt: string | null;
+  ModifiedBy: string | null;
 }
 
-export interface Country {
+export interface Gender extends AuditFields {
+  GenderID: number;
+  GenderName: string;
+}
+
+export interface Continent extends AuditFields {
+  ContinentID: number;
+  ContinentName: string;
+}
+
+export interface Country extends AuditFields {
   CountryID: number;
   CountryName: string;
+  ContinentID: number;
+  Continent?: Continent;
+}
+
+export interface CategoryEntity extends AuditFields {
+  CategoryEntityID: number;
+  CategoryEntityName: string;
+}
+
+export interface InjusticeType extends AuditFields {
+  InjusticeTypeID: number;
+  InjusticeTypeName: string;
+  Description?: string | null;
 }
