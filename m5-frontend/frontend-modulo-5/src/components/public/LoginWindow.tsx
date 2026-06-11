@@ -20,6 +20,8 @@ import { useAuth } from "../../context/authContext";
 import { login as loginService } from "../../services/uesrService";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth0 } from "@auth0/auth0-react";
+
 interface LoginWindowProps {
   open: boolean;
   onClose: () => void;
@@ -37,7 +39,19 @@ export default function LoginWindow({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const { loginWithRedirect } = useAuth0();
 
+  const handleAuth0Login = () => {
+    setError("");
+
+    sessionStorage.removeItem("auth0LoggingOut");
+
+    loginWithRedirect({
+      appState: {
+        returnTo: "/profile",
+      },
+    });
+  };
   const handleLogin = async () => {
     setError("");
     try {
@@ -140,7 +154,10 @@ export default function LoginWindow({
           </Typography>{" "}
           and acknowledge that you understand the Privacy Policy
         </Typography>
-        <Button sx={loginWindowStyles.auth0Button(theme)} onClick={handleLogin}>
+        <Button
+          sx={loginWindowStyles.auth0Button(theme)}
+          onClick={handleAuth0Login}
+        >
           <img src={AuthLogo} width={30} height={30} />
           <Typography sx={loginWindowStyles.textButton(theme)}>
             Continue with Auth0

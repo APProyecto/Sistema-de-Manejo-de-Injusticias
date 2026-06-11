@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Logout } from "@mui/icons-material";
 import EditIcon from "@mui/icons-material/Edit";
 import { useAuth } from "../../context/authContext";
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   logout as logoutService,
   getUserProfilePictureUrl,
@@ -17,9 +18,30 @@ export default function MyVotes() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
+  const { logout: auth0Logout, isAuthenticated: isAuth0Authenticated } =
+    useAuth0();
+
   const handleLogout = async () => {
-    await logoutService();
+    sessionStorage.setItem("auth0LoggingOut", "true");
+
+    try {
+      await logoutService();
+    } catch (error) {
+      console.error("Error en logoutService:", error);
+    }
+
     logout();
+
+    if (isAuth0Authenticated) {
+      auth0Logout({
+        logoutParams: {
+          returnTo: window.location.origin,
+        },
+      });
+      return;
+    }
+
+    sessionStorage.removeItem("auth0LoggingOut");
     navigate("/");
   };
 
