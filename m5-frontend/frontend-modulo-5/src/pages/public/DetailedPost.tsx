@@ -29,6 +29,7 @@ import UserComment from "../../components/user/UserComment";
 import PostCommentBox from "../../components/user/PostCommentBox";
 import { getBoycottById, voteBoycott } from "../../services/boycottService";
 import { formatDate, formatNumber } from "../../utils/utils";
+import LoadingScreen from "../../components/common/LoadingScreen";
 
 type CommentFilter = "New" | "Old" | "Most Relevant" | "Less Relevant";
 const FILTERS: CommentFilter[] = [
@@ -43,6 +44,7 @@ export default function DetailedPost() {
   const theme = useTheme();
   const { isAuthenticated, user } = useAuth();
   const { id } = useParams();
+  const resolvedUserId = user?.appUserId ?? user?.appUserId ?? (user as any)?.id;
 
   const [data, setData] = useState<DetailedPostData>();
   const [filterNumber, setFilterNumber] = useState(0);
@@ -50,17 +52,17 @@ export default function DetailedPost() {
   const [activeFilter, setActiveFilter] = useState<CommentFilter>("New");
 
   useEffect(() => {
-    getBoycottById(Number(id), user?.userId).then(setData);
-  }, [id, user?.userId]);
+    getBoycottById(Number(id), resolvedUserId).then(setData);
+  }, [id, resolvedUserId]);
 
   //actualiza los comentarios cada vez que cambia el id o el número de filtro
   useEffect(() => {
     if (id) {
-      getComments(Number(id), filterNumber, user?.userId).then(setComments);
+      getComments(Number(id), filterNumber, resolvedUserId).then(setComments);
     }
-  }, [id, filterNumber, user?.userId]);
+  }, [id, filterNumber, resolvedUserId]);
 
-  if (!data) return <Box>Loading...</Box>;
+  if (!data) return <LoadingScreen></LoadingScreen>;
 
   const onCommentsClick = () => {};
 
@@ -100,20 +102,20 @@ export default function DetailedPost() {
       return;
     }
 
-    await voteBoycott(Number(id), newVote, user?.appUserId);
+    await voteBoycott(Number(id), newVote, resolvedUserId);
   };
 
   const visibleEvidences = data.evidences.slice(0, 2);
   const extraEvidences = data.evidences.length - 2;
 
   const handleCreateComment = async (description: string) => {
-    if (!id || !user?.userId) return;
+    if (!id || !resolvedUserId) return;
 
     try {
-      await createComment(description, Number(id), user.userId);
+      await createComment(description, Number(id), resolvedUserId);
       setActiveFilter("New");
       setFilterNumber(0);
-      await getComments(Number(id), 0, user.userId).then(setComments);
+      await getComments(Number(id), 0, resolvedUserId).then(setComments);
     } catch (error) {
       console.error("Error creating comment:", error);
     }
@@ -269,7 +271,7 @@ export default function DetailedPost() {
               <UserComment
                 key={comment.id}
                 comment={comment}
-                loggedInUserId={user?.userId}
+                loggedInUserId={user?.appUserId}
               />
             ) : (
               <PublicComment key={comment.id} comment={comment} />
@@ -308,8 +310,8 @@ export default function DetailedPost() {
         <Typography sx={detailedPostStyles.subtitle(theme)}>
           Other Company Cases
         </Typography>
-        {data.indicted.cases.map((item, index) => (
-          <Container key={index} sx={detailedPostStyles.bulletItem(theme)}>
+        {data.indicted.cases.map((item) => (
+          <Container key={item} sx={detailedPostStyles.bulletItem(theme)}>
             <Typography sx={detailedPostStyles.bulletPoint(theme)}>
               {"\u2022"}
             </Typography>

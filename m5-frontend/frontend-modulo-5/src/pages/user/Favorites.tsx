@@ -5,11 +5,13 @@ import { myPostsStyles } from '../styles/MyPostsStyles';
 import { useEffect, useState } from 'react';
 import { getFavorites } from '../../services/boycottService';
 import { useAuth } from '../../context/authContext';
+import LoadingScreen from '../../components/common/LoadingScreen';
 
 export default function Favorites() {
 
   const theme = useTheme();
   const { user } = useAuth();
+  const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
   const [data, setData] = useState<PostCardData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +21,7 @@ export default function Favorites() {
       setLoading(true);
       setError(null);
       try {
-        const userId = user?.appUserId;
+        const userId = resolvedUserId;
         const favorites = await getFavorites(userId);
         setData(favorites);
       } catch (err) {
@@ -31,7 +33,9 @@ export default function Favorites() {
     };
 
     fetchFavorites();
-  }, [user?.appUserId]);
+  }, [resolvedUserId]);
+
+  if(loading) return (<LoadingScreen/>);
 
   return (
     <Container sx={myPostsStyles.mainContainer(theme)}>
@@ -39,7 +43,6 @@ export default function Favorites() {
         <Typography variant='h2'>Favorites</Typography>
       </Container>
       <Container sx={myPostsStyles.container(theme)}>
-        {loading ? <Typography>Cargando favoritos...</Typography> : null}
         {error ? <Typography>{error}</Typography> : null}
         {data.map((data) => (
           <PostCard 

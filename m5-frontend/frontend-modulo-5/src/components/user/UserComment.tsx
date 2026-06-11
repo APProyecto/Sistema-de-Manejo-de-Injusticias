@@ -13,12 +13,12 @@ import {
 import type { Comment } from "../../types";
 import { commentStyles } from "../styles/CommentStyles";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import VotesBox from "../public/VotesBox";
 import CommentVotesBox from "../public/CommentVoteBox";
-import { Reply, Error } from "@mui/icons-material";
+import { Delete, Error } from "@mui/icons-material";
 import ReportWindow from "./ReportWindow";
 import { useState } from "react";
 import { voteComment, deleteCommentVote } from "../../services/commentsService";
+import DeleteCommentConfirmation from "./DeleteCommentConfirmation";
 
 interface UserCommentProps {
   comment: Comment;
@@ -31,6 +31,7 @@ export default function UserComment({
 }: UserCommentProps) {
   const theme = useTheme();
   const [reportCommentOpen, setReportCommentOpen] = useState(false);
+  const [delelteCommentOpen, setDeleteCommentOpen] = useState(false);
   const [votes, setVotes] = useState<number>(Number(c.votes));
   const [currentVote, setCurrentVote] = useState<boolean | null>(
     c.voted_by_user ?? null,
@@ -80,6 +81,11 @@ export default function UserComment({
         onClose={() => setReportCommentOpen(false)}
         commentId={c.id}
       />
+      <DeleteCommentConfirmation
+        open={delelteCommentOpen}
+        onClose={() => setDeleteCommentOpen(false)}
+        commentId={c.id}
+      />
 
       <Box sx={commentStyles.commentHeader(theme)}>
         <Avatar
@@ -96,20 +102,28 @@ export default function UserComment({
         </Typography>
         <Box sx={{ display: "flex", flex: 1 }}></Box>
 
-        {/*Botón de reporte*/}
-        <IconButton
-          sx={commentStyles.replyButton(theme)}
-          onClick={() => setReportCommentOpen(true)}
-        >
-          <Error sx={commentStyles.errorIcon(theme)}></Error>
-        </IconButton>
+
+        {loggedInUserId == c.user.id ?
+          /* Botón de eliminar */
+          <IconButton
+            sx={commentStyles.replyButton(theme)}
+            onClick={() => setDeleteCommentOpen(true)}
+          >
+            <Delete sx={commentStyles.errorIcon(theme)}></Delete>
+          </IconButton>
+          :
+          /*Botón de reporte*/
+          <IconButton
+            sx={commentStyles.replyButton(theme)}
+            onClick={() => setReportCommentOpen(true)}
+          >
+            <Error sx={commentStyles.errorIcon(theme)}></Error>
+          </IconButton>
+        }
       </Box>
       <Typography sx={commentStyles.text(theme)}>{c.content}</Typography>
       <Box sx={commentStyles.interactionBox(theme)}>
         <Box sx={{ display: "flex", flex: 1 }}></Box>
-        <IconButton sx={commentStyles.replyButton(theme)}>
-          <Reply sx={commentStyles.replyIcon(theme)}></Reply>
-        </IconButton>
         <CommentVotesBox
           votes={votes}
           currentVote={currentVote}

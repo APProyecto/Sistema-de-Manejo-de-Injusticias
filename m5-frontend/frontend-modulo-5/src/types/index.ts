@@ -162,3 +162,16 @@ export interface ApiResponse<T> {
     pages: number;
   };
 }
+export interface Gender { 
+  GenderID: number, 
+  GenderName: String, 
+  CreatedAt: String | null, 
+  CreatedBy: String | null, 
+  ModifiedAt: String | null, 
+  ModifiedBy: String | null, 
+}
+
+export interface Country {
+  CountryID: number;
+  CountryName: string;
+}
