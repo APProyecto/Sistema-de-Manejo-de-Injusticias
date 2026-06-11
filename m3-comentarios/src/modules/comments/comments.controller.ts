@@ -14,19 +14,25 @@ import { prisma } from "../../config/prisma";
 */
 type SortOrder = "asc" | "desc";
 
-const SORT_OPTIONS: Record<number, { field: string; order: SortOrder }> = {
-  1: { field: "CommentDate", order: "desc" },
-  2: { field: "CommentDate", order: "asc" },
-  3: { field: "interactions", order: "desc" },
-  4: { field: "interactions", order: "asc" },
+const SORT_OPTIONS: Record<
+  number,
+  {
+    field: string;
+    order: SortOrder;
+  }
+> = {
+  0: { field: "CommentDate", order: "desc" },
+  1: { field: "CommentDate", order: "asc" },
+  2: { field: "interactions", order: "desc" },
+  3: { field: "interactions", order: "asc" },
 };
 
 export async function getComments(req: Request, res: Response) {
   try {
     const { BoycottID, SortBy, LoggedUserID } = req.query;
 
-    const sortCode = parseInt(SortBy as string) || 1;
-    const sortOption = SORT_OPTIONS[sortCode] ?? SORT_OPTIONS[1];
+    const sortCode = SortBy !== undefined ? parseInt(SortBy as string) : 0;
+    const sortOption = SORT_OPTIONS[sortCode] ?? SORT_OPTIONS[0];
     const isInteractionSort = sortOption.field === "interactions";
 
     const loggedUserID = LoggedUserID ? parseInt(LoggedUserID as string) : null;
@@ -59,8 +65,8 @@ export async function getComments(req: Request, res: Response) {
 
     if (isInteractionSort) {
       comments.sort((a, b) => {
-        const interactionsA = a.VotesInFavor + a.VotesAgainst;
-        const interactionsB = b.VotesInFavor + b.VotesAgainst;
+        const interactionsA = a.VotesInFavor - a.VotesAgainst;
+        const interactionsB = b.VotesInFavor - b.VotesAgainst;
         return sortOption.order === "desc"
           ? interactionsB - interactionsA
           : interactionsA - interactionsB;
@@ -103,7 +109,7 @@ export async function getComments(req: Request, res: Response) {
         },
         content: comment.Description,
         creation_date: comment.CommentDate.toISOString(),
-        votes: `${comment.VotesInFavor + comment.VotesAgainst}`,
+        votes: `${comment.VotesInFavor - comment.VotesAgainst}`,
         voted_by_user: vote ? vote.IsInFavor : null,
       };
     });
