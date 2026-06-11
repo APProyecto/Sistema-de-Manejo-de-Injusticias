@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import { prisma } from "../../config/prisma";
 
+import {
+  createOrUpdateEntityDocument,
+  createOrUpdateInjusticeTypeDocument
+} from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+
 /* =========================
    GENDER
 ========================= */
@@ -692,7 +697,11 @@ export async function createInjusticeType(req: Request, res: Response) {
   try {
     const { injusticeName, createdBy } = req.body;
 
-    if (!injusticeName || typeof injusticeName !== "string" || injusticeName.trim() === "") {
+    if (
+      !injusticeName ||
+      typeof injusticeName !== "string" ||
+      injusticeName.trim() === ""
+    ) {
       return res.status(400).json({
         error: "injusticeName is required",
       });
@@ -705,9 +714,28 @@ export async function createInjusticeType(req: Request, res: Response) {
       },
     });
 
+    const mongoDocument = await createOrUpdateInjusticeTypeDocument(
+      injusticeType.InjusticeTypeID,
+      injusticeType.InjusticeName
+    );
+
+    let updatedInjusticeType = injusticeType;
+
+    if (mongoDocument?._id) {
+      updatedInjusticeType = await prisma.injusticeType.update({
+        where: {
+          InjusticeTypeID: injusticeType.InjusticeTypeID,
+        },
+        data: {
+          MongoDocumentID: mongoDocument._id.toString(),
+        },
+      });
+    }
+
     return res.status(201).json({
       message: "Injustice type created successfully",
-      injusticeType,
+      injusticeType: updatedInjusticeType,
+      mongoDocumentId: mongoDocument?._id?.toString() ?? null,
     });
   } catch (error: any) {
     console.error("createInjusticeType error:", error);
@@ -820,6 +848,301 @@ export async function deleteInjusticeType(req: Request, res: Response) {
     if (error.code === "P2003") {
       return res.status(409).json({
         error: "Cannot delete this injustice type because it is being used",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+/* =========================
+   ENTITY
+========================= */
+
+export async function getEntities(_req: Request, res: Response) {
+  try {
+    const entities = await prisma.entity.findMany({
+      orderBy: {
+        EntityID: "asc",
+      },
+      include: {
+        CategoryEntity: true,
+        IndustryType: true,
+        Sector: true,
+      },
+    });
+
+    return res.status(200).json(entities);
+  } catch (error) {
+    console.error("getEntities error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function getEntityById(req: Request, res: Response) {
+  try {
+    const entityId = Number(req.params.entityId);
+
+    if (!Number.isInteger(entityId) || entityId <= 0) {
+      return res.status(400).json({
+        error: "Invalid entityId",
+      });
+    }
+
+    const entity = await prisma.entity.findUnique({
+      where: {
+        EntityID: entityId,
+      },
+      include: {
+        CategoryEntity: true,
+        IndustryType: true,
+        Sector: true,
+      },
+    });
+
+    if (!entity) {
+      return res.status(404).json({
+        error: "Entity not found",
+      });
+    }
+
+    return res.status(200).json(entity);
+  } catch (error) {
+    console.error("getEntityById error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function createEntity(req: Request, res: Response) {
+  try {
+    const {
+      entityName,
+      description,
+      categoryEntityId,
+      industryTypeId,
+      sectorId,
+      createdBy,
+    } = req.body;
+
+    if (!entityName || typeof entityName !== "string" || entityName.trim() === "") {
+      return res.status(400).json({
+        error: "entityName is required",
+      });
+    }
+
+    const parsedCategoryEntityId = Number(categoryEntityId);
+
+    if (!Number.isInteger(parsedCategoryEntityId) || parsedCategoryEntityId <= 0) {
+      return res.status(400).json({
+        error: "valid categoryEntityId is required",
+      });
+    }
+
+    const entity = await prisma.entity.create({
+      data: {
+        EntityName: entityName.trim(),
+        Description: description?.trim() || null,
+        CategoryEntityID: parsedCategoryEntityId,
+        IndustryTypeID: industryTypeId ? Number(industryTypeId) : null,
+        SectorID: sectorId ? Number(sectorId) : null,
+        CreatedBy: createdBy ? Number(createdBy) : null,
+      },
+    });
+
+    const mongoDocument = await createOrUpdateEntityDocument(
+      entity.EntityID,
+      entity.EntityName,
+    );
+
+    let updatedEntity = entity;
+
+    if (mongoDocument?._id) {
+      updatedEntity = await prisma.entity.update({
+        where: {
+          EntityID: entity.EntityID,
+        },
+        data: {
+          MongoDocumentID: mongoDocument._id.toString(),
+        },
+      });
+    }
+
+    return res.status(201).json({
+      message: "Entity created successfully",
+      entity: updatedEntity,
+      mongoDocumentId: mongoDocument?._id?.toString() ?? null,
+    });
+  } catch (error: any) {
+    console.error("createEntity error:", error);
+
+    if (error.code === "P2002") {
+      return res.status(409).json({
+        error: "Entity already exists for this category",
+      });
+    }
+
+    if (error.code === "P2003") {
+      return res.status(409).json({
+        error: "Invalid foreign key value",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function updateEntity(req: Request, res: Response) {
+  try {
+    const entityId = Number(req.params.entityId);
+
+    if (!Number.isInteger(entityId) || entityId <= 0) {
+      return res.status(400).json({
+        error: "Invalid entityId",
+      });
+    }
+
+    const currentEntity = await prisma.entity.findUnique({
+      where: {
+        EntityID: entityId,
+      },
+    });
+
+    if (!currentEntity) {
+      return res.status(404).json({
+        error: "Entity not found",
+      });
+    }
+
+    const {
+      entityName,
+      description,
+      categoryEntityId,
+      industryTypeId,
+      sectorId,
+      modifiedBy,
+    } = req.body;
+
+    const updatedEntity = await prisma.entity.update({
+      where: {
+        EntityID: entityId,
+      },
+      data: {
+        EntityName: entityName?.trim() || currentEntity.EntityName,
+        Description:
+          description !== undefined
+            ? description?.trim() || null
+            : currentEntity.Description,
+        CategoryEntityID: categoryEntityId
+          ? Number(categoryEntityId)
+          : currentEntity.CategoryEntityID,
+        IndustryTypeID:
+          industryTypeId !== undefined
+            ? industryTypeId
+              ? Number(industryTypeId)
+              : null
+            : currentEntity.IndustryTypeID,
+        SectorID:
+          sectorId !== undefined
+            ? sectorId
+              ? Number(sectorId)
+              : null
+            : currentEntity.SectorID,
+        ModifiedAt: new Date(),
+        ModifiedBy: modifiedBy ? Number(modifiedBy) : null,
+      },
+    });
+
+    const mongoDocument = await createOrUpdateEntityDocument(
+      updatedEntity.EntityID,
+      updatedEntity.EntityName,
+    );
+
+    let finalEntity = updatedEntity;
+
+    if (mongoDocument?._id && updatedEntity.MongoDocumentID !== mongoDocument._id.toString()) {
+      finalEntity = await prisma.entity.update({
+        where: {
+          EntityID: updatedEntity.EntityID,
+        },
+        data: {
+          MongoDocumentID: mongoDocument._id.toString(),
+        },
+      });
+    }
+
+    return res.status(200).json({
+      message: "Entity updated successfully",
+      entity: finalEntity,
+      mongoDocumentId: mongoDocument?._id?.toString() ?? finalEntity.MongoDocumentID,
+    });
+  } catch (error: any) {
+    console.error("updateEntity error:", error);
+
+    if (error.code === "P2025") {
+      return res.status(404).json({
+        error: "Entity not found",
+      });
+    }
+
+    if (error.code === "P2002") {
+      return res.status(409).json({
+        error: "Entity already exists for this category",
+      });
+    }
+
+    if (error.code === "P2003") {
+      return res.status(409).json({
+        error: "Invalid foreign key value",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function deleteEntity(req: Request, res: Response) {
+  try {
+    const entityId = Number(req.params.entityId);
+
+    if (!Number.isInteger(entityId) || entityId <= 0) {
+      return res.status(400).json({
+        error: "Invalid entityId",
+      });
+    }
+
+    await prisma.entity.delete({
+      where: {
+        EntityID: entityId,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Entity deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("deleteEntity error:", error);
+
+    if (error.code === "P2025") {
+      return res.status(404).json({
+        error: "Entity not found",
+      });
+    }
+
+    if (error.code === "P2003") {
+      return res.status(409).json({
+        error: "Cannot delete this entity because it is being used",
       });
     }
 
