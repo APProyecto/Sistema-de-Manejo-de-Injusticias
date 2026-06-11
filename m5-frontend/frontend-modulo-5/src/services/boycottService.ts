@@ -37,10 +37,11 @@ export const getBoycotts = async (filters?: {
   pais?: string;
   tipo_injusticia?: string;
   orden?: string;
-}): Promise<PostCardData[]> => {
+}, userId?: number): Promise<PostCardData[]> => {
   const response = await boycottApi.get<ApiResponse<PostCardData[]>>('/api/boycotts', {
     params: {
       ...filters,
+      ...(userId === undefined ? {} : { userId }),
       page: 1,
       pageSize: 10,
       orderBy: 'votes',
@@ -57,12 +58,14 @@ export const searchBoycotts = async (
     countryId?: number;
     injusticeTypeId?: number;
     orderBy?: string;
-  }
+  },
+  userId?: number
 ): Promise<PostCardData[]> => {
   const response = await boycottApi.get<ApiResponse<PostCardData[]>>(`/api/boycotts/search`, {
     params: {
       q,
       ...filters,
+      ...(userId === undefined ? {} : { userId }),
       page: 1,
       pageSize: 10,
     },

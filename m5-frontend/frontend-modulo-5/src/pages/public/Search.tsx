@@ -1,15 +1,18 @@
-import { Container, Typography, Card, CardContent, Button, Box, useTheme } from '@mui/material';
+import { Container, Box, useTheme } from '@mui/material';
 import type { PostCardData } from '../../types';
 import PostCard from '../../components/common/PostCard';
 import { homeStyles } from '../styles/HomeStyles';
 import { useEffect, useState } from 'react';
-import { getBoycotts, searchBoycotts } from '../../services/boycottService';
+import { searchBoycotts } from '../../services/boycottService';
 import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../context/authContext';
 
 export default function Search() {
 
   const theme = useTheme();
   const [posts, setPosts] = useState<PostCardData[]>([]);
+  const { user, isLoading } = useAuth();
+  const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
 
   const [searchParams] = useSearchParams();
 
@@ -22,8 +25,10 @@ export default function Search() {
   }
 
   useEffect(() => {
-    searchBoycotts(q || '', filters).then(setPosts);
-  }, [q, searchParams]);
+    if (isLoading) return;
+
+    searchBoycotts(q || '', filters, resolvedUserId).then(setPosts);
+  }, [q, searchParams, isLoading, resolvedUserId]);
 
   if(!posts) return (<Box>Searching...</Box>)
 
