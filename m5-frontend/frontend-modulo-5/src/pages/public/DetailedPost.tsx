@@ -29,6 +29,7 @@ import UserComment from "../../components/user/UserComment";
 import PostCommentBox from "../../components/user/PostCommentBox";
 import { getBoycottById, voteBoycott } from "../../services/boycottService";
 import { formatDate, formatNumber } from "../../utils/utils";
+import LoadingScreen from "../../components/common/LoadingScreen";
 
 type CommentFilter = "New" | "Old" | "Most Relevant" | "Less Relevant";
 const FILTERS: CommentFilter[] = [
@@ -43,7 +44,7 @@ export default function DetailedPost() {
   const theme = useTheme();
   const { isAuthenticated, user } = useAuth();
   const { id } = useParams();
-  const resolvedUserId = user?.appUserId ?? user?.userId ?? (user as any)?.id;
+  const resolvedUserId = user?.appUserId ?? user?.appUserId ?? (user as any)?.id;
 
   const [data, setData] = useState<DetailedPostData>();
   const [filterNumber, setFilterNumber] = useState(0);
@@ -61,7 +62,7 @@ export default function DetailedPost() {
     }
   }, [id, filterNumber, resolvedUserId]);
 
-  if (!data) return <Box>Loading...</Box>;
+  if (!data) return <LoadingScreen></LoadingScreen>;
 
   const onCommentsClick = () => {};
 
@@ -270,7 +271,7 @@ export default function DetailedPost() {
               <UserComment
                 key={comment.id}
                 comment={comment}
-                loggedInUserId={user?.userId}
+                loggedInUserId={user?.appUserId}
               />
             ) : (
               <PublicComment key={comment.id} comment={comment} />
