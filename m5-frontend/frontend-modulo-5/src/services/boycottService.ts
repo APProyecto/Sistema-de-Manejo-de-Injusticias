@@ -1,5 +1,6 @@
 // src/services/boycottService.ts
-import type { ApiResponse, PostCardData, CreateBoycottData, DetailedPostData, FilterCategories } from '../types';
+import { mockEntities } from '../data/mockEntities';
+import type { ApiResponse, PostCardData, CreateBoycottData, DetailedPostData, FilterCategories, simpleEntity } from '../types';
 import { authApi, boycottApi } from './api';
 
 type HttpMethod = 'get' | 'post' | 'delete';
@@ -72,6 +73,17 @@ export const searchBoycotts = async (
   });
   console.log(response);
   return response.data.data;
+};
+
+export const searchEntities = async (
+  inputValue: string,
+  categoryId: number,
+): Promise<simpleEntity[]> => {
+  return mockEntities.filter(
+    (e) =>
+      e.categoryId === categoryId &&
+      e.name.toLowerCase().includes(inputValue.toLowerCase())
+  );
 };
 
 export const getFilterCategories = async (): Promise<FilterCategories> => {
