@@ -12,17 +12,21 @@ import MyPosts from './pages/user/MyPosts';
 import Suggestions from './pages/user/Suggestions';
 import AppRoutes from './routes/AppRoutes';
 import { AuthProvider } from './context/authContext';
+import { SearchProvider } from './context/SearchContext';
 
 const theme = darkTheme;
 
 function App() {
 
   return (
-    <AuthProvider>
-      <ThemeProvider theme={theme}>
-        <AppRoutes/>
-      </ThemeProvider>
-    </AuthProvider>
+    <SearchProvider>
+      <AuthProvider>
+        <ThemeProvider theme={theme}>
+          <AppRoutes/>
+        </ThemeProvider>
+      </AuthProvider>
+    </SearchProvider>
+
   );
 }
 
