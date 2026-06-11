@@ -33,20 +33,6 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
     navigate("/my-votes");
   };
 
-  if (!user) return;
-
-  const currentUser = user as any;
-  console.log(user);
-
-  const userId = currentUser.appUserId ?? currentUser.userId;
-  const usernameValue = currentUser.appUserName ?? currentUser.username ?? "";
-
-  const pictureUrl = currentUser.picture
-    ? currentUser.picture
-    : userId
-      ? getUserProfilePictureUrl(userId)
-      : "";
-
   return (
     <AppBar sx={headerStyles.appBar(theme)}>
       <LoginWindow
@@ -82,11 +68,6 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
               sx={headerStyles.profilePictureButton(theme)}
               onClick={handleAvatarClick}
             >
-              <Avatar
-                src={pictureUrl}
-                alt={usernameValue}
-                sx={headerStyles.profilePicture(theme)}
-              />
             </Button>
           ) : (
             <Button
