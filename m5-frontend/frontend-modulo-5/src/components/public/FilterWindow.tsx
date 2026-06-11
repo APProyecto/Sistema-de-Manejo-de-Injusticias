@@ -1,106 +1,78 @@
 import { useTheme, Dialog, DialogContent, IconButton, Typography, Button, Box, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
 import { filterWindowStyles } from '../styles/FilterWindowStyles';
 import CloseIcon from '@mui/icons-material/Close';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { Category, FilterCategories, FilterValues } from '../../types';
+import { useSearch } from '../../context/SearchContext';
+import { getFilterCategories } from '../../services/boycottService';
 
 interface FilterWindowProps {
   open: boolean;
   onClose: () => void;
-  onApply: (filters: FilterValues) => void;
 }
 
-export interface FilterValues {
-  country: string;
-  industry: string;
-  injustice: string;
-  orderBy: string;
-}
-
-export default function FilterWindow({ open, onClose, onApply }: FilterWindowProps) {
+export default function FilterWindow({ open, onClose }: FilterWindowProps) {
   const theme = useTheme();
+  const { filters: currentFilters, setFilters, performSearch } = useSearch();
   
-  const [filters, setFilters] = useState<FilterValues>({
-    country: '',
-    industry: '',
-    injustice: '',
-    orderBy: ''
-  });
+  const [localFilters, setLocalFilters] = useState<FilterValues>(currentFilters);
+  const [filterCategories, setFilterCategories] = useState<FilterCategories>();
 
-  const countries = [
-    'United States',
-    'Canada',
-    'United Kingdom',
-    'Germany',
-    'France',
-    'Spain',
-    'Italy',
-    'Brazil',
-    'Mexico',
-    'Japan',
-    'China',
-    'India',
-    'Australia'
-  ];
+  // Sincronizar filtros locales cuando cambian los filtros globales
+  useEffect(() => {
+    setLocalFilters(currentFilters);
+  }, [currentFilters]);
 
-  const industries = [
-    'Technology',
-    'Healthcare',
-    'Finance',
-    'Education',
-    'Manufacturing',
-    'Retail',
-    'Transportation',
-    'Energy',
-    'Agriculture',
-    'Entertainment'
-  ];
+  useEffect(() => {
+    getFilterCategories().then(setFilterCategories);
+  }, []);
 
-  const injustices = [
-    'Discrimination',
-    'Harassment',
-    'Unfair Treatment',
-    'Wage Theft',
-    'Unsafe Working Conditions',
-    'Wrongful Termination',
-    'Privacy Violation',
-    'Corruption',
-    'Human Rights Violation',
-    'Environmental Injustice'
-  ];
 
-  const orderOptions = [
-    'Most Recent',
-    'Oldest First',
-    'Most Relevant',
-    'Highest Rated',
-    'Lowest Rated',
-    'Most Comments'
-  ];
+  const countries = filterCategories?.countries ?? [];
+  const industries = filterCategories?.industries ?? [];
+  const injustices = filterCategories?.injustices ?? [];
+  const orderOptions = filterCategories?.orderOptions ?? [];
 
-  const handleFilterChange = (field: keyof FilterValues, value: string) => {
-    setFilters(prev => ({
+  const getCountryName = (id: number | null): string => {
+    if (!id) return '';
+    return countries.find(c => c.id === id)?.name || '';
+  };
+
+  const getIndustryName = (id: number | null): string => {
+    if (!id) return '';
+    return industries.find(i => i.id === id)?.name || '';
+  };
+
+  const getInjusticeName = (id: number | null): string => {
+    if (!id) return '';
+    return injustices.find(i => i.id === id)?.name || '';
+  };
+
+  const getOrderByName = (id: number | null): string => {
+    if (!id) return '';
+    return orderOptions.find(o => o.id === id)?.name || '';
+  };
+
+  const handleFilterChange = (field: keyof FilterValues, value: number | null) => {
+    setLocalFilters(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
   const handleApply = () => {
-    onApply(filters);
+    setFilters(localFilters);
+    performSearch();
     onClose();
   };
 
   const handleCancel = () => {
-    setFilters({
-      country: '',
-      industry: '',
-      injustice: '',
-      orderBy: ''
-    });
+    setLocalFilters(currentFilters);
     onClose();
   };
 
   const getSelectedCount = () => {
-    return Object.values(filters).filter(value => value !== '').length;
+    return Object.values(localFilters).filter(value => value !== null && value !== '').length;
   };
 
   return (
@@ -126,21 +98,22 @@ export default function FilterWindow({ open, onClose, onApply }: FilterWindowPro
           <FormControl fullWidth sx={filterWindowStyles.formControl(theme)}>
             <InputLabel sx={filterWindowStyles.inputLabel(theme)}>Country</InputLabel>
             <Select
-              value={filters.country}
-              onChange={(e) => handleFilterChange('country', e.target.value)}
+              value={localFilters.countryId ?? ''}
+              onChange={(e) => handleFilterChange('countryId', e.target.value ? Number(e.target.value) : null)}
               label="Country"
               sx={filterWindowStyles.select(theme)}
               MenuProps={{
                 slotProps: {
-                    paper: {
+                  paper: {
                     sx: filterWindowStyles.menuPaper(theme)
-                    }
+                  }
                 }
               }}
             >
+              <MenuItem value="">None</MenuItem>
               {countries.map((country) => (
-                <MenuItem key={country} value={country}>
-                  {country}
+                <MenuItem key={country.id} value={country.id}>
+                  {country.name}
                 </MenuItem>
               ))}
             </Select>
@@ -150,21 +123,22 @@ export default function FilterWindow({ open, onClose, onApply }: FilterWindowPro
           <FormControl fullWidth sx={filterWindowStyles.formControl(theme)}>
             <InputLabel sx={filterWindowStyles.inputLabel(theme)}>Industry</InputLabel>
             <Select
-              value={filters.industry}
-              onChange={(e) => handleFilterChange('industry', e.target.value)}
+              value={localFilters.industryId ?? ''}
+              onChange={(e) => handleFilterChange('industryId', e.target.value ? Number(e.target.value) : null)}
               label="Industry"
               sx={filterWindowStyles.select(theme)}
               MenuProps={{
                 slotProps: {
-                    paper: {
+                  paper: {
                     sx: filterWindowStyles.menuPaper(theme)
-                    }
+                  }
                 }
               }}
             >
+              <MenuItem value="">None</MenuItem>
               {industries.map((industry) => (
-                <MenuItem key={industry} value={industry}>
-                  {industry}
+                <MenuItem key={industry.id} value={industry.id}>
+                  {industry.name}
                 </MenuItem>
               ))}
             </Select>
@@ -174,21 +148,22 @@ export default function FilterWindow({ open, onClose, onApply }: FilterWindowPro
           <FormControl fullWidth sx={filterWindowStyles.formControl(theme)}>
             <InputLabel sx={filterWindowStyles.inputLabel(theme)}>Injustice</InputLabel>
             <Select
-              value={filters.injustice}
-              onChange={(e) => handleFilterChange('injustice', e.target.value)}
+              value={localFilters.injusticeId ?? ''}
+              onChange={(e) => handleFilterChange('injusticeId', e.target.value ? Number(e.target.value) : null)}
               label="Injustice"
               sx={filterWindowStyles.select(theme)}
               MenuProps={{
                 slotProps: {
-                    paper: {
+                  paper: {
                     sx: filterWindowStyles.menuPaper(theme)
-                    }
+                  }
                 }
               }}
             >
+              <MenuItem value="">None</MenuItem>
               {injustices.map((injustice) => (
-                <MenuItem key={injustice} value={injustice}>
-                  {injustice}
+                <MenuItem key={injustice.id} value={injustice.id}>
+                  {injustice.name}
                 </MenuItem>
               ))}
             </Select>
@@ -198,21 +173,22 @@ export default function FilterWindow({ open, onClose, onApply }: FilterWindowPro
           <FormControl fullWidth sx={filterWindowStyles.formControl(theme)}>
             <InputLabel sx={filterWindowStyles.inputLabel(theme)}>Order by</InputLabel>
             <Select
-              value={filters.orderBy}
-              onChange={(e) => handleFilterChange('orderBy', e.target.value)}
+              value={localFilters.orderById ?? ''}
+              onChange={(e) => handleFilterChange('orderById', e.target.value ? Number(e.target.value) : null)}
               label="Order by"
               sx={filterWindowStyles.select(theme)}
               MenuProps={{
                 slotProps: {
-                    paper: {
+                  paper: {
                     sx: filterWindowStyles.menuPaper(theme)
-                    }
+                  }
                 }
               }}
             >
+              <MenuItem value="">None</MenuItem>
               {orderOptions.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option}
+                <MenuItem key={option.id} value={option.id}>
+                  {option.name}
                 </MenuItem>
               ))}
             </Select>
@@ -226,31 +202,31 @@ export default function FilterWindow({ open, onClose, onApply }: FilterWindowPro
               {getSelectedCount()} Active Filters :
             </Typography>
             <Box sx={filterWindowStyles.chipContainer(theme)}>
-              {filters.country && (
+              {localFilters.countryId && (
                 <Chip 
-                  label={`Country: ${filters.country}`} 
-                  onDelete={() => handleFilterChange('country', '')}
+                  label={`Country: ${getCountryName(localFilters.countryId)}`} 
+                  onDelete={() => handleFilterChange('countryId', null)}
                   sx={filterWindowStyles.chip(theme)}
                 />
               )}
-              {filters.industry && (
+              {localFilters.industryId && (
                 <Chip 
-                  label={`Industry: ${filters.industry}`} 
-                  onDelete={() => handleFilterChange('industry', '')}
+                  label={`Industry: ${getIndustryName(localFilters.industryId)}`} 
+                  onDelete={() => handleFilterChange('industryId', null)}
                   sx={filterWindowStyles.chip(theme)}
                 />
               )}
-              {filters.injustice && (
+              {localFilters.injusticeId && (
                 <Chip 
-                  label={`Injustice: ${filters.injustice}`} 
-                  onDelete={() => handleFilterChange('injustice', '')}
+                  label={`Injustice: ${getInjusticeName(localFilters.injusticeId)}`} 
+                  onDelete={() => handleFilterChange('injusticeId', null)}
                   sx={filterWindowStyles.chip(theme)}
                 />
               )}
-              {filters.orderBy && (
+              {localFilters.orderById && (
                 <Chip 
-                  label={`Order: ${filters.orderBy}`} 
-                  onDelete={() => handleFilterChange('orderBy', '')}
+                  label={`Order: ${getOrderByName(localFilters.orderById)}`} 
+                  onDelete={() => handleFilterChange('orderById', null)}
                   sx={filterWindowStyles.chip(theme)}
                 />
               )}

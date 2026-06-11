@@ -4,6 +4,7 @@ import PostCard from '../../components/common/PostCard';
 import { homeStyles } from '../styles/HomeStyles';
 import { useEffect, useState } from 'react';
 import { getBoycotts } from '../../services/boycottService';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Home() {
 
