@@ -19,6 +19,8 @@ import { useNavigate } from "react-router-dom";
 import { formatDate, formatNumber } from "../../utils/utils";
 import { useAuth } from "../../context/authContext";
 import { voteBoycott } from "../../services/boycottService";
+import { getEntityPictureUrl } from "../../services/uesrService";
+
 
 interface PostCardProps {
   data: PostCardData;
@@ -113,7 +115,7 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
         <Container sx={PostCardStyles.entitiesContainer(theme)}>
           {/*Indicted*/}
           <Entity
-            src={data.indicted_picture}
+            src={getEntityPictureUrl(data.id)}
             name={data.indicted}
             onPressClick={onIndictedClick}
           ></Entity>
