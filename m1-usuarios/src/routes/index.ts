@@ -3,6 +3,8 @@ import { checkJwt } from "../middlewares/auth.middleware";
 import { Router } from "express";
 import usersRoutes from "../modules/users/users.routes";
 import fileRoutes from "../modules/files/files.routes";
+import cataloguesRoutes from "../modules/catalogues/catalogues.routes";
+
 import crypto from "crypto";
 const router = Router();
 
@@ -16,6 +18,8 @@ router.get("/", (_req, res) => {
 router.use("/users", usersRoutes);
 
 router.use("/files", fileRoutes);
+
+router.use("/catalogues", cataloguesRoutes);
 
 router.get(
   "/protected",
