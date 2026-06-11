@@ -55,7 +55,72 @@ export async function getCommentReports(req: Request, res: Response){
 	}
 }
 
+/*
+    Function: getBoycottReports. Filters reports based on optional search and state parameters.
+    Inputs: Request object containing optional search and state.
+    Description: Retrieves all the existing reports for boycotts.
+    Outputs: JSON response with the list of reports or an error message.
+*/
+export async function getBoycottReports(req: Request, res: Response){
+	try {
+		const { search, state } = req.query;
+		const filter: any = {ReportBoycott: {isNot: null}};
 
+		if (search && String(search).trim() !== ""){
+			const searchText = String(search).trim();
+			filter.AND = filter.AND || [];
+			filter.AND.push({
+				OR: [
+					{MotiveReport: {
+						MotiveName: {
+							contains: searchText, mode: 'insensitive'}
+						}
+					},
+					{ReportBoycott: {
+						Boycott: {
+							Title: {
+								contains: searchText, mode: 'insensitive'
+							}
+						}
+					}},
+				],
+			});
+		}
+
+		if (state && String(state).trim() !== "") {
+			const st = String(state).trim();
+			const stateCode = parseInt(st);
+			filter.AND = filter.AND || [];
+			if (!isNaN(stateCode)) {
+				filter.AND.push({ReportStateID: stateCode});
+			} else {
+				filter.AND.push({ReportState: {StateName: {contains: st, mode: 'insensitive'}}});
+			}
+		}
+
+		const reports = await prisma.report.findMany({
+			where: filter,
+			select: {
+				UserDescription: true,
+				Subject: true,
+				ReportedAt: true,
+				ReportedBy: true,
+				AdminAnswer: true,
+				CheckedBy: true,
+				ReportState: {select:{StateName: true}},
+				MotiveReport: {select:{MotiveName:true}},
+				ReportBoycott: {select: {Boycott: {select: {Title: true, BoycottID:true}}}},
+			},
+			orderBy: { ReportedAt: 'desc' },
+		});
+
+        res.json({ ok: true, reports });
+
+	} catch (error) {
+		console.error("getBoycottReports error:", error);
+		res.status(500).json({ ok: false, error: "Internal server error" });
+	}
+}
 
 /*
     Function: createCommentReport.
@@ -164,109 +229,71 @@ export async function closeReportBoycott(req: Request, res: Response) {
 	}
 }
 
-/*
-    Function: getBoycottReports. Filters reports based on optional search and state parameters.
-    Inputs: Request object containing optional search and state.
-    Description: Retrieves all the existing reports for boycotts.
-    Outputs: JSON response with the list of reports or an error message.
-*/
-export async function getBoycottReports(req: Request, res: Response){
-	try {
-		const { search, state } = req.query;
-		const filter: any = {ReportBoycott: {isNot: null}};
 
-		if (search && String(search).trim() !== ""){
-			const searchText = String(search).trim();
-			filter.AND = filter.AND || [];
-			filter.AND.push({
-				OR: [
-					{MotiveReport: {
-						MotiveName: {
-							contains: searchText, mode: 'insensitive'}
-						}
-					},
-					{ReportBoycott: {
-						Boycott: {
-							Title: {
-								contains: searchText, mode: 'insensitive'
-							}
-						}
-					}},
-				],
-			});
-		}
+/*
+    Function: getCommentReportCount
+    Inputs: Request object containing state in the body.
+    Description: Counts the comment reports by state (approved, pending, rejected).
+	Hint: Pending = 1, Approved = 2, Rejected = 3, In review (not used) = 4
+    Outputs: JSON response with the count result or an error message.
+*/
+export async function getCommentReportCount(req: Request, res: Response){
+	try {
+		const {state} = req.query;
 
 		if (state && String(state).trim() !== "") {
 			const st = String(state).trim();
 			const stateCode = parseInt(st);
-			filter.AND = filter.AND || [];
-			if (!isNaN(stateCode)) {
-				filter.AND.push({ReportStateID: stateCode});
-			} else {
-				filter.AND.push({ReportState: {StateName: {contains: st, mode: 'insensitive'}}});
-			}
+			const postCount = await prisma.reportComment.count({
+				where: {
+					Report: {
+						ReportStateID: stateCode,
+					}
+				},
+			});
+			
+        	res.json({ ok: true, postCount });
+		} else {
+			res.status(666).json({ ok: false, error: "Report state missing." });
 		}
 
-		const reports = await prisma.report.findMany({
-			where: filter,
-			select: {
-				UserDescription: true,
-				Subject: true,
-				ReportedAt: true,
-				ReportedBy: true,
-				AdminAnswer: true,
-				CheckedBy: true,
-				ReportState: {select:{StateName: true}},
-				MotiveReport: {select:{MotiveName:true}},
-				ReportBoycott: {select: {Boycott: {select: {Title: true, BoycottID:true}}}},
-			},
-			orderBy: { ReportedAt: 'desc' },
-		});
-
-        res.json({ ok: true, reports });
-
 	} catch (error) {
-		console.error("getBoycottReports error:", error);
+		console.error("getCommentReportCount error:", error);
 		res.status(500).json({ ok: false, error: "Internal server error" });
 	}
 }
 
 /*
-- Reporte de boycotts con las mismas razones.
-	- Atributos del reporte:
-		Subject : String
-		UserDescription : String
-		AdminAnswer : String
-		ReportedAt : Date
-		CheckedAt : Date
-		CreatedBy : UserID
-		ModifiedAt : Date
-		ModifiedBy : UserID
-		FK ReportedBy : UserID
-		FK CheckedBy : UserID
-		FK ReportState : ReportStateID
-		FK MotiveReport : MotiveReportID
-		ReportBoycottID : ReportID
-		BoycottID : BoycottID
-
-- Crear reporte
-		Subject : String
-		UserDescription : String
-		CreatedBy : UserID
-		FK ReportedBy : UserID
-		FK MotiveReport : MotiveReportID
-		BoycottID : BoycottID
-
-- Cerrar reporte
-		ReportBoycottID : ReportID
-		AdminAnswer : String
-		FK ReportState : ReportStateID
-
-
-	- Eliminar reporte
-		ReportBoycottID : ReportID
-		
-- Actualizar status de reporte
-- Panel de administrador para revisar y responder reportes.
-	- Obtener reportes
+    Function: getCommentReportCount
+    Inputs: Request object containing state in the body.
+    Description: Counts the comment reports by state (approved, pending, rejected).
+	Hint: Pending = 1, Approved = 2, Rejected = 3, In review (not used) = 4
+    Outputs: JSON response with the count result or an error message.
 */
+export async function getBoycottReportCount(req: Request, res: Response){
+	try {
+		const {state} = req.query;
+
+		if (state && String(state).trim() !== "") {
+			const st = String(state).trim();
+			const stateCode = parseInt(st);
+			const postCount = await prisma.reportBoycott.count({
+				where: {
+					Report: {
+						ReportStateID: stateCode,
+					}
+				},
+			});
+			
+        	res.json({ ok: true, postCount });
+		} else {
+			res.status(666).json({ ok: false, error: "Report state missing." });
+		}
+
+	} catch (error) {
+		console.error("getBoycottReportCount error:", error);
+		res.status(500).json({ ok: false, error: "Internal server error" });
+	}
+}
+
+
