@@ -6,16 +6,17 @@ import type { FilterCategories, simpleEntity } from '../../types';
 import EntitySearchBar from '../../components/user/EntitySearchBar';
 import { mockEntities } from '../../data/mockEntities';
 
+// En tu componente CreateBoycott
+import { createBoycott } from '../../services/boycottService';
+import { useAuth } from '../../context/authContext';
 type Step = 1 | 2;
-
-const entityOptions = ['Company', 'Organization', 'Person', 'Institution', 'Government', 'Other'];
 
 export default function CreateBoycott() {
   const theme = useTheme();
   const evidenceInputRef = useRef<HTMLInputElement | null>(null);
   const [step, setStep] = useState<Step>(1);
   const [entity, setEntity] = useState('Other');
-  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [categoryId, setCategoryId] = useState<number | null>(null); 
   const [industryId, setIndustryId] = useState<number | null>(null);
   const [countryId, setCountryId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
@@ -24,9 +25,15 @@ export default function CreateBoycott() {
   const [isDraggingEvidence, setIsDraggingEvidence] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<simpleEntity | null>(null);
   const [searchCategoryId, setSearchCategoryId] = useState<number | null>(null);
-
+  const [loading, setLoading] = useState(false);
   const [filterCategories, setFilterCategories] = useState<FilterCategories>();
+
+  const entityOptions = ['Company', 'Organization', 'Person', 'Institution', 'Government', 'Other'];
   
+  // Obtener el usuario actual (ajusta según tu auth)
+  const { user } = useAuth(); 
+  const userId = user?.appUserId || 1; // Temporal, reemplazar con tu auth real
+
   useEffect(() => {
     getFilterCategories().then(setFilterCategories);
   }, []);
@@ -37,13 +44,64 @@ export default function CreateBoycott() {
 
   const isFirstStep = step === 1;
 
-  const addEvidenceFiles = (files: FileList | File[]) => {
-    const incomingFiles = Array.from(files);
+  // Validar que todos los campos requeridos estén llenos
+  const isStep2Valid = () => {
+    return (
+      selectedEntity !== null &&
+      title.trim() !== '' &&
+      description.trim() !== '' &&
+      categoryId !== null &&
+      categoryId > 0 &&
+      countryId !== null &&
+      countryId > 0
+    );
+  };
 
-    if (!incomingFiles.length) {
+  // Manejar la creación del boycott
+  const handleCreateBoycott = async () => {
+    if (!isStep2Valid()) {
+      alert('Por favor completa todos los campos requeridos');
       return;
     }
 
+    setLoading(true);
+
+    try {
+      const boycottData = {
+        title: title.trim(),
+        description: description.trim(),
+        creatorId: userId, // ← Cambiar de createdBy a creatorId
+        entityId: selectedEntity!.id,
+        countryId: countryId!,
+        injusticeTypeId: categoryId!,
+        boycottStateId: 1, // Activo
+      };
+
+      const result = await createBoycott(boycottData);
+      
+      console.log('Boycott creado:', result);
+      
+      // Mostrar mensaje de éxito
+      alert('¡Boycott creado exitosamente!');
+      
+      // Redirigir o limpiar el formulario
+      // router.push(`/boycotts/${result.id}`);
+      
+      // O limpiar el formulario
+      // resetForm();
+      
+    } catch (error) {
+      console.error('Error al crear boycott:', error);
+      alert('Error al crear el boycott. Por favor intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Resto de tus funciones existentes...
+  const addEvidenceFiles = (files: FileList | File[]) => {
+    const incomingFiles = Array.from(files);
+    if (!incomingFiles.length) return;
     setEvidenceFiles((currentFiles: File[]) => [...currentFiles, ...incomingFiles]);
   };
 
@@ -55,7 +113,6 @@ export default function CreateBoycott() {
     if (event.target.files) {
       addEvidenceFiles(event.target.files);
     }
-
     event.target.value = '';
   };
 
@@ -92,29 +149,42 @@ export default function CreateBoycott() {
     return countries.find(c => c.id === id)?.name || '';
   };
 
-const getCategoryIdFromName = (categoryName: string): number | null => {
-  const categoryMap: Record<string, number> = {
-    'Company': 1,
-    'Organization': 2,
-    'Person': 3,
-    'Institution': 4,
-    'Government': 5,
-    'Other': 6,
+  const getCategoryIdFromName = (categoryName: string): number | null => {
+    const categoryMap: Record<string, number> = {
+      'Company': 1,
+      'Organization': 2,
+      'Person': 3,
+      'Institution': 4,
+      'Government': 5,
+      'Other': 6,
+    };
+    return categoryMap[categoryName] || null;
   };
-  return categoryMap[categoryName] || null;
-};
 
-const getCategoryNameFromId = (categoryId: number): string => {
-  const categoryMap: Record<number, string> = {
-    1: 'Company',
-    2: 'Organization',
-    3: 'Person',
-    4: 'Institution',
-    5: 'Government',
-    6: 'Other',
+  const getCategoryNameFromId = (categoryId: number): string => {
+    const categoryMap: Record<number, string> = {
+      1: 'Company',
+      2: 'Organization',
+      3: 'Person',
+      4: 'Institution',
+      5: 'Government',
+      6: 'Other',
+    };
+    return categoryMap[categoryId] || 'Unknown';
   };
-  return categoryMap[categoryId] || 'Unknown';
-};
+
+  // Resumen de datos para depuración
+  const getSummary = () => {
+    return {
+      title,
+      description,
+      entity: selectedEntity,
+      injusticeType: getCategoryName(categoryId),
+      country: getCountryName(countryId),
+      industry: getIndustryName(industryId),
+      evidenceCount: evidenceFiles.length,
+    };
+  };
 
   return (
     <Container sx={createBoycottStyles.mainContainer(theme)}>
@@ -140,10 +210,11 @@ const getCategoryNameFromId = (categoryId: number): string => {
             <Box sx={createBoycottStyles.formSection()}>
               {/* Category (Injustice) */}
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Category</Typography>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Category *</Typography>
                 <TextField
                   select
                   fullWidth
+                  required
                   value={categoryId ?? ''}
                   onChange={(event) => setCategoryId(event.target.value ? Number(event.target.value) : null)}
                   sx={createBoycottStyles.textField(theme)}
@@ -159,7 +230,7 @@ const getCategoryNameFromId = (categoryId: number): string => {
                     },
                   }}
                 >
-                  <MenuItem value="">None</MenuItem>
+                  <MenuItem value="">Select a category</MenuItem>
                   {injustices.map((injustice) => (
                     <MenuItem key={injustice.id} value={injustice.id}>
                       {injustice.name}
@@ -168,9 +239,9 @@ const getCategoryNameFromId = (categoryId: number): string => {
                 </TextField>
               </Box>
 
-              {/* Industry */}
+              {/* Industry (Opcional) */}
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Industry</Typography>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Industry (Optional)</Typography>
                 <TextField
                   select
                   fullWidth
@@ -200,10 +271,11 @@ const getCategoryNameFromId = (categoryId: number): string => {
 
               {/* Country */}
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Country</Typography>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Country *</Typography>
                 <TextField
                   select
                   fullWidth
+                  required
                   value={countryId ?? ''}
                   onChange={(event) => setCountryId(event.target.value ? Number(event.target.value) : null)}
                   sx={createBoycottStyles.textField(theme)}
@@ -219,7 +291,7 @@ const getCategoryNameFromId = (categoryId: number): string => {
                     },
                   }}
                 >
-                  <MenuItem value="">None</MenuItem>
+                  <MenuItem value="">Select a country</MenuItem>
                   {countries.map((country) => (
                     <MenuItem key={country.id} value={country.id}>
                       {country.name}
@@ -231,6 +303,7 @@ const getCategoryNameFromId = (categoryId: number): string => {
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: '18px' }}>
                 <Button
                   onClick={() => setStep(2)}
+                  disabled={!categoryId || !countryId}
                   sx={createBoycottStyles.primaryButton(theme)}
                 >
                   Next step
@@ -246,20 +319,20 @@ const getCategoryNameFromId = (categoryId: number): string => {
             </Typography>
 
             <Box>
-              <Typography sx={createBoycottStyles.fieldLabel()}>Entity Type</Typography>
+              <Typography sx={createBoycottStyles.fieldLabel()}>Entity Type *</Typography>
               <Box sx={createBoycottStyles.entityGrid}>
                 {entityOptions.map((option) => {
-                  const categoryId = getCategoryIdFromName(option);
+                  const categoryIdFromName = getCategoryIdFromName(option);
                   return (
                     <Button
                       key={option}
                       onClick={() => {
                         setTimeout(() => {
-                          setSearchCategoryId(categoryId);
+                          setSearchCategoryId(categoryIdFromName);
                           setSelectedEntity(null);
                         }, 0);
                       }}
-                      sx={createBoycottStyles.entityButton(theme, searchCategoryId === categoryId)}
+                      sx={createBoycottStyles.entityButton(theme, searchCategoryId === categoryIdFromName)}
                     >
                       {option}
                     </Button>
@@ -269,37 +342,30 @@ const getCategoryNameFromId = (categoryId: number): string => {
             </Box>
 
             <Box sx={{ mt: 2 }}>
-              <Typography sx={createBoycottStyles.fieldLabel()}>Search Entity</Typography>
-                {searchCategoryId && (
-                  <EntitySearchBar
-                    selectedEntity={selectedEntity}
-                    onEntityChange={setSelectedEntity}
-                    categoryId={searchCategoryId}
-                    placeholder="Search in this category..."
-                  />
-                )}
-                {!searchCategoryId && (
-                  <TextField
-                    fullWidth
-                    disabled
-                    placeholder="Select an entity type first"
-                    sx={createBoycottStyles.textField(theme)}
-                  />
-                )}
-              {selectedEntity && (
-                <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                    Selected: {selectedEntity.name} ({getCategoryNameFromId(selectedEntity.categoryId)})
-                  </Typography>
-                </Box>
+              <Typography sx={createBoycottStyles.fieldLabel()}>Search Entity *</Typography>
+              {searchCategoryId && (
+                <EntitySearchBar
+                  selectedEntity={selectedEntity}
+                  onEntityChange={setSelectedEntity}
+                  categoryId={searchCategoryId}
+                />
+              )}
+              {!searchCategoryId && (
+                <TextField
+                  fullWidth
+                  disabled
+                  placeholder="Select an entity type first"
+                  sx={createBoycottStyles.textField(theme)}
+                />
               )}
             </Box>
 
             <Box sx={createBoycottStyles.formSection()}>
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Title</Typography>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Title *</Typography>
                 <TextField
                   fullWidth
+                  required
                   placeholder='Title'
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
@@ -308,9 +374,10 @@ const getCategoryNameFromId = (categoryId: number): string => {
               </Box>
 
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Description</Typography>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Description *</Typography>
                 <TextField
                   fullWidth
+                  required
                   multiline
                   minRows={6}
                   placeholder="Type a detailed description of the injustice.."
@@ -321,7 +388,7 @@ const getCategoryNameFromId = (categoryId: number): string => {
               </Box>
 
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Evidence</Typography>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Evidence (Optional - Coming Soon)</Typography>
                 <Box
                   sx={isDraggingEvidence ? createBoycottStyles.uploadBoxActive(theme) : createBoycottStyles.uploadBox()}
                   onClick={handleEvidenceClick}
@@ -344,7 +411,7 @@ const getCategoryNameFromId = (categoryId: number): string => {
                       Drag and drop files here or click to browse
                     </Typography>
                     <Typography sx={createBoycottStyles.uploadHint}>
-                      You can attach images, documents and other evidence files
+                      You can attach images, documents and other evidence files (Coming soon)
                     </Typography>
 
                     {evidenceFiles.length > 0 && (
@@ -373,8 +440,12 @@ const getCategoryNameFromId = (categoryId: number): string => {
                   Back
                 </Button>
 
-                <Button sx={createBoycottStyles.postButton(theme)}>
-                  Post
+                <Button 
+                  onClick={handleCreateBoycott}
+                  disabled={loading || !isStep2Valid()}
+                  sx={createBoycottStyles.postButton(theme)}
+                >
+                  {loading ? 'Creating...' : 'Post'}
                 </Button>
               </Box>
             </Box>
