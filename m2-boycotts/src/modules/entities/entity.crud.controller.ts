@@ -1,4 +1,93 @@
-// ── entity.crud.controller.ts ─────────────────────────────────────────────────
+// En entity.crud.controller.ts
+
+/**
+ * POST /api/entities/:id/picture
+ * Body: { picture: FileMetadata }
+ * Actualiza la imagen de una entidad existente
+ */
+export async function updateEntityPictureHandler(
+  req: Request, 
+  res: Response
+): Promise<void> {
+  try {
+    const entityId = aEnteroPositivo(req.params.id);
+    if (!entityId) {
+      res.status(400).json({ ok: false, mensaje: "ID de entidad inválido" });
+      return;
+    }
+
+    // Verificar que la entidad existe
+    const entity = await prisma.entity.findUnique({
+      where: { EntityID: entityId },
+      select: { EntityID: true, EntityName: true }
+    });
+
+    if (!entity) {
+      res.status(404).json({ ok: false, mensaje: "Entidad no encontrada" });
+      return;
+    }
+
+    const picture = req.body?.picture as FileMetadata;
+    if (!picture) {
+      res.status(400).json({ ok: false, mensaje: "Falta la información de la imagen" });
+      return;
+    }
+
+    const updatedDoc = await updateEntityPicture(
+      entityId,
+      entity.EntityName,
+      picture
+    );
+
+    res.json({ 
+      ok: true, 
+      mensaje: "Imagen actualizada correctamente",
+      data: { picture: updatedDoc?.picture }
+    });
+  } catch (error) {
+    console.error("[updateEntityPicture]", error);
+    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+  }
+}
+
+/**
+ * DELETE /api/entities/:id/picture
+ * Elimina la imagen de una entidad
+ */
+export async function deleteEntityPictureHandler(
+  req: Request, 
+  res: Response
+): Promise<void> {
+  try {
+    const entityId = aEnteroPositivo(req.params.id);
+    if (!entityId) {
+      res.status(400).json({ ok: false, mensaje: "ID de entidad inválido" });
+      return;
+    }
+
+    // Verificar que la entidad existe
+    const entity = await prisma.entity.findUnique({
+      where: { EntityID: entityId },
+      select: { EntityID: true }
+    });
+
+    if (!entity) {
+      res.status(404).json({ ok: false, mensaje: "Entidad no encontrada" });
+      return;
+    }
+
+    const { deleteEntityPicture } = await import("../../../../m0-base-datos/src/services/mongoDocuments.service");
+    const updatedDoc = await deleteEntityPicture(entityId);
+
+    res.json({ 
+      ok: true, 
+      mensaje: "Imagen eliminada correctamente"
+    });
+  } catch (error) {
+    console.error("[deleteEntityPicture]", error);
+    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+  }
+}
 
 import { Request, Response } from "express";
 import {
@@ -9,6 +98,9 @@ import {
   obtenerEntidadPorId,
   obtenerTodasEntidades,
 } from "./entity.service";
+import { FileMetadata } from "../../../../m0-base-datos/src/types/mongoDocuments";
+import { updateEntityPicture } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+import { prisma } from "../../config/prisma";
 
 /*
   Controlador: entity.crud.controller.ts
@@ -49,6 +141,7 @@ export async function crearEntidadHandler(req: Request, res: Response): Promise<
     const industryTypeId  = aEnteroPositivo(req.body?.industryTypeId);
     const sectorId        = aEnteroPositivo(req.body?.sectorId);
     const createdBy       = obtenerUserId(req);
+    const picture         = req.body?.picture; 
 
     if (!entityName || !categoryEntityId || !createdBy) {
       res.status(400).json({
@@ -65,6 +158,7 @@ export async function crearEntidadHandler(req: Request, res: Response): Promise<
       industryTypeId,
       sectorId,
       createdBy,
+      picture, 
     });
 
     if (resultado.estado === "duplicado") {
@@ -73,7 +167,12 @@ export async function crearEntidadHandler(req: Request, res: Response): Promise<
     }
 
     if (resultado.estado === "ok") {
-      console.log(resultado.data.entityId);
+      res.status(201).json({ 
+        ok: true, 
+        mensaje: "Entidad creada exitosamente",
+        data: { entityId: resultado.data.entityId }
+      });
+      return;
     }
   } catch (error) {
     console.error("[crearEntidad]", error);

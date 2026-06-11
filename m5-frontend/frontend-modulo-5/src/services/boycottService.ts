@@ -79,6 +79,15 @@ export const searchEntities = async (
   inputValue: string,
   categoryId: number,
 ): Promise<simpleEntity[]> => {
+
+  const response = await boycottApi.get<ApiResponse<simpleEntity[]>>(`/api/entities?`, {
+    params: {
+      q: inputValue,
+      categoryEntityId: categoryId
+    },
+  });
+  return response.data.data;
+
   return mockEntities.filter(
     (e) =>
       e.categoryId === categoryId &&
@@ -200,4 +209,103 @@ export const testGetUsers = async (): Promise<any[]> => {
   const response = await authApi.get<any[]>('/api/users/listUsers');
 
   return response.data;
+};
+
+
+// Subir una imagen al servidor
+export const uploadImage = async (file: File): Promise<{ fileId: string; metadata: any }> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await boycottApi.post<ApiResponse<{ mongoFileId: string; gridFsId: string; filename: string; contentType: string; size: number }>>(
+    '/api/upload',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+
+  return {
+    fileId: response.data.data.mongoFileId || response.data.data.gridFsId,
+    metadata: response.data.data,
+  };
+};
+
+// Crear una entidad con imagen
+export const createEntityWithImage = async (
+  entityData: {
+    entityName: string;
+    description?: string;
+    categoryEntityId: number;
+    industryTypeId?: number;
+    sectorId?: number;
+    userId: number;
+  },
+  imageFile?: File
+): Promise<{ entityId: number; entityName: string }> => {
+  
+  let pictureMetadata = null;
+
+  // Si hay imagen, subirla primero
+  if (imageFile) {
+    try {
+      const uploadResult = await uploadImage(imageFile);
+      
+      // Crear el metadata de la imagen en el formato que espera el backend
+      pictureMetadata = {
+        mongoFileId: uploadResult.metadata.mongoFileId,
+        gridFsId: uploadResult.metadata.gridFsId,
+        filename: uploadResult.metadata.filename,
+        contentType: uploadResult.metadata.contentType,
+        size: uploadResult.metadata.size,
+        uploadDate: new Date(),
+      };
+    } catch (error) {
+      console.error('Error al subir la imagen:', error);
+      throw new Error('No se pudo subir la imagen. Por favor, intenta de nuevo.');
+    }
+  }
+
+  // Crear la entidad con la metadata de la imagen
+  const response = await boycottApi.post<ApiResponse<{ entityId: number }>>('/api/entities', {
+    ...entityData,
+    picture: pictureMetadata, // Si no hay imagen, esto será null
+  });
+
+  return {
+    entityId: response.data.data.entityId,
+    entityName: entityData.entityName,
+  };
+};
+
+// Función para actualizar solo la imagen de una entidad existente
+export const updateEntityImage = async (
+  entityId: number,
+  entityName: string,
+  imageFile: File
+): Promise<void> => {
+  // Subir la nueva imagen
+  const uploadResult = await uploadImage(imageFile);
+  
+  const pictureMetadata = {
+    mongoFileId: uploadResult.metadata.mongoFileId,
+    gridFsId: uploadResult.metadata.gridFsId,
+    filename: uploadResult.metadata.filename,
+    contentType: uploadResult.metadata.contentType,
+    size: uploadResult.metadata.size,
+    uploadDate: new Date(),
+  };
+
+  // Actualizar la imagen de la entidad
+  await boycottApi.post(`/api/entities/${entityId}/picture`, {
+    picture: pictureMetadata,
+    entityName, // El backend necesita el entityName para el upsert
+  });
+};
+
+// Función para eliminar la imagen de una entidad
+export const deleteEntityImage = async (entityId: number): Promise<void> => {
+  await boycottApi.delete(`/api/entities/${entityId}/picture`);
 };

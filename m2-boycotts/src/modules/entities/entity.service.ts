@@ -3,7 +3,10 @@
 import { prisma } from "../../config/prisma";
 import {
   getEntityDocumentByEntityId,
+  createEntityDocument,
+  updateEntityPicture,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+import { FileMetadata } from "../../../../m0-base-datos/src/types/mongoDocuments";
 
 /*
   Servicio: entity.service.ts
@@ -19,6 +22,7 @@ export type CrearEntidadInput = {
   industryTypeId?: number;
   sectorId?: number;
   createdBy: number;
+  picture?: FileMetadata; 
 };
 
 export type ActualizarEntidadInput = {
@@ -60,6 +64,7 @@ function resolveSafeFileId(
                dentro de la misma categoria.
   Salida: entidad creada o duplicado.
 */
+
 export async function crearEntidad(
   input: CrearEntidadInput
 ): Promise<ResultadoOperacion<{ entityId: number }>> {
@@ -73,6 +78,7 @@ export async function crearEntidad(
 
   if (existente) return { estado: "duplicado" };
 
+  // Crear la entidad en MySQL
   const entity = await prisma.entity.create({
     data: {
       EntityName: input.entityName,
@@ -81,9 +87,35 @@ export async function crearEntidad(
       IndustryTypeID: input.industryTypeId ?? null,
       SectorID: input.sectorId ?? null,
       CreatedBy: input.createdBy,
+      MongoDocumentID: null,
     },
-    select: { EntityID: true },
+    select: { 
+      EntityID: true, 
+      EntityName: true,
+      Description: true,
+      CategoryEntityID: true,
+    },
   });
+
+  if (input.picture) {
+    try {
+      await updateEntityPicture(
+        entity.EntityID,
+        entity.EntityName,
+        input.picture  
+      );
+    } catch (error) {
+      console.error("[crearEntidad] Error al guardar la imagen:", error);
+    }
+  } else {
+    // Si no hay imagen, igual crear el documento base
+    try {
+      const { createOrUpdateEntityDocument } = await import("../../../../m0-base-datos/src/services/mongoDocuments.service");
+      await createOrUpdateEntityDocument(entity.EntityID, entity.EntityName);
+    } catch (error) {
+      console.error("[crearEntidad] Error al crear documento base:", error);
+    }
+  }
 
   return { estado: "ok", data: { entityId: entity.EntityID } };
 }

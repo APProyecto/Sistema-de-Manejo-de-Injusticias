@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { actualizarEntidadHandler, buscarEntidadesHandler, crearEntidadHandler, eliminarEntidadHandler, obtenerEntidadHandler, obtenerTodasEntidadesHandler } from "./entity.crud.controller";
+import { actualizarEntidadHandler, buscarEntidadesHandler, crearEntidadHandler, deleteEntityPictureHandler, eliminarEntidadHandler, obtenerEntidadHandler, obtenerTodasEntidadesHandler, updateEntityPictureHandler } from "./entity.crud.controller";
 
 /*
   Rutas:boycott.routes.ts
@@ -18,5 +18,6 @@ router.get("/search", buscarEntidadesHandler);
 router.get("/:id", obtenerEntidadHandler);
 router.put("/:id", actualizarEntidadHandler);
 router.delete("/:id", eliminarEntidadHandler);
-
+router.post("/entities/:id/picture", updateEntityPictureHandler);  
+router.delete("/entities/:id/picture", deleteEntityPictureHandler); 
 export default router;
