@@ -105,7 +105,7 @@ export async function getComments(req: Request, res: Response) {
         user: {
           id: comment.CreatorID,
           username: profile?.userName ?? "",
-          profilePicture: `http://localhost:3001/api/files/appUser/${comment.CreatorID}/picture`,
+          profilePicture: `https://fair-boycott.sytes.net/api/files/appUser/${comment.CreatorID}/picture`,
         },
         content: comment.Description,
         creation_date: comment.CommentDate.toISOString(),
