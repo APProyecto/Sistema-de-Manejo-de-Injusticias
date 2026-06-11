@@ -6,37 +6,79 @@ import { darkTheme } from "./theme";
 import AppRoutes from "./routes/AppRoutes";
 import { AuthProvider } from "./context/authContext";
 import { SearchProvider } from "./context/SearchContext";
-import { syncUser } from "./services/authService";
+
+import { useAuth } from "./context/authContext";
+import { syncAuth0User } from "./services/uesrService";
 
 const theme = darkTheme;
 
-function App() {
-  const { isAuthenticated, getAccessTokenSilently, user } = useAuth0();
+function Auth0Sync() {
+  const {
+    isAuthenticated,
+    isLoading,
+    user: auth0User,
+    getAccessTokenSilently,
+  } = useAuth0();
+
+  const { login, user } = useAuth();
 
   useEffect(() => {
-    async function syncAuthUser() {
+    let cancelled = false;
+
+    const syncUser = async () => {
       try {
-        if (!isAuthenticated) return;
+        if (isLoading) return;
+        if (!isAuthenticated || !auth0User) return;
+
+        if (sessionStorage.getItem("auth0LoggingOut") === "true") {
+          return;
+        }
+
+        if (!auth0User.email) return;
+
+        if (user?.email === auth0User.email) {
+          return;
+        }
 
         const token = await getAccessTokenSilently();
 
-        localStorage.setItem("token", token);
+        const syncedUser = await syncAuth0User(
+          token,
+          auth0User.email,
+          auth0User.name || "User",
+        );
 
-        await syncUser(token, user?.email || "", user?.name || "User");
-
-        console.log("Usuario sincronizado:", user);
+        if (!cancelled) {
+          login(syncedUser);
+        }
       } catch (error) {
-        console.error(error);
+        console.error("Auth0 sync error:", error);
       }
-    }
+    };
 
-    syncAuthUser();
-  }, [isAuthenticated, getAccessTokenSilently, user]);
+    syncUser();
 
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isLoading,
+    isAuthenticated,
+    auth0User,
+    getAccessTokenSilently,
+    login,
+    user?.email,
+  ]);
+
+  return null;
+}
+
+function App() {
   return (
     <SearchProvider>
       <AuthProvider>
         <ThemeProvider theme={theme}>
+          <Auth0Sync />
           <AppRoutes />
         </ThemeProvider>
       </AuthProvider>

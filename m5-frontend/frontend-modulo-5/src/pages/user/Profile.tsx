@@ -20,6 +20,8 @@ import { useNavigate } from "react-router-dom";
 import type { PostCardData } from "../../types";
 import PostCard from "../../components/common/PostCard";
 
+import { useAuth0 } from "@auth0/auth0-react";
+
 export default function Profile() {
   let data: PostCardData[] = [
     {
@@ -70,19 +72,42 @@ export default function Profile() {
   ];
 
   const navigate = useNavigate();
+  const theme = useTheme();
+
+  const { user, logout } = useAuth();
+
+  const { logout: auth0Logout, isAuthenticated: isAuth0Authenticated } =
+    useAuth0();
 
   const handleLogout = async () => {
-    await logoutService(); //llamada al servicio
-    logout(); //isAthenticated = false
+    console.log("Entró al logout", { isAuth0Authenticated });
+
+    sessionStorage.setItem("auth0LoggingOut", "true");
+
+    try {
+      await logoutService();
+    } catch (error) {
+      console.error("Error en logoutService:", error);
+    }
+
+    logout();
+
+    if (isAuth0Authenticated) {
+      auth0Logout({
+        logoutParams: {
+          returnTo: window.location.origin,
+        },
+      });
+      return;
+    }
+
+    sessionStorage.removeItem("auth0LoggingOut");
+    navigate("/");
   };
 
   const handleEdit = () => {
     navigate("/edit-profile");
   };
-
-  const { user, logout } = useAuth();
-  const theme = useTheme();
-
   if (!user) return null;
   console.log("USUARIO", user);
   const currentUser = user as any;

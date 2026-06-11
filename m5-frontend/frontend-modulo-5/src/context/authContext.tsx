@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import type { ReactNode } from "react";
 import type { User, UserRole } from "../types";
 
@@ -35,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (userData: User): User => {
+  const login = useCallback((userData: User): User => {
     const userWithRole: User = {
       ...userData,
       role: userData.isAdmin ? "admin" : "user",
@@ -45,11 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userWithRole);
 
     return userWithRole;
-  };
-  const logout = () => {
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-  };
+  }, []);
 
   // Función para verificar si el usuario tiene un rol específico
   const hasRole = (roles: UserRole | UserRole[]): boolean => {

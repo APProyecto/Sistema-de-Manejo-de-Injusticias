@@ -25,6 +25,7 @@ enableMocking().then(() => {
           audience: import.meta.env.VITE_AUTH0_AUDIENCE,
           scope: "openid profile email",
         }}
+        cacheLocation="localstorage"
       >
         <BrowserRouter>
           <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
