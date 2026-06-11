@@ -949,11 +949,13 @@ export async function googleLogin(req: Request, res: Response) {
 
 
     if (userSearch.appUserId === -1) {
+      const randomNum = Math.floor(Math.random() * 10000);
+      const filledNum = String(randomNum).padStart(4, '0');
       appUser = await prisma.appUser.create({
         data: {
           FirstName: encryptText(given_name || ""),
           LastName: encryptText(family_name || ""),
-          UserName: email,
+          UserName: `${email.split('@')[0]}${filledNum}`,
           Email: encryptText(cleanEmail),
           Password: "", 
           IsAdmin: false, 
