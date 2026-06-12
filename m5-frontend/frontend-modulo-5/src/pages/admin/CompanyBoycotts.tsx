@@ -95,7 +95,6 @@ export default function CompanyBoycotts() {
       boycotts: {
         boycottId: number;
         title: string;
-        description: string | null;
         author: string;
         date: string;
         status: string;
@@ -109,7 +108,6 @@ export default function CompanyBoycotts() {
     boycotts: {
       boycottId: number;
       title: string;
-      description: string | null;
       author: string;
       date: string;
       status: string;
@@ -357,20 +355,6 @@ export default function CompanyBoycotts() {
                           }}
                         >
                           {new Date(boycott.date).toLocaleDateString()}
-                        </Typography>
-                      </Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          width: "75%",
-                          textAlign: "left",
-                        }}
-                      >
-                        <Typography
-                          variant="body1"
-                          sx={{ fontWeight: "bold", mx: "Auto" }}
-                        >
-                          {boycott.description ?? "No description available"}
                         </Typography>
                       </Box>
                     </Box>
