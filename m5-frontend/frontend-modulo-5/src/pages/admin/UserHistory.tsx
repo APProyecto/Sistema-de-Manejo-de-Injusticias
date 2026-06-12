@@ -57,7 +57,7 @@ export default function UserHistory() {
       CategoryFilter:'Category'
     });
     try{
-      const response = await fetch(`http://localhost:3004/api/tracking/getUserHistory?${parameters.toString()}`);
+      const response = await fetch(`https://fair-boycott.sytes.net/api/tracking/getUserHistory?${parameters.toString()}`);
       const data = await response.json();
       if (Array.isArray(data)) {
         setUserS(data);

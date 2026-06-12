@@ -2,7 +2,7 @@ import { Container, Typography, Card, Grid, Box, useTheme, Avatar } from '@mui/m
 import { DashboardStyles } from '../styles/DashboardStyles';
 import { useEffect, useState } from 'react';
 
-const API_BASE_URL = 'http://localhost:3004/api';
+const API_BASE_URL = 'https://fair-boycott.sytes.net/api';
 
 type DashboardSummaryResponse = {
   ok: boolean;

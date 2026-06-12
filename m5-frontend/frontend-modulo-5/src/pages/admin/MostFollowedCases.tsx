@@ -46,7 +46,7 @@ export default function MostFollowedCases() {
       injusticeFilter: catname
     });
     try{
-      const response = await fetch(`http://localhost:3004/api/tracking/getFollowers?${parameters.toString()}`);
+      const response = await fetch(`https://fair-boycott.sytes.net/api/tracking/getFollowers?${parameters.toString()}`);
       const data = await response.json();
 
       if (Array.isArray(data)) {
