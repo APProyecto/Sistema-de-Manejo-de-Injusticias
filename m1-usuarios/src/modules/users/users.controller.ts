@@ -133,6 +133,7 @@ export async function checkRol(req: Request, res: Response) {
       where : {AdminID : ID?.UserID},
       select : {IsSuperAdmin : true}
     });
+
     if(rol){
       return res.json({
         result : '1',
@@ -152,15 +153,11 @@ export async function checkRol(req: Request, res: Response) {
 }
 export async function convertAdminToUser(req: Request, res: Response) {
   try {
-    const {email} = req.body;
-    const ID = await prisma.appUser.findUnique({
-      where : {Email : email},
-      select : {UserID : true}
-    });
+    const {ID} = req.body;
     
     if (!Number.isInteger(ID?.UserID)) {
       return res.status(400).json({
-        error: "Invalid or missing genderId",
+        error: "Invalid",
       });
     }
     const Id = Number(ID?.UserID);
@@ -171,6 +168,10 @@ export async function convertAdminToUser(req: Request, res: Response) {
 
     const rol = await prisma.normalUser.create({
       data : {NormalUserID : Id},
+    });
+    const isAdminchange = await prisma.appUser.update({
+      where : {UserID : Id},
+      data : {IsAdmin : false},
     });
     if(rol){
       return res.json({
@@ -191,15 +192,11 @@ export async function convertAdminToUser(req: Request, res: Response) {
 
 export async function convertUserToAdmin(req: Request, res: Response) {
   try {
-    const {email} = req.body;
-    const ID = await prisma.appUser.findUnique({
-      where : {Email : email},
-      select : {UserID : true}
-    });
+    const {ID} = req.body;
     
     if (!Number.isInteger(ID?.UserID)) {
       return res.status(400).json({
-        error: "Invalid or missing genderId",
+        error: "Invalid",
       });
     }
     const Id = Number(ID?.UserID);
@@ -207,6 +204,11 @@ export async function convertUserToAdmin(req: Request, res: Response) {
     const Deleterol = await prisma.normalUser.delete({
       where : {NormalUserID : Id},
     })
+
+    const isAdminchange = await prisma.appUser.update({
+      where : {UserID : ID},
+      data : {IsAdmin : true},
+    });
 
     const rol = await prisma.admin.create({
       data : {AdminID : Id,
@@ -222,7 +224,7 @@ export async function convertUserToAdmin(req: Request, res: Response) {
       result : '0',
     });
   } catch (error) {
-    console.error("Rol error:", error);
+    console.error("Error:", error);
 
     return res.status(500).json({
       error: "Internal server error",
@@ -263,6 +265,70 @@ export async function listUsers(_req: Request, res: Response) {
     }));
 
     return res.json(decryptedUsers);
+  } catch (error) {
+    console.error("listUsers error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+
+export async function listNormalUsers(_req: Request, res: Response) {
+  try {
+    const users = await prisma.normalUser.findMany({
+      include: {
+        AppUser_NormalUser_NormalUserIDToAppUser: true,
+      },
+    });
+    
+    const decryptedUsers = users.map((user) => ({
+      ...user,
+      FirstName: safeDecryptText(user.AppUser_NormalUser_NormalUserIDToAppUser.FirstName),
+      LastName: safeDecryptText(user.AppUser_NormalUser_NormalUserIDToAppUser.LastName),
+      Email: safeDecryptText(user.AppUser_NormalUser_NormalUserIDToAppUser.Email),
+    }));
+
+    return res.json(decryptedUsers);
+  } catch (error) {
+    console.error("listUsers error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function listAdminUsers(_req: Request, res: Response) {
+  try {
+    const users = await prisma.admin.findMany({
+      include: {
+        AppUser_Admin_AdminIDToAppUser: true,
+      },
+    });
+    
+    const decryptedUsers = users.map((user) => ({
+      ...user,
+      FirstName: safeDecryptText(user.AppUser_Admin_AdminIDToAppUser.FirstName),
+      LastName: safeDecryptText(user.AppUser_Admin_AdminIDToAppUser.LastName),
+      Email: safeDecryptText(user.AppUser_Admin_AdminIDToAppUser.Email),
+    }));
+
+    return res.json(decryptedUsers);
+  } catch (error) {
+    console.error("listUsers error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function listAccountStates(_req: Request, res: Response) {
+  try {
+    const accounts = await prisma.accountState.findMany();
+    return res.json(accounts);
   } catch (error) {
     console.error("listUsers error:", error);
 
