@@ -21,7 +21,7 @@ import { useAuth } from "../../context/authContext";
 import { voteBoycott } from "../../services/boycottService";
 import { getEntityPictureUrlByBoycottId, getInjusticePictureUrlByBoycottId } from "../../services/uesrService";
 import { useEffect, useState } from "react";
-import { getEntityPictureUrl } from "../../services/uesrService";
+
 
 interface PostCardProps {
   data: PostCardData;
