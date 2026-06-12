@@ -41,7 +41,6 @@ export default function MostFollowedCases() {
       catname = injusticeTypes.find(item => item.InjusticeTypeID === Category)?.InjusticeName ?? 'Category';
     }
 
-    console.log(entityname, catname);//borrar luego -------------------------------------------
     const parameters = new URLSearchParams({
       indictedFilter: entityname,
       injusticeFilter: catname

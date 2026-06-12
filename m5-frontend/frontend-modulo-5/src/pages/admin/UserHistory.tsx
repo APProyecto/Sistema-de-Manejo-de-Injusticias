@@ -122,7 +122,7 @@ export default function UserHistory() {
             <Typography variant='h4' sx={{my:'Auto',fontWeight:'bold'}}>{Query.username}</Typography>
           </Box>
 
-          <Box sx={{mx:2,my:2,pb:1, background:theme.palette.grey[200],borderRadius:5}}>
+          <Box sx={{mx:2,my:2,pb:1, background:theme.palette.grey[200],borderRadius:5, overflowY:'auto',maxHeight:400}}>
             <Box sx={{display:'flex'}}>
               <Typography variant='h5' sx={UserHistoryStyles.subTitle(theme)}>User Posts</Typography>
             </Box>
@@ -152,7 +152,7 @@ export default function UserHistory() {
             }
           </Box>
 
-          <Box sx={{mx:2,my:4,pb:1, background:theme.palette.grey[200],borderRadius:5}}>
+          <Box sx={{mx:2,my:4,pb:1, background:theme.palette.grey[200],borderRadius:5, overflowY:'auto',maxHeight:400}}>
             <Box sx={{display:'flex'}}>
               <Typography variant='h5' sx={UserHistoryStyles.subTitle(theme)}>User Comments</Typography>
             </Box>
@@ -179,7 +179,7 @@ export default function UserHistory() {
             }
           </Box>
 
-          <Box sx={{mx:2,my:4,pb:1, background:theme.palette.grey[200],borderRadius:5}}>
+          <Box sx={{mx:2,my:4,pb:1, background:theme.palette.grey[200],borderRadius:5, overflowY:'auto',maxHeight:400}}>
             <Box sx={{display:'flex'}}>
               <Typography variant='h5' sx={UserHistoryStyles.subTitle(theme)}>Followed Companies</Typography>
             </Box>
