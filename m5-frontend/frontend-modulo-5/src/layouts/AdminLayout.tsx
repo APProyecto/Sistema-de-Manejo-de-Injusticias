@@ -10,20 +10,21 @@ export default function AdminLayout() {
     const [user, setUser] = useState(null);
     const [signedIn, setSignedIn] = useState(false);
     const [isDashboardMode, setIsDashboardMode] = useState(false);
+    const [sideMenuOpen, setSideMenuOpen] = useState(false);
     const navigate = useNavigate();
 
-    // Función para cambiar el modo
+    
     const toggleMode = () => {
         setIsDashboardMode(!isDashboardMode);
     };
 
-    // Función para activar modo dashboard
+    
     const enableDashboardMode = () => {
         navigate('admin/dashboard');
         setIsDashboardMode(true);
     };
 
-    // Función para activar modo normal
+    
     const enableNormalMode = () => {
         navigate('/');
         setIsDashboardMode(false);
@@ -31,7 +32,7 @@ export default function AdminLayout() {
 
     return (
         <Container>
-            <UserHeader />
+            <UserHeader  onOpenSideMenu={() => setSideMenuOpen(true)}/>
             <Container sx={
             {display:'flex', 
             flexDirection:'row', 
@@ -42,11 +43,15 @@ export default function AdminLayout() {
                     <AdminModeSideMenu 
                         onSwitchToNormalMode={enableNormalMode} 
                         currentMode="admin"
+                        open={sideMenuOpen}
+                        onClose={() => setSideMenuOpen(false)}
                     />
                 ) : (
                     <AdminSideMenu 
                         onSwitchToDashboardMode={enableDashboardMode}
                         currentMode="user"
+                        open={sideMenuOpen}
+                        onClose={() => setSideMenuOpen(false)}
                     />
                 )}
             <Outlet/>
