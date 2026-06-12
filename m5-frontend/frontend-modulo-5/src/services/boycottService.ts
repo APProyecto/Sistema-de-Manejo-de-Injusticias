@@ -400,37 +400,6 @@ export const getFavorites = async (userId?: number): Promise<PostCardData[]> => 
   return (data as any).data ?? [];
 };
 
-export const getMyBoycotts = async (creatorId: number): Promise<PostCardData[]> => {
-  const response = await boycottApi.get<{ ok: boolean; total: number; data: any[] }>(
-    '/api/boycotts/mine',
-    {
-      params: { creatorId },
-    }
-  );
-
-  const rows = response.data.data ?? [];
-
-  return rows.map((item: any) => ({
-    id: Number(item.BoycottID),
-    username: 'You',
-    user_picture: '',
-    indicted: item.Entity?.EntityName ?? 'Unknown',
-    indicted_picture: '',
-    case: item.InjusticeType?.InjusticeName ?? 'Unknown',
-    case_picture: '',
-    title: item.Title ?? '',
-    description: '',
-    creation_date: item.PublicationDate ?? new Date().toISOString(),
-    is_favorite: false,
-    votes: String((item.VotesInFavor ?? 0) - (item.VotesAgainst ?? 0)),
-    voted_by_user: null,
-    coments: String(item.NumberComments ?? 0),
-    evidences: '0',
-    state: item.BoycottState?.StateName ?? 'Active',
-    caseNumber: item.CaseNumber ? String(item.CaseNumber) : undefined,
-  }));
-};
-
 // Reportar un boycott
 export const reportBoycott = async (
   id: number,
