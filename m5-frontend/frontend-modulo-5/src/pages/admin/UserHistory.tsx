@@ -12,6 +12,7 @@ import { Circle} from '@mui/icons-material';
 import PostInteracionButton from '../../components/common/PostInteractionButton';
 import QueryNavegation from './QueryNavigation';
 import { Edited, UnderReview } from '../styles/ButtonStyles';
+import {getUserProfilePictureUrl} from '../../services/userService'
 
 
 interface userQuery {ok:boolean;

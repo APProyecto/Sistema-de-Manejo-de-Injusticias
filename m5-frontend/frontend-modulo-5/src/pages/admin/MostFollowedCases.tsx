@@ -29,7 +29,7 @@ export default function MostFollowedCases() {
 
   const [injusticeTypes, setInjusticeTypes] = useState<
       { InjusticeTypeID: number; InjusticeName: string }[]
-    >([]);
+    >([{ InjusticeTypeID: 0, InjusticeName: 'Category' }]);
 
   const getFollows = async (entityid:number, catid:number) => {
     let entityname = 'Category';
@@ -58,18 +58,12 @@ export default function MostFollowedCases() {
       console.error('Error fetching user history:', error);
     }
   }
-  const addDefaultCategory = () =>{
-    const defaultvalue =  { InjusticeTypeID: 0, InjusticeName: 'Category' };
-    setInjusticeTypes([defaultvalue, ...injusticeTypes]);
-  }
   
   useEffect(()=>{
     getFollows(EntityTypeSelected, Category);
-
     statsApi.get("/api/audits/filter-options").then((res) => {
           setInjusticeTypes(res.data.data.injusticeTypes);
         });
-     addDefaultCategory();
   },[]);
 
   return (
