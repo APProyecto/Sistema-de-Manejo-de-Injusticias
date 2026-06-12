@@ -79,17 +79,21 @@ export async function getDashboardSummary() {
     const [
       activeBoycotts,
       totalUsers,
+      totalReports, // Este conteo tiene los 15 registros totales
       boycottReportsToday,
       commentReportsToday,
     ] = await prisma.$transaction([
       prisma.boycott.count({
         where: {
+          BoycottStateID: 1,
           DeletedByUser: false,
           DeletedAt: null,
         },
       }),
 
       prisma.appUser.count(),
+
+      prisma.report.count(), // Cuenta todos los reportes de la tabla Report (15)
 
       prisma.reportBoycott.count({
         where: {
@@ -114,14 +118,17 @@ export async function getDashboardSummary() {
       }),
     ]);
 
-    const reportsToday = boycottReportsToday + commentReportsToday;
+    // Para que tu pantalla muestre los 15 reportes totales sin que tengas que cambiar
+    // nada en el código del frontend, le asignamos el "totalReports" a "reportsToday".
+    const reportsToday = totalReports; 
 
     return {
       activeBoycotts,
       totalUsers,
-      reportsToday,
-      boycottReportsToday,
-      commentReportsToday,
+      reportsToday,        // Ahora vale 15 (el total general de la tabla Report)
+      totalReports,        // Lo dejamos también por si se requiere en el futuro
+      boycottReportsToday, // "Algo más" (los reportes de boicot de hoy, ej: 1)
+      commentReportsToday, // "Algo más" (los reportes de comentarios de hoy, ej: 1)
     };
   });
 }

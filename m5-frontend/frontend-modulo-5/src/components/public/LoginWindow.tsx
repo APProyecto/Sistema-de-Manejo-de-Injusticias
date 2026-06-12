@@ -124,7 +124,7 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
       setSuccess("Logged in successfully!");
       onClose();
       if (loggedUser.isAdmin) navigate("/admin/dashboard");
-      else navigate("/profile");
+      else navigate("/");
     } catch {
       setError("Incorrect credentials");
     }
