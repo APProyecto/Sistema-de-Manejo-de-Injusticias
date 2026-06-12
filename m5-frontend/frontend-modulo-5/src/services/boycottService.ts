@@ -192,11 +192,11 @@ export const searchBoycotts = async (
       break;
     case 3: // Most relevant
       orderByParam = 'relevance';
-      orderDirectionParam = 'desc';
+      orderDirectionParam = 'asc';
       break;
     case 4: // Less relevant
       orderByParam = 'relevance';
-      orderDirectionParam = 'asc';
+      orderDirectionParam = 'desc';
       break;
     default:
       orderByParam = 'createdAt';
