@@ -225,3 +225,42 @@ export interface InjusticeType {
   ModifiedAt?: string | null;
   ModifiedBy?: string | null;
 }
+
+export interface Sector {
+  SectorID: number;
+  SectorName: string;
+  CreatedAt?: string | Date;
+  CreatedBy?: number | null;
+  ModifiedAt?: string | Date | null;
+  ModifiedBy?: number | null;
+}
+
+export interface IndustryType {
+  IndustryTypeID: number;
+  IndustryName: string;
+  CreatedAt?: string | Date;
+  CreatedBy?: number | null;
+  ModifiedAt?: string | Date | null;
+  ModifiedBy?: number | null;
+}
+
+export interface Entity {
+  EntityID: number;
+  EntityName: string;
+  MongoDocumentID?: string | null;
+  Description?: string | null;
+  NumberBoycotts?: number;
+
+  CategoryEntityID: number;
+  IndustryTypeID: number;
+  SectorID: number;
+
+  CategoryEntity?: CategoryEntity;
+  IndustryType?: IndustryType;
+  Sector?: Sector;
+
+  CreatedAt?: string | Date;
+  CreatedBy?: number | null;
+  ModifiedAt?: string | Date | null;
+  ModifiedBy?: number | null;
+}

@@ -30,6 +30,13 @@ import {
   createInjusticeType,
   updateInjusticeType,
   deleteInjusticeType,
+
+  getSectors,
+  getSectorById,
+  createSector,
+  updateSector,
+  deleteSector,
+  getIndustryTypes,
 } from "./catalogues.controller";
 
 const router = Router();
@@ -68,5 +75,15 @@ router.get("/entities/:entityId", getEntityById);
 router.post("/entities", createEntity);
 router.put("/entities/:entityId", updateEntity);
 router.delete("/entities/:entityId", deleteEntity);
+
+// Sector
+router.get("/sectors", getSectors);
+router.get("/sectors/:sectorId", getSectorById);
+router.post("/sectors", createSector);
+router.put("/sectors/:sectorId", updateSector);
+router.delete("/sectors/:sectorId", deleteSector);
+
+// IndustryType
+router.get("/industry-types", getIndustryTypes);
 
 export default router;
