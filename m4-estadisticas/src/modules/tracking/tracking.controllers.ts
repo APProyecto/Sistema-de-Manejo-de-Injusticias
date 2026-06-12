@@ -3,11 +3,14 @@ import { prisma } from "../../config/prisma";
 
 import { downloadFileFromGridFS } from "../../../../m0-base-datos/src/services/gridfs.service";
 
-import {
+/**
+ * import {
   getEntityDocumentByEntityId,
   getAppUserDocumentByUserId,
   getBoycottDocumentByMysqlId,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+ */
+
 
 import {
   getUserProfilePictureUrl,
@@ -75,6 +78,9 @@ export async function getMostFollowedCases(req: Request, res: Response) {
         if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
           let element = {
             entityname: FindCases[j].Entity.EntityName,
+            entityPicture: null,
+            entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
+
             entityPicture: await getEntityPictureUrlByBoycottId(
               FindCases[j].BoycottID,
             ),
@@ -135,6 +141,8 @@ export async function getUserPostAndComments(req: Request, res: Response) {
         UserID: true,
       },
     });
+
+    const AppUserPicture = null;
 
     const AppUserPicture = await getUserProfilePictureUrl(Number(userId));
 
@@ -235,9 +243,8 @@ export async function getUserPostAndComments(req: Request, res: Response) {
     for (let i = 0; i < entityFollowing.length; i++) {
       let entity = {
         EntityName: entityFollowing[i].Boycott.Entity.EntityName,
-        EntityPicture: await getEntityPictureUrlByBoycottId(
-          entityFollowing[i].Boycott.BoycottID,
-        ),
+        EntityPicture: "",
+        EntityPicture: "",
       };
       if (
         !enrichEntities.some(
