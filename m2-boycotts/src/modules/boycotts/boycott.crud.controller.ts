@@ -256,6 +256,7 @@ const dataWithDescription = await Promise.all(
     return {
       ...boycott,
       Description: mongoDoc?.description ?? "",
+      evidences: mongoDoc?.evidence.length ?? 0
     };
   })
 );
