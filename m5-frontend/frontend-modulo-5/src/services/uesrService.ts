@@ -99,22 +99,24 @@ export const uploadUserProfilePicture = async (id: number, file: File) : Promise
 
 export const getUserProfilePictureUrl = (
   id: number,
-  version?: string
 ): string => {
-  const query = version ? `?v=${encodeURIComponent(version)}` : "";
 
   return `${authApi.defaults.baseURL}/api/files/appUser/${id}/picture`;
 };
 
-export const getEntityPictureUrl = (
+export const getEntityPictureUrlByBoycottId = (
   id: number,
-  version?: string
 ): string => {
-  const query = version ? `?v=${encodeURIComponent(version)}` : "";
 
   return `${authApi.defaults.baseURL}/api/files/entityBoycott/${id}/picture`;
 };
 
+export const getInjusticePictureUrlByBoycottId = (
+  id: number,
+): string => {
+
+  return `${authApi.defaults.baseURL}/api/files/injustice-typesBoycott/${id}/picture`;
+};
 
 export const syncAuth0User = async (
   token: string,

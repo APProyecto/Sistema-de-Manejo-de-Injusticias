@@ -44,7 +44,6 @@ export const suggestionsStyles = {
   card: (theme: Theme): SxProps<Theme> => ({
     width: '100%',
     maxWidth: '1180px',
-    marginLeft: { xs: 0, lg: '15%' },
     borderRadius: '32px',
     backgroundColor: theme.palette.grey[100],
     boxShadow: '0 10px 24px rgba(0, 0, 0, 0.28)',

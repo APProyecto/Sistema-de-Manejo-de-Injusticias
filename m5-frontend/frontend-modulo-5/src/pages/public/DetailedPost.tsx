@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Container,
   Box,
@@ -44,8 +44,7 @@ export default function DetailedPost() {
   const theme = useTheme();
   const { isAuthenticated, user } = useAuth();
   const { id } = useParams();
-  const resolvedUserId =
-    user?.appUserId ?? user?.appUserId ?? (user as any)?.id;
+  const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
 
   const [data, setData] = useState<DetailedPostData>();
   const [filterNumber, setFilterNumber] = useState(0);
@@ -103,17 +102,46 @@ export default function DetailedPost() {
     }
   };
 
-  const handleVoteChange = async (newVote: boolean | null) => {
+  const handleVoteChange = async (
+    newVote: boolean | null,
+    previousVote: boolean | null,
+  ) => {
     if (!isAuthenticated) {
       globalThis.alert("Debes iniciar sesión para votar.");
       throw new Error("Not authenticated");
     }
 
-    if (newVote === null || !id) {
+    if (!resolvedUserId) {
+      globalThis.alert("No se pudo identificar tu usuario para registrar el voto.");
+      throw new Error("Missing userId");
+    }
+
+    if (!id) {
       return;
     }
 
-    await voteBoycott(Number(id), newVote, resolvedUserId);
+    const voteToSend = newVote ?? previousVote;
+    if (voteToSend === null) {
+      return;
+    }
+
+    const result = await voteBoycott(Number(id), voteToSend, resolvedUserId);
+    
+    // Update the data with the new vote counts returned by backend
+    if (result.votesInFavor !== undefined && result.votesAgainst !== undefined && data) {
+      const newVotes = result.votesInFavor - result.votesAgainst;
+      setData({
+        ...data,
+        votes: String(newVotes),
+        voted_by_user: result.votoActual,
+      });
+    } else {
+      // Fallback: refetch if backend doesn't return vote counts
+      const updatedData = await getBoycottById(Number(id), resolvedUserId);
+      if (updatedData) {
+        setData(updatedData);
+      }
+    }
   };
 
   const visibleEvidences = data.evidences.slice(0, 2);
