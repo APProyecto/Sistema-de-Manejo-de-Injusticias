@@ -1,135 +1,135 @@
-import { AppBar, Toolbar, Typography, Button, Box, Container, useTheme, TextField, InputAdornment } from '@mui/material';
-import { sideMenuStyles } from '../styles/SideMenuStyles';
-import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
-import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import StarBorderPurple500OutlinedIcon from '@mui/icons-material/StarBorderPurple500Outlined';
-import CreateIcon from '@mui/icons-material/Create';
-import MarkunreadOutlinedIcon from '@mui/icons-material/MarkunreadOutlined';
-import { useNavigate } from 'react-router-dom';
-import { AreaChart, Assessment, Balance, PeopleAlt, QueryStats, QuestionAnswer, ReportProblem, Source, Category, Inbox } from '@mui/icons-material';
+import {
+    Typography,
+    Button,
+    Box,
+    Container,
+    useTheme,
+    Drawer,
+} from "@mui/material";
 
-interface AdminDahsboardSideMenu {
-    onSwitchToNormalMode: () => void; 
+import { sideMenuStyles } from "../styles/SideMenuStyles";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import { useNavigate } from "react-router-dom";
+import {
+    AreaChart,
+    Assessment,
+    Balance,
+    PeopleAlt,
+    QueryStats,
+    QuestionAnswer,
+    ReportProblem,
+    Source,
+    Category,
+    Inbox,
+} from "@mui/icons-material";
+
+interface AdminDashboardSideMenuProps {
+    onSwitchToNormalMode: () => void;
     currentMode?: string;
+    open: boolean;
+    onClose: () => void;
 }
 
-export default function AdminDahsboardSideMenu({ onSwitchToNormalMode, currentMode }: AdminDahsboardSideMenu) {
-  const theme = useTheme();
-  const navigate = useNavigate();
+export default function AdminDahsboardSideMenu({
+    onSwitchToNormalMode,
+    currentMode,
+    open,
+    onClose,
+}: AdminDashboardSideMenuProps) {
+    const theme = useTheme();
+    const navigate = useNavigate();
 
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
+    const handleNavigation = (path: string) => {
+        navigate(path);
+        onClose();
+    };
 
-  return (
-    <Container sx={sideMenuStyles.adminModeContainer(theme)}>
+    const handleNormalMode = () => {
+        onSwitchToNormalMode();
+    };
 
-        {/* Home */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={onSwitchToNormalMode}
-        >
-            <HomeOutlinedIcon sx={sideMenuStyles.buttonIcon(theme)}></HomeOutlinedIcon>
+    const menuContent = (
+        <>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={handleNormalMode}>
+            <HomeOutlinedIcon sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Home</Typography>
         </Button>
 
-
-        {/* Dashboard */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/dashboard')}
-        >
-            <Assessment sx={sideMenuStyles.buttonIcon(theme)}></Assessment>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/dashboard")}>
+            <Assessment sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Dashboard</Typography>
         </Button>
 
-
-        {/* Manage Users */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/manage-users')}
-        >
-            <PeopleAlt sx={sideMenuStyles.buttonIcon(theme)}></PeopleAlt>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/manage-users")}>
+            <PeopleAlt sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Manage Users</Typography>
         </Button>
 
-
-        {/* Manage Reports */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/manage-reports')}
-        >
-            <ReportProblem sx={sideMenuStyles.buttonIcon(theme)}></ReportProblem>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/manage-reports")}>
+            <ReportProblem sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Manage Reports</Typography>
         </Button>
 
-
-        {/* Manage Comments */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/manage-comments')}
-        >
-            <QuestionAnswer sx={sideMenuStyles.buttonIcon(theme)}></QuestionAnswer>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/manage-comments")}>
+            <QuestionAnswer sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Manage Comments</Typography>
         </Button>
 
-        {/* Manage Suggestions */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/manage-suggestions')}
-        >
-            <Inbox sx={sideMenuStyles.buttonIcon(theme)}></Inbox>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/manage-suggestions")}>
+            <Inbox sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Suggestions</Typography>
         </Button>
 
-        {/* Statistics */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/statistics')}
-        >
-            <AreaChart sx={sideMenuStyles.buttonIcon(theme)}></AreaChart>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/statistics")}>
+            <AreaChart sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Statistics</Typography>
         </Button>
 
-
-        {/* Queries */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/queries')}
-        >
-            <QueryStats sx={sideMenuStyles.buttonIcon(theme)}></QueryStats>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/queries")}>
+            <QueryStats sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Queries</Typography>
         </Button>
 
-
-        {/* Cases of Injustice */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/cases-of-injustice')}
-        >
-            <Balance sx={sideMenuStyles.buttonIcon(theme)}></Balance>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/cases-of-injustice")}>
+            <Balance sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Cases of Injustice</Typography>
         </Button>
 
-
-        {/* Logs */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/logs')}
-        >
-            <Source sx={sideMenuStyles.buttonIcon(theme)}></Source>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/logs")}>
+            <Source sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Logs</Typography>
         </Button>
 
-        {/* Catalogue */}
-        <Button 
-            sx={sideMenuStyles.navButton(theme)}
-            onClick={() => handleNavigation('admin/catalogues')}
-        >
-            <Category sx={sideMenuStyles.buttonIcon(theme)}></Category>
+        <Button sx={sideMenuStyles.navButton(theme)} onClick={() => handleNavigation("/admin/catalogues")}>
+            <Category sx={sideMenuStyles.buttonIcon(theme)} />
             <Typography sx={sideMenuStyles.buttonText(theme)}>Catalogues</Typography>
         </Button>
+        </>
+    );
 
-    </Container>
-  );
+    return (
+        <>
+        <Container
+            sx={{
+            ...sideMenuStyles.adminModeContainer(theme),
+            display: { xs: "none", sm: "flex" },
+            }}
+        >
+            {menuContent}
+        </Container>
+
+        <Drawer anchor="left" open={open} onClose={onClose}>
+            <Box
+            sx={{
+                ...sideMenuStyles.adminModeContainer(theme),
+                width: "280px",
+                height: "100%",
+                display: "flex",
+            }}
+            >
+            {menuContent}
+            </Box>
+        </Drawer>
+        </>
+    );
 }
