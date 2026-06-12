@@ -66,7 +66,7 @@ export async function getMostFollowedCases(req: Request, res: Response) {
         if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
           let element = {
             entityname: FindCases[j].Entity.EntityName,
-            entityPicture: getEntityPicture(FindCases[j].Entity.EntityID),
+            entityPicture: await getEntityPicture(FindCases[j].Entity.EntityID),
             entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
             injusticeType: FindCases[j].InjusticeType.InjusticeName,
             followers: followersCount[i]._count._all,
