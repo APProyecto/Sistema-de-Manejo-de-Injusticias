@@ -1,5 +1,6 @@
-import type { User } from '../types';
+import type { User, PostCardData } from "../types";
 import { authApi } from './api';
+
 
 interface LoginResponse {
   success: boolean
@@ -39,6 +40,29 @@ interface UploadPictureResponse {
     mongoFileId: string;
     gridFsId: string;
   };
+}
+
+interface MyVotedPostResponse {
+  id: number;
+
+  creatorId: number;
+  entityId: number;
+  injusticeTypeId: number;
+
+  username: string;
+  indicted: string;
+  case: string;
+
+  title: string;
+  description: string;
+  creation_date: string;
+
+  is_favorite: boolean;
+  votes: string;
+  voted_by_user: boolean;
+  coments: string;
+  evidences: string;
+  state: string;
 }
 
 interface UpdateProfileWithPictureResponse {
@@ -208,4 +232,36 @@ export const syncAuth0User = async (
   localStorage.setItem("user", JSON.stringify(user));
 
   return user;
+};
+
+export const getMyVotedPosts = async (
+  appUserId: number
+): Promise<PostCardData[]> => {
+  const response = await authApi.get<MyVotedPostResponse[]>(
+    `/api/users/votes/${appUserId}`
+  );
+
+  return response.data.map((post) => ({
+    id: post.id,
+    username: post.username,
+
+    user_picture: getUserProfilePictureUrl(post.creatorId),
+
+    indicted: post.indicted,
+    indicted_picture: getEntityPictureUrlByBoycottId(post.id),
+
+    case: post.case,
+    case_picture: getInjusticePictureUrlByBoycottId(post.id),
+
+    title: post.title,
+    description: post.description,
+    creation_date: post.creation_date,
+
+    is_favorite: post.is_favorite,
+    votes: post.votes,
+    voted_by_user: post.voted_by_user,
+    coments: post.coments,
+    evidences: post.evidences,
+    state: post.state,
+  }));
 };

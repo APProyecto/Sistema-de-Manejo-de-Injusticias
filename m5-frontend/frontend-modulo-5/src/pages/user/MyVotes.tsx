@@ -4,10 +4,13 @@ import { Logout } from "@mui/icons-material";
 import EditIcon from "@mui/icons-material/Edit";
 import { useAuth } from "../../context/authContext";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useEffect, useState } from "react";
 import {
   logout as logoutService,
   getUserProfilePictureUrl,
+  getMyVotedPosts,
 } from "../../services/userService";
+
 import { myVotesStyles } from "../styles/MyVotesStyles";
 import type { PostCardData } from "../../types";
 import PostCard from "../../components/common/PostCard";
@@ -17,6 +20,8 @@ export default function MyVotes() {
   const theme = useTheme();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [votedPosts, setVotedPosts] = useState<PostCardData[]>([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(false);
 
   const { logout: auth0Logout, isAuthenticated: isAuth0Authenticated } =
     useAuth0();
@@ -48,6 +53,8 @@ export default function MyVotes() {
   const handleEdit = () => {
     navigate("/edit-profile");
   };
+  if (!user) return null;
+
   const currentUser = user as any;
 
   const userId = currentUser.appUserId ?? currentUser.userId;
@@ -59,48 +66,25 @@ export default function MyVotes() {
     currentUser.profilePicture ??
     (userId ? getUserProfilePictureUrl(userId) : DefaultAvatar);
 
-  const votedPosts: PostCardData[] = [
-    {
-      id: 1,
-      username: "Justifier_12",
-      user_picture: DefaultAvatar,
-      indicted: "Starbucks",
-      indicted_picture: DefaultAvatar,
-      case: "Genocide in Gaza",
-      case_picture: DefaultAvatar,
-      title: "Starbucks supports Israel",
-      description:
-        "I'm deeply troubled by reports suggesting Starbucks' backing of Israel, especially given the ongoing genocide in Gaza. As patrons, our choices reflect our values.",
-      creation_date: "15h ago",
-      is_favorite: false,
-      votes: "21k",
-      voted_by_user: true,
-      coments: "25k",
-      evidences: "5",
-      state: "Open",
-    },
-    {
-      id: 2,
-      username: "Justifier_12",
-      user_picture: DefaultAvatar,
-      indicted: "Alice",
-      indicted_picture: DefaultAvatar,
-      case: "Exploitation",
-      case_picture: DefaultAvatar,
-      title: "Alice exploits their workers",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus maximus ante vitae dignissim elementum.",
-      creation_date: "2 days ago",
-      is_favorite: false,
-      votes: "1.4M",
-      voted_by_user: true,
-      coments: "18k",
-      evidences: "12",
-      state: "Active",
-    },
-  ];
+  useEffect(() => {
+    const loadVotedPosts = async () => {
+      if (!userId) return;
 
-  if (!user) return null;
+      try {
+        setIsLoadingPosts(true);
+
+        const posts = await getMyVotedPosts(userId);
+
+        setVotedPosts(posts);
+      } catch (error) {
+        console.error("Error loading voted posts:", error);
+      } finally {
+        setIsLoadingPosts(false);
+      }
+    };
+
+    loadVotedPosts();
+  }, [userId]);
 
   return (
     <Container sx={myVotesStyles.container(theme)}>
@@ -134,14 +118,22 @@ export default function MyVotes() {
       <Typography sx={myVotesStyles.title(theme)}>My Votes</Typography>
 
       <Container sx={myVotesStyles.postsContainer()}>
-        {votedPosts.map((post) => (
-          <PostCard
-            key={post.id}
-            data={post}
-            inFeed={false}
-            voteSelection={post.voted_by_user ? "positive" : "negative"}
-          />
-        ))}
+        {isLoadingPosts && (
+          <Typography sx={{ color: theme.palette.text.primary }}>
+            Loading votes...
+          </Typography>
+        )}
+
+        {!isLoadingPosts &&
+          votedPosts.map((post) => (
+            <PostCard key={post.id} data={post} inFeed={false} />
+          ))}
+
+        {!isLoadingPosts && votedPosts.length === 0 && (
+          <Typography sx={{ color: theme.palette.text.primary }}>
+            You have not voted on any posts yet.
+          </Typography>
+        )}
       </Container>
     </Container>
   );

@@ -17,7 +17,8 @@ import {
   listAdminUsers,
   listNormalUsers,
   listAccountStates,
-  changeUserStatus
+  changeUserStatus,
+  listUserVotedBoycotts,
 } from "./users.controller";
 
 const router = Router();
@@ -41,4 +42,6 @@ router.get("/AllAdmins", listAdminUsers);
 router.get("/AllNormalUsers", listNormalUsers);
 router.get("/AccountStates", listAccountStates);
 router.post("/changeStatus",changeUserStatus );
+
+router.get("/votes/:appUserId", listUserVotedBoycotts);
 export default router;

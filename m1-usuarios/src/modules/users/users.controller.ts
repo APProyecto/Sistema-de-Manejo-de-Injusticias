@@ -10,6 +10,8 @@ import {
   updateAppUserPicture,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
+import { getBoycottDocumentByMysqlId } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+
 import {
   uploadFileToGridFS,
 } from "../../../../m0-base-datos/src/services/gridfs.service";
@@ -25,6 +27,163 @@ import {
 import { createHmac} from "crypto";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+
+function formatCompactNumber(value: number): string {
+  if (value >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1)}M`;
+  }
+
+  if (value >= 1_000) {
+    return `${(value / 1_000).toFixed(value % 1_000 === 0 ? 0 : 1)}k`;
+  }
+
+  return String(value);
+}
+
+function formatRelativeDate(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days} days ago`;
+
+  return date.toLocaleDateString();
+}
+
+export async function listUserVotedBoycotts(req: Request, res: Response) {
+  try {
+    const appUserId = Number(req.params.appUserId);
+
+    if (!Number.isInteger(appUserId) || appUserId <= 0) {
+      return res.status(400).json({
+        error: "Invalid appUserId",
+      });
+    }
+
+    const votes = await prisma.userVotesBoycott.findMany({
+      where: {
+        UserID: appUserId,
+      },
+      orderBy: {
+        VoteDate: "desc",
+      },
+      select: {
+        IsInFavor: true,
+        VoteDate: true,
+        Boycott: {
+          select: {
+            BoycottID: true,
+            Title: true,
+            PublicationDate: true,
+            VotesInFavor: true,
+            VotesAgainst: true,
+            NumberComments: true,
+            CreatorID: true,
+
+            AppUser_Boycott_CreatorIDToAppUser: {
+              select: {
+                UserID: true,
+                UserName: true,
+              },
+            },
+
+            Entity: {
+              select: {
+                EntityID: true,
+                EntityName: true,
+              },
+            },
+
+            InjusticeType: {
+              select: {
+                InjusticeTypeID: true,
+                InjusticeName: true,
+              },
+            },
+
+            BoycottState: {
+              select: {
+                StateName: true,
+              },
+            },
+
+            UserFavoriteBoycott: {
+              where: {
+                UserID: appUserId,
+              },
+              select: {
+                UserID: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const posts = await Promise.all(
+      votes.map(async (vote) => {
+        const boycott = vote.Boycott;
+
+        const mongoDocument = await getBoycottDocumentByMysqlId(
+          boycott.BoycottID
+        );
+
+        const mongoData = mongoDocument as any;
+
+        const description = mongoData?.description ?? "";
+        const evidences =
+          mongoData?.filesNumber ?? mongoData?.files?.length ?? 0;
+
+        return {
+          id: boycott.BoycottID,
+
+          creatorId: boycott.CreatorID,
+          entityId: boycott.Entity.EntityID,
+          injusticeTypeId: boycott.InjusticeType.InjusticeTypeID,
+
+          username:
+            boycott.AppUser_Boycott_CreatorIDToAppUser?.UserName ?? "User",
+
+          indicted: boycott.Entity.EntityName,
+          case: boycott.InjusticeType.InjusticeName,
+
+          title: boycott.Title,
+          description,
+
+          creation_date: formatRelativeDate(boycott.PublicationDate),
+
+          is_favorite: boycott.UserFavoriteBoycott.length > 0,
+
+          votes: formatCompactNumber(
+            boycott.VotesInFavor + boycott.VotesAgainst
+          ),
+
+          voted_by_user: vote.IsInFavor,
+
+          coments: formatCompactNumber(boycott.NumberComments),
+          evidences: String(evidences),
+
+          state: boycott.BoycottState.StateName,
+        };
+      })
+    );
+
+    return res.status(200).json(posts);
+  } catch (error) {
+    console.error("listUserVotedBoycotts error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
 
 /*
   Function: countUsers.
