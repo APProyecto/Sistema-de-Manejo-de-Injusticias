@@ -251,7 +251,7 @@ export default function Quereis() {
               },
             }}
             sx={QueriesStyles.Select(theme)}
-            >
+          >
             <MenuItem value={0}>All</MenuItem>
             {injusticeTypes.map((c) => (
               <MenuItem key={c.InjusticeTypeID} value={c.InjusticeTypeID}>
@@ -424,8 +424,8 @@ export default function Quereis() {
         flexItem
         sx={{ ...QueriesStyles.Divider(theme), m: 0 }}
       />
-      <Box sx={{overflowY:'auto',maxHeight:'56vh'}}>
-      {rows.map((row) => (
+
+      {sortedRows.map((row) => (
         <Box
           key={row.boycottId}
           sx={{
@@ -493,7 +493,7 @@ export default function Quereis() {
 
           <Box sx={{ width: "18%", display: "flex", my: 1 }}>
             <Typography variant="body2" sx={{ m: "Auto" }}>
-              {row.date}
+              {new Date(row.date).toLocaleDateString("es-ES")}
             </Typography>
           </Box>
           <Divider
@@ -523,7 +523,6 @@ export default function Quereis() {
           </Box>
         </Box>
       ))}
-      </Box>
     </Container>
   );
 }
