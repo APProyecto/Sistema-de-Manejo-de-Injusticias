@@ -15,6 +15,9 @@ import {
     getAppUserDocumentByUserId,
     updateInjusticeTypePicture,
     updateAppUserPicture,
+    createOrUpdateEntityDocument,
+    getEntityDocumentByEntityId,
+    updateEntityPicture
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
 import { buildFileMetadata } from "../../../../m0-base-datos/src/utils/fileMetadata";
@@ -348,6 +351,13 @@ export async function getUserAppPicture(
             req.params.appUserId
         );
 
+        if (!Number.isInteger(appUserId) || appUserId <= 0) {
+        return res.status(400).json({
+            error: "Invalid appUserId",
+        });
+        }
+
+
         const appUser =
             await prisma.appUser.findUnique({
                 where: {
@@ -410,3 +420,344 @@ export async function getUserAppPicture(
         });
     }
 }
+
+
+/**
+ * Function: syncEntitiesToMongo
+ * Inputs: None
+ * Description: Create in mongo the Entities Documents duplicating the name and ID from the MySQL DB
+ * Outputs: JSON with a succesful or error message
+ */
+
+export async function syncEntitiesToMongo(_req: Request , res: Response) {
+    try{
+
+        const entities = await prisma.entity.findMany({
+            select: {
+                EntityID: true,
+                EntityName: true,
+            },
+        });
+        
+        const results = [];
+
+        for(const entity of entities ) {
+            
+            const mongoDocument = await createOrUpdateEntityDocument(                
+                entity.EntityID,
+                entity.EntityName,
+            );
+
+            if(!mongoDocument?._id) {
+                continue;
+            }
+
+            await prisma.entity.update({
+                where: {
+                    EntityID : entity.EntityID,
+                },
+                data: {
+                    MongoDocumentID: mongoDocument._id.toString(),
+                },
+            });
+
+            results.push({
+                entityId: entity.EntityID,
+                entityName: entity.EntityName,
+                mongoDocumentId: mongoDocument._id.toString(),
+            });
+        }
+
+        return res.json({
+            message: "Entities synchronized successfully",
+            total: results.length,
+            data: results,
+        });
+
+        
+
+    } catch(error) {
+        console.error("syncEntitiesToMongo error", error);
+
+        return res.status(500).json({
+            error: "Internal server error"
+        })
+    }
+}
+
+/**
+ * Function: uploadEntityPicture
+ * Inputs:
+ *  - entityId: Number from url params
+ *  - Description: Uploads an Entity picture to GridFS, creates/updates its mongo document and stores the Mongo document ID in MySQL.
+ * Outputs: JSON response with Mongo document ID and file information.
+ */
+export async function uploadEntityPicture(req: Request, res: Response) {
+    try {
+        const entityId = Number(req.params.entityId);
+
+        if(!Number.isInteger(entityId) || entityId <= 0) {
+            return res.status(400).json({
+                error: "Invalid entityId",
+            });
+        }
+        
+        if(!req.file) {
+            return res.status(400).json({
+                error: "No file uploaded. Use form-data with key 'file' ",
+            });
+        }
+
+        const entity = await prisma.entity.findUnique({
+            where: {
+                EntityID: entityId,
+            },
+            select: {
+                EntityID: true,
+                EntityName: true,
+            },
+        });
+
+        if(!entity) {
+            return res.status(404).json({
+                error: "Entity not found",
+            });
+        }
+
+        const mongoFileId = await uploadFileToGridFS(
+            req.file.originalname,
+            req.file.buffer,
+            req.file.mimetype
+        );
+
+        const picture = buildFileMetadata (
+            req.file.originalname,
+            req.file.size,
+            req.file.mimetype,
+            mongoFileId
+        );
+
+        const fileMetadataResult = await createFileMetadata(picture);
+
+        const mongoDocument = await updateEntityPicture (
+            entity.EntityID,
+            entity.EntityName,
+            picture
+        );
+
+        if(!mongoDocument?._id) {
+            return res.status(500).json({
+                error: "Mongo document was not created or updated",
+            });
+        }
+
+        await prisma.entity.update({
+            where : {
+                EntityID: entity.EntityID,
+            },
+            data : {
+                MongoDocumentID: mongoDocument._id.toString(),
+            }
+        });
+
+        return res.status(201).json({
+            message: "Injustice type picture uploaded successfully",
+            entityId: entity.EntityID,
+            entityName: entity.EntityName,
+            mongoDocumentId: mongoDocument._id.toString(),
+            mongoFileId: mongoFileId.toString(),
+            fileMetadataId: fileMetadataResult.insertedId.toString(),
+            picture,
+        });
+
+    } catch (error) {
+        console.error("uploadEntityPicture error:", error);
+
+        return res.status(500).json({
+        error: "Internal server error",
+        });
+    }
+}
+
+
+
+/**
+ * Function: getEntityPicture
+ * Inputs:
+ *  - entityId: Number from URL params.
+ * Description: Gets an Entity picture from MongoDb and returns it
+ * Outputs: Binary image response
+ */
+
+export async function getEntityPicture(req: Request, res: Response) {
+    try{
+        const entityId = Number(req.params.entityId);
+
+        if(!Number.isInteger(entityId) || entityId <= 0) {
+            return res.status(400).json({
+                error: "Invalid entityId",
+            });
+        }
+
+        const mongoDocument = await getEntityDocumentByEntityId(entityId);
+
+        if(!mongoDocument?.picture?.mongoFileId) {
+            return res.status(404).json({
+                error: "entity picture not found",
+            });
+        }
+
+        const fileBuffer = await downloadFileFromGridFS(
+            mongoDocument.picture.mongoFileId.toString()
+        )
+
+        res.setHeader(
+            "Content-Type",
+            mongoDocument.picture.contentType ?? "application/octet-stream"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `inline; filename="${mongoDocument.picture.fileName}`
+        );
+
+        return res.send(fileBuffer);
+
+
+    }catch(error) {
+        console.error("getEntityPicture error:", error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+}
+
+/**
+ * Function: getEntityPictureByBoycottId
+ * Inputs:
+ *  - boycottId: Number from URL params.
+ * Description: Gets an Entity picture from MongoDb and returns it
+ * Outputs: Binary image response
+ */
+
+export async function getEntityPictureByBoycottId(req: Request, res: Response) {
+    try{
+        const boycottId = Number(req.params.boycottId);
+
+        if(!Number.isInteger(boycottId) || boycottId <= 0) {
+            return res.status(400).json({
+                error: "Invalid entityId",
+            });
+        }
+
+        const entity = await prisma.boycott.findUnique({
+            where : {
+                BoycottID : boycottId,
+            },
+
+            select : {
+                EntityID : true, 
+            }
+        });
+
+        const mongoDocument = await getEntityDocumentByEntityId(entity?.EntityID || 1);
+
+        if(!mongoDocument?.picture?.mongoFileId) {
+            return res.status(404).json({
+                error: "entity picture not found",
+            });
+        }
+
+        const fileBuffer = await downloadFileFromGridFS(
+            mongoDocument.picture.mongoFileId.toString()
+        )
+
+        res.setHeader(
+            "Content-Type",
+            mongoDocument.picture.contentType ?? "application/octet-stream"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `inline; filename="${mongoDocument.picture.fileName}`
+        );
+
+        return res.send(fileBuffer);
+
+
+    }catch(error) {
+        console.error("getEntityPicture error:", error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+}
+
+/**
+ * Function: getInjusticeTypePictureByBoycott
+ * Inputs:
+ *  - boycottId: Number from URL params.
+ * Description: Gets and InjusticeType picture from MongoDb and returns it
+ * Outputs: Binary image response
+ */
+
+export async function getInjusticeTypePictureByBoycott(req: Request, res: Response) {
+    try{
+        const boycottId = Number(req.params.boycottId);
+
+        if(!Number.isInteger(boycottId) || boycottId <= 0) {
+            return res.status(400).json({
+                error: "Invalid entityId",
+            });
+        }
+
+        const injusticeType = await prisma.boycott.findUnique({
+            where : {
+                BoycottID : boycottId,
+            },
+
+            select : {
+                InjusticeTypeID : true, 
+            }
+        });
+
+
+        const mongoDocument = await getInjusticeTypeDocumentById(injusticeType?.InjusticeTypeID || 1);
+
+        if(!mongoDocument?.picture?.mongoFileId) {
+            return res.status(404).json({
+                error: "Injustice type picture not found",
+            });
+        }
+
+        const fileBuffer = await downloadFileFromGridFS(
+            mongoDocument.picture.mongoFileId.toString()
+        )
+
+        res.setHeader(
+            "Content-Type",
+            mongoDocument.picture.contentType ?? "application/octet-stream"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `inline; filename="${mongoDocument.picture.fileName}`
+        );
+
+        return res.send(fileBuffer);
+
+
+    }catch(error) {
+        console.error("getInjusticeTypePicture error:", error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+}
+
+
+
+

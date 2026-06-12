@@ -7,6 +7,11 @@ import {
     syncInjusticeTypesToMongo,
     uploadInjusticeTypePicture,
     uploadUserAppPicture,
+    uploadEntityPicture,
+    syncEntitiesToMongo,
+    getEntityPicture,
+    getEntityPictureByBoycottId,
+    getInjusticeTypePictureByBoycott
 } from "./files.controller"
 
 const router = Router();
@@ -20,9 +25,25 @@ router.post(
     syncInjusticeTypesToMongo
 );
 
+router.post(
+    "/entities/sync",
+    syncEntitiesToMongo
+);
+
+
 router.put("/injustice-types/:injusticeTypeId/picture",
     upload.single("file"),
     uploadInjusticeTypePicture
+);
+
+router.get(
+    "/injustice-typesBoycott/:boycottId/picture",
+    getInjusticeTypePictureByBoycott
+);
+
+router.put("/entities/:entityId/picture",
+    upload.single("file"),
+    uploadEntityPicture
 );
 
 router.put("/appUser/:appUserId/picture",
@@ -33,6 +54,16 @@ router.put("/appUser/:appUserId/picture",
 router.get(
     "/injustice-types/:injusticeTypeId/picture",
     getInjusticeTypePicture
+);
+
+router.get(
+    "/entities/:entityId/picture",
+    getEntityPicture
+);
+
+router.get(
+    "/entityBoycott/:boycottId/picture",
+    getEntityPictureByBoycottId
 );
 
 router.get(

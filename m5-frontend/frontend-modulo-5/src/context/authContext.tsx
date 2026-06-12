@@ -1,67 +1,93 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
-import type { User, UserRole } from '../types';
-
-
-
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
+import type { ReactNode } from "react";
+import type { User, UserRole } from "../types";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   userRole: UserRole | null;
-  login: (token: string, userData: User) => Promise<User>;
+  login: (userData: User) => User;
   logout: () => void;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+function normalizeUser(userData: User): User {
+  const rawUser = userData as User & {
+    id?: number;
+    userId?: number;
+    username?: string;
+    appUserName?: string;
+  };
+
+  return {
+    ...userData,
+    appUserId: userData.appUserId ?? rawUser.userId ?? rawUser.id ?? 0,
+    appUserName: userData.appUserName ?? rawUser.username ?? "User",
+  };
+}
+
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Cargar sesión guardada al iniciar la app
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    
-    if (token && userStr) {
+    const userStr = localStorage.getItem("user");
+
+    if (userStr) {
       try {
         const userData = JSON.parse(userStr);
-        setUser(userData);
+        setUser(normalizeUser(userData));
       } catch (error) {
-        console.error('Error parsing user:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        console.error("Error parsing user:", error);
+        localStorage.removeItem("user");
       }
     }
+
     setIsLoading(false);
   }, []);
 
-  const login = async (token: string, userData: User): Promise<User> => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    return userData;
-  };
+  const login = useCallback((userData: User): User => {
+    const normalizedUser = normalizeUser(userData);
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    const userWithRole: User = {
+      ...normalizedUser,
+      role: normalizedUser.isAdmin ? "admin" : "user",
+    };
+
+    localStorage.setItem("user", JSON.stringify(userWithRole));
+    setUser(userWithRole);
+
+    return userWithRole;
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
-  };
+  }, []);
 
-  // Función para verificar si el usuario tiene un rol específico
-  const hasRole = (roles: UserRole | UserRole[]): boolean => {
-    if (!user) return false;
-    
-    const rolesArray = Array.isArray(roles) ? roles : [roles];
-    return rolesArray.includes(user.role);
-  };
+  const hasRole = useCallback(
+    (roles: UserRole | UserRole[]): boolean => {
+      if (!user) return false;
 
-  return (
-    <AuthContext.Provider value={{
+      const rolesArray = Array.isArray(roles) ? roles : [roles];
+      return rolesArray.includes(user.role || "user");
+    },
+    [user],
+  );
+
+  const contextValue = useMemo(
+    () => ({
       user,
       isAuthenticated: !!user,
       isLoading,
@@ -69,7 +95,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       logout,
       hasRole,
-    }}>
+    }),
+    [user, isLoading, login, logout, hasRole],
+  );
+
+  return (
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
@@ -77,8 +108,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
+
   return context;
 }

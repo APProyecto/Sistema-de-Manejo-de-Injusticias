@@ -80,4 +80,41 @@ export const handlers = [
 
     return HttpResponse.json({ success: true, data: userWithoutPassword })
   }),
+
+  // Passthrough para /api/* al backend real
+  http.all('/api/*', async ({ request }) => {
+    const targetUrl = new URL(request.url)
+    targetUrl.hostname = 'localhost'
+    targetUrl.port = '3002'
+    
+    console.log('[MSW] Proxying to backend:', targetUrl.toString())
+    
+    try {
+      // Para GET requests, no enviar body
+      const fetchOptions: RequestInit = {
+        method: request.method,
+        headers: Object.fromEntries(request.headers.entries()),
+      }
+      
+      if (request.method !== 'GET' && request.method !== 'HEAD') {
+        fetchOptions.body = await request.arrayBuffer()
+      }
+      
+      const response = await fetch(targetUrl.toString(), fetchOptions)
+      
+      console.log('[MSW] Backend response:', response.status, targetUrl.pathname)
+      
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+      })
+    } catch (error) {
+      console.error('[MSW] Backend connection error:', error)
+      return HttpResponse.json(
+        { error: 'Backend unavailable', details: String(error) },
+        { status: 503 }
+      )
+    }
+  }),
 ]

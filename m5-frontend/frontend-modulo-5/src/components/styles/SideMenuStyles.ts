@@ -3,7 +3,8 @@ import type { SxProps, Theme } from '@mui/material';
 export const sideMenuStyles = {
 
   container: (theme: Theme): SxProps<Theme> => ({
-    display: 'flex',
+    display: {xs: 'none',
+              sm: 'flex',},
     flexDirection: 'column',
     marginX: 0,
     paddingTop: '100px',
@@ -18,7 +19,8 @@ export const sideMenuStyles = {
     borderRightColor: theme.palette.secondary.main,
   }),
   adminModeContainer: (theme: Theme): SxProps<Theme> => ({
-    display: 'flex',
+    display: {xs: 'none',
+              sm: 'flex',},
     flexDirection: 'column',
     marginX: 0,
     paddingBottom: '30px',
@@ -149,7 +151,8 @@ export const sideMenuStyles = {
     gap: '30px',
   }),
   unsignedContainer: (theme: Theme): SxProps<Theme> => ({
-    display: 'flex',
+    display: {xs: 'none',
+              sm: 'flex',},
     flexDirection: 'column',
     marginX: 0,
     paddingY: '40px',

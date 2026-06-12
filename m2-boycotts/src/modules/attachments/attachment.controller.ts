@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { prisma } from "../../config/prisma";
-import { getBoycottDocumentByMysqlId } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+import {
+  addEvidenceToBoycott,
+  getBoycottDocumentByMysqlId,
+} from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+import type { FileMetadata } from "../../../../m0-base-datos/src/types/mongoDocuments";
 
 /*
   Controlador: attachment.controller.ts
@@ -18,10 +22,13 @@ import { getBoycottDocumentByMysqlId } from "../../../../m0-base-datos/src/servi
  */
 export async function obtenerAdjuntos(req: Request, res: Response): Promise<void> {
   try {
-    const boycottId = parseInt(req.params.boycottId);
+    const rawBoycottId = Array.isArray(req.params.boycottId)
+      ? req.params.boycottId[0]
+      : req.params.boycottId;
+    const boycottId = Number.parseInt(rawBoycottId ?? "", 10);
 
     // Validar que el ID sea un número válido
-    if (isNaN(boycottId)) {
+    if (Number.isNaN(boycottId)) {
       res.status(400).json({ ok: false, mensaje: "El ID del boycott no es válido" });
       return;
     }
@@ -61,6 +68,104 @@ export async function obtenerAdjuntos(req: Request, res: Response): Promise<void
     
   } catch (error) {
     console.error("[obtenerAdjuntos]", error);
+    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+  }
+}
+
+function normalizarMetadata(valor: unknown): FileMetadata | null {
+  if (!valor || typeof valor !== "object") return null;
+
+  const source = valor as Record<string, unknown>;
+  const fileName =
+    (typeof source.fileName === "string" && source.fileName.trim()) ||
+    (typeof source.filename === "string" && source.filename.trim()) ||
+    "";
+
+  const mongoFileIdRaw = source.mongoFileId ?? source.gridFsId;
+  const mongoFileId =
+    typeof mongoFileIdRaw === "string" || typeof mongoFileIdRaw === "number"
+      ? String(mongoFileIdRaw)
+      : "";
+
+  if (!fileName || !mongoFileId) return null;
+
+  const rawSize = source.fileSize ?? source.size;
+  let fileSize: number | undefined;
+  if (typeof rawSize === "number") {
+    fileSize = rawSize;
+  } else if (typeof rawSize === "string") {
+    fileSize = Number(rawSize);
+  }
+
+  const contentType =
+    typeof source.contentType === "string" ? source.contentType : undefined;
+
+  return {
+    fileName,
+    fileSize: Number.isFinite(fileSize) ? fileSize : undefined,
+    contentType,
+    mongoFileId,
+    gridFsId: mongoFileId,
+  };
+}
+
+/**
+ * POST /api/boycotts/:boycottId/attachments
+ * Body: { evidence: FileMetadata[] }
+ */
+export async function agregarAdjuntos(req: Request, res: Response): Promise<void> {
+  try {
+    const rawBoycottId = Array.isArray(req.params.boycottId)
+      ? req.params.boycottId[0]
+      : req.params.boycottId;
+    const boycottId = Number.parseInt(rawBoycottId ?? "", 10);
+
+    if (Number.isNaN(boycottId)) {
+      res.status(400).json({ ok: false, mensaje: "El ID del boycott no es valido" });
+      return;
+    }
+
+    const boycott = await prisma.boycott.findUnique({
+      where: { BoycottID: boycottId },
+      select: { BoycottID: true },
+    });
+
+    if (!boycott) {
+      res.status(404).json({ ok: false, mensaje: "Boycott no encontrado" });
+      return;
+    }
+
+    const rawEvidence: unknown[] = [];
+    if (Array.isArray(req.body?.evidence)) {
+      rawEvidence.push(...req.body.evidence);
+    } else if (req.body?.evidence) {
+      rawEvidence.push(req.body.evidence);
+    }
+
+    const evidence = rawEvidence
+      .map((item: unknown) => normalizarMetadata(item))
+      .filter((item: FileMetadata | null): item is FileMetadata => Boolean(item));
+
+    if (!evidence.length) {
+      res.status(400).json({ ok: false, mensaje: "No se recibio evidencia valida" });
+      return;
+    }
+
+    for (const item of evidence) {
+      await addEvidenceToBoycott(boycottId, item);
+    }
+
+    const documento = await getBoycottDocumentByMysqlId(boycottId);
+
+    res.status(201).json({
+      ok: true,
+      mensaje: "Adjuntos agregados correctamente",
+      data: {
+        evidenceCount: documento?.evidence?.length ?? 0,
+      },
+    });
+  } catch (error) {
+    console.error("[agregarAdjuntos]", error);
     res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
   }
 }

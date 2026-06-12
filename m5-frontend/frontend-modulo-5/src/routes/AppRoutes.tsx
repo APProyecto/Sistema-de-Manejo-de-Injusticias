@@ -5,6 +5,7 @@ import ProtectedRoute from './ProtectedRoute';
 import Home from '../pages/public/Home';
 import DetailedPost from '../pages/public/DetailedPost';
 import Evidences from '../pages/public/Evidences';
+import Search from '../pages/public/Search';
 
 // Páginas de usuario
 import Profile from '../pages/user/Profile';
@@ -25,6 +26,7 @@ import CompanyBoycotts from '../pages/admin/CompanyBoycotts';
 import UserHistory from '../pages/admin/UserHistory';
 import MostFollowedCases from '../pages/admin/MostFollowedCases';
 import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
+import Catalogues from '../pages/admin/Catalogues';
 import Logs from '../pages/admin/Logs';
 import ManageComments from '../pages/admin/ManageComments';
 import DynamicLayout from '../layouts/DynamicLayout';
@@ -39,6 +41,7 @@ export default function AppRoutes() {
       {/* Rutas públicas (sin inciar sesión) */}
       <Route element={<DynamicLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/search/" element={<Search />} />
         <Route path="/detailed-post/:id" element={<DetailedPost />} />
         <Route path="/detailed-post/:id/evidences" element={<Evidences />} />
 
@@ -133,6 +136,11 @@ export default function AppRoutes() {
         <Route path="/admin/cases-of-injustice" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <CasesOfInjustice />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/catalogues" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <Catalogues />
           </ProtectedRoute>
         } />
         <Route path="/admin/logs" element={

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { obtenerAdjuntos } from "./attachment.controller";
+import { agregarAdjuntos, obtenerAdjuntos } from "./attachment.controller";
  
 /*
   Rutas: attachment.routes.ts
@@ -11,6 +11,9 @@ const router = Router({ mergeParams: true });
  
 // GET /api/boycotts/:boycottId/attachments — metadatos de adjuntos de un boycott
 router.get("/", obtenerAdjuntos);
+
+// POST /api/boycotts/:boycottId/attachments — agrega evidencias al boycott
+router.post("/", agregarAdjuntos);
  
 export default router;
  

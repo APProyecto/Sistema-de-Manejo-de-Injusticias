@@ -14,6 +14,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import ReplyOutlinedIcon from '@mui/icons-material/ReplyOutlined';
 import { commentApi } from '../../services/api';
+import { closeReport } from '../../services/commentsService';
 
 import { manageReportsStyles } from '../styles/ManageReportsStyles';
 
@@ -35,16 +36,16 @@ const initialReports: ReportItem[] = [
   {
     id: 1,
     postId: 101,
-    reportTitle: 'This post is obsolete',
-    reporter: 'user123',
+    reportTitle: 'LOADING REPORTS',
+    reporter: 'JoeMama',
     reportDetails:
-      'Hello, I have seen this post claiming Johnson & Johnson uses Tylenol, however those products were discontinued, this is misleading and irrelevant, please take action.',
+      ':33 < hi, repawts are still loading',
     reportTime: '2026-06-09 14:32',
-    reportCount: 7,
+    reportCount: 666,
     status: 'Pending',
-    reportUserId: 'user123',
+    reportUserId: 'JoeMama',
   },
-  {
+  /* {
     id: 2,
     postId: 102,
     reportTitle: 'McDonald’s doesn’t use pink slime!',
@@ -79,7 +80,7 @@ const initialReports: ReportItem[] = [
     reportCount: 5,
     status: 'Rejected',
     reportUserId: 'user129',
-  },
+  }, */
 ];
 
 const tabs = ['Posts', 'Unresolved', 'All'] as const;
@@ -87,7 +88,7 @@ const tabs = ['Posts', 'Unresolved', 'All'] as const;
 type ReportTab = (typeof tabs)[number];
 
 const reportsEndpoint =
-  import.meta.env.VITE_REPORTS_MODERATION_ENDPOINT ?? '/api/reports/getAll?SortBy=0';
+  import.meta.env.VITE_REPORTS_MODERATION_ENDPOINT ?? '/api/reports/getBoycottReports';
 const useBackend = Boolean(import.meta.env.VITE_API_MODULE3);
 
 function formatRelativeTime(dateString: string) {
@@ -157,12 +158,77 @@ export default function ManageReports() {
     setReplyText('');
   };
 
-  const handleApprove = (id: number) => {
-    setReports((current) => current.map((item) => (item.id === id ? { ...item, status: 'Approved' } : item)));
+  const handleApprove = async (
+    reportId: number,
+    adminId: number,
+    adminReply: string
+  ) => {
+    const registerResult = await fetch(
+      `${import.meta.env.VITE_API_MODULE3}/api/reports/closeReport`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportId,
+          adminId,
+          adminReply,
+          stateId: 2
+        })
+      }
+    );
+
+    const registerData = await registerResult.json();
+
+    if (!registerResult.ok) {
+      setError(registerData.error);
+      return;
+    }
+
+    setReports((current) =>
+      current.map((item) =>
+        item.id === reportId
+          ? { ...item, status: 'Approved' }
+          : item
+      )
+    );
+
+    return registerData;
   };
 
-  const handleReject = (id: number) => {
-    setReports((current) => current.map((item) => (item.id === id ? { ...item, status: 'Rejected' } : item)));
+  const handleReject = async (reportId: number,
+    adminId: number,
+    adminReply: string
+  ) => {
+    const registerResult = await fetch(
+      `${import.meta.env.VITE_API_MODULE3}/api/reports/closeReport`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportId,
+          adminId,
+          adminReply,
+          stateId: 3
+        })
+      }
+    );
+
+    const registerData = await registerResult.json();
+
+    if (!registerResult.ok) {
+      setError(registerData.error);
+      return;
+    }
+
+    setReports((current) =>
+      current.map((item) =>
+        item.id === reportId
+          ? { ...item, status: 'Rejected' }
+          : item
+      )
+    );
+
+    return registerData;
   };
 
   const handleSendReply = () => {
@@ -186,17 +252,17 @@ export default function ManageReports() {
             ? response.data
             : response.data?.reports ?? response.data?.data ?? [];
         const normalizedReports: ReportItem[] = (rawReports as any[]).map((item) => ({
-          id: item.id ?? item.report_id ?? Date.now(),
-          postId: item.post_id ?? item.postId ?? 0,
-          reportTitle: item.report_title || item.title || item.reason || 'Reported item',
-          reporter: item.reporter || item.username || item.reported_by || item.reportedBy || 'Unknown',
+          id: item.ReportID ?? item.ReportID,
+          postId: item.ReportBoycott.Boycott.BoycottID ?? item.postId ?? 0,
+          reportTitle: item.Subject || 'Missing Subject',
+          reporter: item.AppUser_Report_ReportedByToAppUser.UserName || "Missing Username",
           reportDetails:
-            item.report_details || item.details || item.description || item.report_description || item.report_text || '',
+            item.UserDescription || 'Missing Description',
           reportTime:
-            item.report_time || item.created_at || item.createdAt || item.date || item.reported_at || 'Unknown date',
-          reportCount: Number(item.report_count ?? item.count ?? 1),
-          status: ['Pending', 'Approved', 'Rejected'].includes(item.status) ? item.status : 'Pending',
-          reportUserId: item.reporter || item.username || item.reported_by || item.reportedBy || 'Unknown',
+            item.ReportedAt || 'Unknown date',
+          reportCount: Number(item.report_count ?? item.count ?? 666),
+          status: item.ReportState.StateName || 'State Unknown',
+          reportUserId: item.ReportedBy || 'Missing Author',
         }));
 
         setReports(normalizedReports.length ? normalizedReports : initialReports);
@@ -254,9 +320,9 @@ export default function ManageReports() {
           {visibleItems.map((item) => (
             <Card key={item.id} sx={manageReportsStyles.reportCard(theme, item.id === selectedReportId)} onClick={() => handleSelectItem(item.id)}>
               <Box sx={manageReportsStyles.listHeader(theme)}>
-                <Avatar sx={manageReportsStyles.listAvatar(theme)}>{item.reporter.charAt(0).toUpperCase()}</Avatar>
+                <Avatar sx={manageReportsStyles.listAvatar(theme)}>{item.reporter.toString()}</Avatar>
                 <Box sx={manageReportsStyles.listText(theme)}>
-                  <Typography sx={manageReportsStyles.reporterName(theme)}>{item.reporter}</Typography>
+                  <Typography sx={manageReportsStyles.reporterName(theme)}>{item.reporter.toString()}</Typography>
                   <Typography sx={manageReportsStyles.reportTitle(theme)}>{item.reportTitle}</Typography>
                   {currentTab !== 'Posts' ? (
                     <Typography sx={manageReportsStyles.reportMeta(theme)}>{formatRelativeTime(item.reportTime)}</Typography>
@@ -274,10 +340,10 @@ export default function ManageReports() {
           <Card sx={manageReportsStyles.detailCard(theme)}>
             <Box sx={manageReportsStyles.detailHeader(theme)}>
               <Box sx={manageReportsStyles.detailAuthor(theme)}>
-                <Avatar sx={manageReportsStyles.detailAvatar(theme)}>{activeReport.reporter.charAt(0).toUpperCase()}</Avatar>
+                <Avatar sx={manageReportsStyles.detailAvatar(theme)}>{activeReport.reporter.toString().toUpperCase()}</Avatar>
                 <Box>
                   <Typography sx={manageReportsStyles.detailAuthorName(theme)}>{activeReport.reporter}</Typography>
-                  <Typography sx={manageReportsStyles.timestamp(theme)}>{activeReport.reportTime}</Typography>
+                  <Typography sx={manageReportsStyles.timestamp(theme)}>{formatRelativeTime(activeReport.reportTime)}</Typography>
                 </Box>
               </Box>
               <Button variant="contained" onClick={() => navigate(`/detailed-post/${activeReport.postId}`)} sx={manageReportsStyles.actionButton(theme)}>
@@ -295,7 +361,7 @@ export default function ManageReports() {
                     variant="contained"
                     color="success"
                     startIcon={<CheckCircleOutlineIcon />}
-                    onClick={() => handleApprove(activeReport.id)}
+                    onClick={() => handleApprove(activeReport.id, 1,'Default')}
                     sx={{ ...manageReportsStyles.actionButton(theme), ml: 0, whiteSpace: 'nowrap' , color: '#fff', backgroundColor: '#38a169', '&:hover': { backgroundColor: '#2f855a' }}}>
                     Approve
                   </Button>

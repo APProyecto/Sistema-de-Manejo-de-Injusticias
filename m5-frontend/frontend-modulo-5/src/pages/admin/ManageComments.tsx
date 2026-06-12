@@ -16,12 +16,14 @@ import {
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { commentApi } from '../../services/api';
 import { manageCommentsStyles } from '../styles/ManageCommentsStyles';
+import { useAuth } from '../../context/authContext';
+import { getCommentReports, updateReportStatus } from '../../services/commentsService';
+import type { CommentReport } from '../../types';
 
 type CommentStatus = 'Pending' | 'Approved' | 'Rejected';
 
@@ -34,21 +36,31 @@ interface CommentRow {
   description: string;
 }
 
-const initialComments: CommentRow[] = [
-  { id: 1, date: '13/04/2026', status: 'Pending', reason: 'Fake News', original: 'This people use pink slime.', description: 'Accusations are proven to be false.' },
-  { id: 2, date: '17/04/2026', status: 'Pending', reason: 'Hate Speech', original: 'These libs are getting crazy nowadays.', description: 'Hate based on political preferences.' },
-  { id: 3, date: '19/04/2026', status: 'Pending', reason: 'Inappropriate', original: 'Do women even have a word on this?', description: 'Comment includes sexism and misogyny.' },
-  { id: 4, date: '20/04/2026', status: 'Approved', reason: 'Resolved', original: 'Thanks for the info.', description: 'Helpful comment.' },
-  { id: 5, date: '22/04/2026', status: 'Rejected', reason: 'Spam', original: 'Buy cheap watches now!', description: 'Promotional spam.' },
-  { id: 6, date: '23/04/2026', status: 'Pending', reason: 'Harassment', original: 'Everyone who disagrees should just leave.', description: 'Attack on users with differing opinions and personal insults.' },
-  { id: 7, date: '24/04/2026', status: 'Approved', reason: 'Moderated', original: 'I think this is a good point, but needs references.', description: 'Constructive feedback with suggestions for improvement.' },
-  { id: 8, date: '25/04/2026', status: 'Rejected', reason: 'Duplicate', original: 'Read the previous thread, this was already discussed.', description: 'Repeated content that does not add value to the discussion.' },
-  { id: 9, date: '26/04/2026', status: 'Pending', reason: 'Misinformation', original: 'Vaccines cause memory loss and other health problems.', description: 'False medical claim that could mislead community members.' },
-  { id: 10, date: '27/04/2026', status: 'Pending', reason: 'Off-topic', original: 'Now that we are here, did anyone watch the game last night? It was incredible!', description: 'Comment unrelated to the original post and distracting from the topic.' },
-];
+const normalizeCommentReport = (item: CommentReport, index: number): CommentRow => {
+  const raw = item as any;
+  const reportId = raw.ReportID ?? raw.reportId ?? raw.id ?? Number(raw.comment_id) ?? index + 1;
+  const stateName = item.ReportState?.StateName?.toString().toLowerCase();
+
+  return {
+    id: Number(reportId),
+    date: item.ReportedAt ? new Date(item.ReportedAt).toLocaleDateString('es-ES') : 'Sin fecha',
+    status:
+      stateName === 'approved'
+        ? 'Approved'
+        : stateName === 'rejected'
+        ? 'Rejected'
+        : 'Pending',
+    reason: item.MotiveReport?.MotiveName ?? 'Sin motivo',
+    original: item.ReportComment?.CommentBoycott?.Description ?? 'Sin comentario original',
+    description: item.UserDescription ?? '',
+  };
+};
+
+const initialComments: CommentRow[] = [];
 
 export default function ManageComments() {
   const theme = useTheme();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [comments, setComments] = useState<CommentRow[]>(initialComments);
   const [statusFilter, setStatusFilter] = useState<'All' | CommentStatus>('All');
@@ -57,7 +69,7 @@ export default function ManageComments() {
   const [error, setError] = useState<string | null>(null);
   const rowsPerPage = 5;
   const useBackend = Boolean(import.meta.env.VITE_API_MODULE3);
-  const commentsEndpoint = import.meta.env.VITE_COMMENTS_MODERATION_ENDPOINT ?? '/api/comments/getAll?BoycottID=1&SortBy=0';
+  const commentsEndpoint = '/api/reports';
 
   const counts = useMemo(() => {
     const total = comments.length;
@@ -98,34 +110,24 @@ export default function ManageComments() {
       return;
     }
 
-    const fetchComments = async () => {
+    const fetchReports = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await commentApi.get<{ ok: boolean; comments: any[] }>(commentsEndpoint);
-        const rawComments = response.data.comments ?? [];
-        const normalizedComments: CommentRow[] = rawComments.map((item) => ({
-          id: item.id ?? Number(item.comment_id) ?? Date.now(),
-          date:
-            item.date || item.creation_date || item.creationDate || item.created_at || item.createdAt || 'Unknown date',
-          status: ['Pending', 'Approved', 'Rejected'].includes(item.status) ? item.status : 'Pending',
-          reason: item.reason || item.report_reason || item.type || 'Reported',
-          original: item.original || item.content || item.text || item.comment || 'No text',
-          description: item.description || item.report_description || item.details || '',
-        }));
-
-        setComments(normalizedComments.length ? normalizedComments : initialComments);
+        const reports = await getCommentReports();
+        const normalizedComments: CommentRow[] = reports.map(normalizeCommentReport);
+        setComments(normalizedComments);
       } catch (fetchError) {
-        setError('No se pudo cargar el backend de comentarios. Usando datos de ejemplo.');
-        setComments(initialComments);
+        setError('No se pudo cargar el backend de reports. No hay datos para mostrar.');
+        setComments([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchComments();
-  }, [useBackend, commentsEndpoint]);
+    fetchReports();
+  }, [useBackend]);
 
   const statusBg = (status: CommentStatus) => {
     switch (status) {
@@ -138,16 +140,30 @@ export default function ManageComments() {
     }
   };
 
-  const handleApprove = (id: number) => {
-    setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Approved' } : c)));
+  const handleApprove = async (id: number) => {
+    try {
+      if (!user) {
+        setError('No hay usuario autenticado.');
+        return;
+      }
+      await updateReportStatus(id, 2, user.id);
+      setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Approved' } : c)));
+    } catch {
+      setError('No se pudo actualizar el estado del reporte.');
+    }
   };
 
-  const handleReject = (id: number) => {
-    setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Rejected' } : c)));
-  };
-
-  const handleDelete = (id: number) => {
-    setComments((cur) => cur.filter((c) => c.id !== id));
+  const handleReject = async (id: number) => {
+    try {
+      if (!user) {
+        setError('No hay usuario autenticado.');
+        return;
+      }
+      await updateReportStatus(id, 3, user.id);
+      setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Rejected' } : c)));
+    } catch {
+      setError('No se pudo actualizar el estado del reporte.');
+    }
   };
 
   return (
@@ -212,10 +228,10 @@ export default function ManageComments() {
         <Typography sx={{ color: theme.palette.grey[400], fontSize: 12 }}>
           {useBackend
             ? loading
-              ? 'Cargando comentarios desde el backend...'
+              ? 'Cargando reports desde el backend...'
               : error
               ? error
-              : 'Comentarios cargados desde el backend de M3.'
+              : ''
             : 'Backend de M3 no configurado. Mostrando datos de ejemplo.'}
         </Typography>
         {useBackend && !loading && !error && (
@@ -251,15 +267,12 @@ export default function ManageComments() {
                   <Button variant="contained" color="error" startIcon={<CancelOutlinedIcon />} onClick={() => handleReject(c.id)} sx={{ ...manageCommentsStyles.actionButton(theme), whiteSpace: 'nowrap' , color: '#fff', backgroundColor: '#b02525', '&:hover': { backgroundColor: '#9b1c1c' }}}>
                     Reject
                   </Button>
-                  <IconButton color="error" onClick={() => handleDelete(c.id)} sx={manageCommentsStyles.actionButton(theme)}>
-                    <DeleteOutlineIcon sx={{ color: '#ff0000'}} />
-                  </IconButton>
+                  
                 </>
               ) : (
-                <IconButton color="error" onClick={() => handleDelete(c.id)} sx={manageCommentsStyles.actionButton(theme)}>
-                  <DeleteOutlineIcon sx={{ color: '#ff0000'}} />
-                </IconButton>
-              )}
+                <Typography sx={{ color: theme.palette.grey[400], fontSize: 14 }}>-</Typography>
+              )  
+            }
             </Box>
           </Box>
         ))}

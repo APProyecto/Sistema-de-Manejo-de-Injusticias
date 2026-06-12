@@ -1,11 +1,16 @@
 import { Request, Response } from "express";
 import {
+  agregarFavoritoBoycott,
   actualizarBoycott,
   cambiarEstadoBoycott,
   crearBoycott,
   listarMisBoycotts,
   obtenerBoycottPorId,
+  quitarFavoritoBoycott,
+  reportarBoycott,
+  votarBoycott,
 } from "./boycott.service";
+import { getBoycottDocumentByMysqlId } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
 /*
   Controlador: boycott.crud.controller.ts
@@ -33,6 +38,15 @@ function aTexto(valor: unknown): string | undefined {
   }
   const limpio = valor.trim();
   return limpio.length > 0 ? limpio : undefined;
+}
+
+function obtenerUserId(req: Request): number | undefined {
+  return (
+    aEnteroPositivo((req as any).user?.id) ??
+    aEnteroPositivo(req.body?.userId) ??
+    aEnteroPositivo(req.body?.usuarioId) ??
+    aEnteroPositivo(req.query?.userId)
+  );
 }
 
 // ─── Crear boycott ─────────────────────────────────────────────────────────────
@@ -108,7 +122,8 @@ export async function obtenerBoycottHandler(req: Request, res: Response): Promis
       return;
     }
 
-    const detalle = await obtenerBoycottPorId(id);
+    const userId = obtenerUserId(req);
+    const detalle = await obtenerBoycottPorId(id, userId);
     if (!detalle) {
       res.status(404).json({ ok: false, mensaje: "Boycott no encontrado" });
       return;
@@ -234,9 +249,168 @@ export async function misBoycottsHandler(req: Request, res: Response): Promise<v
 
     const data = await listarMisBoycotts(creatorId, incluirEliminados);
 
-    res.json({ ok: true, total: data.length, data });
+const dataWithDescription = await Promise.all(
+  data.map(async (boycott) => {
+    const mongoDoc = await getBoycottDocumentByMysqlId(boycott.BoycottID);
+
+    return {
+      ...boycott,
+      Description: mongoDoc?.description ?? "",
+    };
+  })
+);
+
+res.json({
+  ok: true,
+  total: dataWithDescription.length,
+  data: dataWithDescription,
+});
   } catch (error) {
     console.error("[misBoycotts]", error);
+    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+  }
+}
+
+/**
+ * POST /api/boycotts/:id/vote
+ * Body: isInFavor | voto | inFavor
+ */
+export async function votarBoycottHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const boycottId = aEnteroPositivo(req.params.id);
+    const userId = obtenerUserId(req);
+    const voto = req.body?.isInFavor ?? req.body?.voto ?? req.body?.inFavor;
+
+    if (!boycottId) {
+      res.status(400).json({ ok: false, mensaje: "El ID del boycott no es valido" });
+      return;
+    }
+
+    if (!userId) {
+      res.status(400).json({ ok: false, mensaje: "Falta userId para registrar el voto" });
+      return;
+    }
+
+    if (typeof voto !== "boolean") {
+      res.status(400).json({ ok: false, mensaje: "El voto debe ser booleano" });
+      return;
+    }
+
+    const resultado = await votarBoycott(boycottId, userId, voto);
+
+    if (resultado.estado === "no_encontrado") {
+      res.status(404).json({ ok: false, mensaje: "Boycott no encontrado" });
+      return;
+    }
+
+    res.json({ 
+      ok: true, 
+      votoActual: resultado.votoActual,
+      votesInFavor: resultado.votesInFavor,
+      votesAgainst: resultado.votesAgainst,
+    });
+  } catch (error) {
+    console.error("[votarBoycott]", error);
+    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+  }
+}
+
+/**
+ * POST /api/boycotts/:id/favorite
+ */
+export async function agregarFavoritoBoycottHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const boycottId = aEnteroPositivo(req.params.id);
+    const userId = obtenerUserId(req);
+
+    if (!boycottId) {
+      res.status(400).json({ ok: false, mensaje: "El ID del boycott no es valido" });
+      return;
+    }
+
+    if (!userId) {
+      res.status(400).json({ ok: false, mensaje: "Falta userId para agregar favorito" });
+      return;
+    }
+
+    const resultado = await agregarFavoritoBoycott(boycottId, userId);
+    if (resultado.estado === "no_encontrado") {
+      res.status(404).json({ ok: false, mensaje: "Boycott no encontrado" });
+      return;
+    }
+
+    res.status(201).json({ ok: true });
+  } catch (error) {
+    console.error("[agregarFavoritoBoycott]", error);
+    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+  }
+}
+
+/**
+ * DELETE /api/boycotts/:id/favorite
+ */
+export async function quitarFavoritoBoycottHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const boycottId = aEnteroPositivo(req.params.id);
+    const userId = obtenerUserId(req);
+
+    if (!boycottId) {
+      res.status(400).json({ ok: false, mensaje: "El ID del boycott no es valido" });
+      return;
+    }
+
+    if (!userId) {
+      res.status(400).json({ ok: false, mensaje: "Falta userId para quitar favorito" });
+      return;
+    }
+
+    const resultado = await quitarFavoritoBoycott(boycottId, userId);
+    if (resultado.estado === "no_encontrado") {
+      res.status(404).json({ ok: false, mensaje: "Boycott no encontrado" });
+      return;
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("[quitarFavoritoBoycott]", error);
+    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+  }
+}
+
+/**
+ * POST /api/boycotts/:id/report
+ */
+export async function reportarBoycottHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const boycottId = aEnteroPositivo(req.params.id);
+    const userId = obtenerUserId(req);
+    const reason = aTexto(req.body?.reason) ?? aTexto(req.body?.motivo);
+    const description = aTexto(req.body?.description) ?? aTexto(req.body?.descripcion);
+
+    if (!boycottId) {
+      res.status(400).json({ ok: false, mensaje: "El ID del boycott no es valido" });
+      return;
+    }
+
+    if (!userId) {
+      res.status(400).json({ ok: false, mensaje: "Falta userId para reportar" });
+      return;
+    }
+
+    if (!reason) {
+      res.status(400).json({ ok: false, mensaje: "Falta reason para reportar" });
+      return;
+    }
+
+    const resultado = await reportarBoycott(boycottId, userId, reason, description);
+    if (resultado.estado === "no_encontrado") {
+      res.status(404).json({ ok: false, mensaje: "Boycott no encontrado" });
+      return;
+    }
+
+    res.status(201).json({ ok: true });
+  } catch (error) {
+    console.error("[reportarBoycott]", error);
     res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
   }
 }
