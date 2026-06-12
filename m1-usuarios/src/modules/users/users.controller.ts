@@ -152,11 +152,7 @@ export async function checkRol(req: Request, res: Response) {
 }
 export async function convertAdminToUser(req: Request, res: Response) {
   try {
-    const {email} = req.body;
-    const ID = await prisma.appUser.findUnique({
-      where : {Email : email},
-      select : {UserID : true}
-    });
+    const {ID} = req.body;
     
     if (!Number.isInteger(ID?.UserID)) {
       return res.status(400).json({
@@ -191,11 +187,7 @@ export async function convertAdminToUser(req: Request, res: Response) {
 
 export async function convertUserToAdmin(req: Request, res: Response) {
   try {
-    const {email} = req.body;
-    const ID = await prisma.appUser.findUnique({
-      where : {Email : email},
-      select : {UserID : true}
-    });
+    const {ID} = req.body;
     
     if (!Number.isInteger(ID?.UserID)) {
       return res.status(400).json({
