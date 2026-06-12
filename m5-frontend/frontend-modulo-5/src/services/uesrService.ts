@@ -106,7 +106,7 @@ export const getUserProfilePictureUrl = (
   return `${authApi.defaults.baseURL}/api/files/appUser/${id}/picture`;
 };
 
-export const getEntityPictureUrl = (
+export const getEntityPictureUrlByBoycottId = (
   id: number,
   version?: string
 ): string => {
@@ -115,6 +115,14 @@ export const getEntityPictureUrl = (
   return `${authApi.defaults.baseURL}/api/files/entityBoycott/${id}/picture`;
 };
 
+export const getInjusticePictureUrlByBoycottId = (
+  id: number,
+  version?: string
+): string => {
+  const query = version ? `?v=${encodeURIComponent(version)}` : "";
+
+  return `${authApi.defaults.baseURL}/api/files/injustice-typesBoycott/${id}/picture`;
+};
 
 export const syncAuth0User = async (
   token: string,
