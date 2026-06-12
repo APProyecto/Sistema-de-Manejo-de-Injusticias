@@ -1,26 +1,53 @@
 import type { SxProps, Theme } from '@mui/material';
 
 export const PostCardStyles = {
-    container: (theme:Theme): SxProps<Theme> => ({
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: theme.palette.grey[100],
-        width: '70%',
-        borderRadius: '45px',
-        padding: '45px',
-    }),
-    topContainer: (theme:Theme): SxProps<Theme> => ({
+    container: (theme: Theme): SxProps<Theme> => ({
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: theme.palette.grey[100],
+
+    width: {
+        xs: 'calc(100% - 24px)',
+        sm: '85%',
+        md: '75%',
+        lg: '75%',
+    },
+
+    maxWidth: '900px',
+    boxSizing: 'border-box',
+
+    mx: {
+        xs: 'auto',
+        sm: 'auto',
+        md: 'auto',
+    },
+
+    borderRadius: {
+        xs: '24px',
+        sm: '35px',
+        md: '45px',
+    },
+
+    padding: {
+        xs: '18px',
+        sm: '35px',
+        md: '45px',
+    },
+
+    
+}),
+    topContainer: (theme: Theme): SxProps<Theme> => ({
         display: 'flex',
         flexDirection: 'row',
         alignContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'transparent'
+        backgroundColor: 'transparent',
     }),
-    profilePicture: (theme:Theme): SxProps<Theme> => ({
+    profilePicture: (theme: Theme): SxProps<Theme> => ({
         width: '45px',
         height: '45px',
     }),
-    usernameButton: (theme:Theme): SxProps<Theme> => ({
+    usernameButton: (theme: Theme): SxProps<Theme> => ({
         marginX: '10px',
         borderColor: 'transparent',
         padding: '0px',
@@ -32,7 +59,7 @@ export const PostCardStyles = {
         fontWeight: theme.typography.body2.fontWeight,
         color: theme.typography.body2.color,
     }),
-    descriptionContainer: (theme:Theme): SxProps<Theme> => ({ 
+    descriptionContainer: (theme: Theme): SxProps<Theme> => ({
         display: 'flex',
         flexDirection: 'column',
         flex: 1,
@@ -48,7 +75,7 @@ export const PostCardStyles = {
         marginLeft: '22.5px',
         backgroundColor: 'transparent',
     }),
-    entitiesContainer: (theme:Theme): SxProps<Theme> => ({ 
+    entitiesContainer: (theme: Theme): SxProps<Theme> => ({
         display: 'flex',
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -58,47 +85,50 @@ export const PostCardStyles = {
         backgroundColor: 'transparent',
         justifyContent: 'left',
     }),
-    title: (theme:Theme): SxProps<Theme> => ({ 
+    title: (theme: Theme): SxProps<Theme> => ({
         textAlign: 'left',
         fontSize: theme.typography.h3.fontSize,
         fontWeight: theme.typography.h3.fontWeight,
         color: theme.typography.h3.color,
-        marginY: '15px'
+        marginY: '15px',
     }),
-description: (theme:Theme): SxProps<Theme> => ({ 
-    textAlign: 'left',
-    fontSize: theme.typography.body1.fontSize,
-    fontWeight: theme.typography.body1.fontWeight,
-    color: theme.typography.body1.color,
-    display: '-webkit-box',
-    WebkitLineClamp: 10,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    wordBreak: 'break-word',
-    maxHeight: 'calc(1.5em * 10)', // para calcular el espacio del texto
-    lineHeight: 1.5,
-}),
-    bottomContainer: (theme:Theme): SxProps<Theme> => ({ 
+    description: (theme: Theme): SxProps<Theme> => ({
+        textAlign: 'left',
+        fontSize: theme.typography.body1.fontSize,
+        fontWeight: theme.typography.body1.fontWeight,
+        color: theme.typography.body1.color,
+        display: '-webkit-box',
+        WebkitLineClamp: 10,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        wordBreak: 'break-word',
+        maxHeight: 'calc(1.5em * 10)',
+        lineHeight: 1.5,
+    }),
+    bottomContainer: (theme: Theme): SxProps<Theme> => ({
         display: 'flex',
         flexDirection: 'row',
+        flexWrap: 'wrap',          
         alignItems: 'center',
+        gap: 1,                    
         backgroundColor: 'transparent',
         paddingLeft: '22.5px',
-        justifyContent: 'space-between',
         width: '100%',
     }),
-    interactiveButtonsContainer: (theme:Theme): SxProps<Theme> => ({ 
+    interactiveButtonsContainer: (theme: Theme): SxProps<Theme> => ({
         display: 'flex',
         flexDirection: 'row',
+        flexWrap: 'wrap',          
         backgroundColor: 'transparent',
         gap: 2,
         width: 'auto',
-        padding: 0, 
-        margin: 0, 
+        padding: 0,
+        margin: 0,
     }),
-    filler: (theme:Theme): SxProps<Theme> => ({ 
+    filler: (theme: Theme): SxProps<Theme> => ({
         display: 'flex',
         flex: 1,
+        minWidth: 0,              
     }),
-} 
+}
