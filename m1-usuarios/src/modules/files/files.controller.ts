@@ -632,3 +632,132 @@ export async function getEntityPicture(req: Request, res: Response) {
         });
     }
 }
+
+/**
+ * Function: getEntityPictureByBoycottId
+ * Inputs:
+ *  - boycottId: Number from URL params.
+ * Description: Gets an Entity picture from MongoDb and returns it
+ * Outputs: Binary image response
+ */
+
+export async function getEntityPictureByBoycottId(req: Request, res: Response) {
+    try{
+        const boycottId = Number(req.params.boycottId);
+
+        if(!Number.isInteger(boycottId) || boycottId <= 0) {
+            return res.status(400).json({
+                error: "Invalid entityId",
+            });
+        }
+
+        const entity = await prisma.boycott.findUnique({
+            where : {
+                BoycottID : boycottId,
+            },
+
+            select : {
+                EntityID : true, 
+            }
+        });
+
+        const mongoDocument = await getEntityDocumentByEntityId(entity?.EntityID || 1);
+
+        if(!mongoDocument?.picture?.mongoFileId) {
+            return res.status(404).json({
+                error: "entity picture not found",
+            });
+        }
+
+        const fileBuffer = await downloadFileFromGridFS(
+            mongoDocument.picture.mongoFileId.toString()
+        )
+
+        res.setHeader(
+            "Content-Type",
+            mongoDocument.picture.contentType ?? "application/octet-stream"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `inline; filename="${mongoDocument.picture.fileName}`
+        );
+
+        return res.send(fileBuffer);
+
+
+    }catch(error) {
+        console.error("getEntityPicture error:", error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+}
+
+/**
+ * Function: getInjusticeTypePictureByBoycott
+ * Inputs:
+ *  - boycottId: Number from URL params.
+ * Description: Gets and InjusticeType picture from MongoDb and returns it
+ * Outputs: Binary image response
+ */
+
+export async function getInjusticeTypePictureByBoycott(req: Request, res: Response) {
+    try{
+        const boycottId = Number(req.params.boycottId);
+
+        if(!Number.isInteger(boycottId) || boycottId <= 0) {
+            return res.status(400).json({
+                error: "Invalid entityId",
+            });
+        }
+
+        const injusticeType = await prisma.boycott.findUnique({
+            where : {
+                BoycottID : boycottId,
+            },
+
+            select : {
+                InjusticeTypeID : true, 
+            }
+        });
+
+
+        const mongoDocument = await getInjusticeTypeDocumentById(injusticeType?.InjusticeTypeID || 1);
+
+        if(!mongoDocument?.picture?.mongoFileId) {
+            return res.status(404).json({
+                error: "Injustice type picture not found",
+            });
+        }
+
+        const fileBuffer = await downloadFileFromGridFS(
+            mongoDocument.picture.mongoFileId.toString()
+        )
+
+        res.setHeader(
+            "Content-Type",
+            mongoDocument.picture.contentType ?? "application/octet-stream"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `inline; filename="${mongoDocument.picture.fileName}`
+        );
+
+        return res.send(fileBuffer);
+
+
+    }catch(error) {
+        console.error("getInjusticeTypePicture error:", error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+}
+
+
+
+

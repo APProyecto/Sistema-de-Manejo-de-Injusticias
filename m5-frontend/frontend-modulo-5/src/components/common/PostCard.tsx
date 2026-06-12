@@ -19,6 +19,9 @@ import { useNavigate } from "react-router-dom";
 import { formatDate, formatNumber } from "../../utils/utils";
 import { useAuth } from "../../context/authContext";
 import { voteBoycott } from "../../services/boycottService";
+import { getEntityPictureUrlByBoycottId, getInjusticePictureUrlByBoycottId } from "../../services/uesrService";
+import { useEffect, useState } from "react";
+
 
 interface PostCardProps {
   data: PostCardData;
@@ -30,6 +33,13 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
+  
+  // Local state for vote counter that updates independently of props
+  const [voteCount, setVoteCount] = useState<string>(data.votes);
+  
+  useEffect(() => {
+    setVoteCount(data.votes);
+  }, [data.id, data.votes]);
 
   const onPostClick = () => {
     navigate(`/detailed-post/${data.id}`);
@@ -61,17 +71,32 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
     }
   };
 
-  const handleVoteChange = async (newVote: boolean | null) => {
+  const handleVoteChange = async (
+    newVote: boolean | null,
+    previousVote: boolean | null,
+  ) => {
     if (!isAuthenticated) {
       globalThis.alert("Debes iniciar sesión para votar.");
       throw new Error("Not authenticated");
     }
 
-    if (newVote === null) {
+    if (!resolvedUserId) {
+      globalThis.alert("No se pudo identificar tu usuario para registrar el voto.");
+      throw new Error("Missing userId");
+    }
+
+    const voteToSend = newVote ?? previousVote;
+    if (voteToSend === null) {
       return;
     }
 
-    await voteBoycott(data.id, newVote, resolvedUserId);
+    const result = await voteBoycott(data.id, voteToSend, resolvedUserId);
+    
+    // Update vote count with the values returned by backend
+    if (result.votesInFavor !== undefined && result.votesAgainst !== undefined) {
+      const newVotes = result.votesInFavor - result.votesAgainst;
+      setVoteCount(String(newVotes));
+    }
   };
 
   return (
@@ -113,14 +138,14 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
         <Container sx={PostCardStyles.entitiesContainer(theme)}>
           {/*Indicted*/}
           <Entity
-            src={data.indicted_picture}
+            src={getEntityPictureUrlByBoycottId(data.id)}
             name={data.indicted}
             onPressClick={onIndictedClick}
           ></Entity>
 
           {/*Case*/}
           <Entity
-            src={data.case_picture}
+            src={getInjusticePictureUrlByBoycottId(data.id)}
             name={data.case}
             onPressClick={onCaseClick}
           ></Entity>
@@ -148,7 +173,7 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
         >
           {/* Votes */}
           <VotesBox
-            votes={formatNumber(data.votes)}
+            votes={formatNumber(voteCount)}
             initialVote={data.voted_by_user}
             onVoteChange={handleVoteChange}
           ></VotesBox>

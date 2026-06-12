@@ -10,6 +10,8 @@ import {
     uploadEntityPicture,
     syncEntitiesToMongo,
     getEntityPicture,
+    getEntityPictureByBoycottId,
+    getInjusticeTypePictureByBoycott
 } from "./files.controller"
 
 const router = Router();
@@ -34,6 +36,11 @@ router.put("/injustice-types/:injusticeTypeId/picture",
     uploadInjusticeTypePicture
 );
 
+router.get(
+    "/injustice-typesBoycott/:boycottId/picture",
+    getInjusticeTypePictureByBoycott
+);
+
 router.put("/entities/:entityId/picture",
     upload.single("file"),
     uploadEntityPicture
@@ -52,6 +59,11 @@ router.get(
 router.get(
     "/entities/:entityId/picture",
     getEntityPicture
+);
+
+router.get(
+    "/entityBoycott/:boycottId/picture",
+    getEntityPictureByBoycottId
 );
 
 router.get(
