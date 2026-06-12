@@ -8,7 +8,7 @@ import { AuthProvider } from "./context/authContext";
 import { SearchProvider } from "./context/SearchContext";
 
 import { useAuth } from "./context/authContext";
-import { syncAuth0User } from "./services/uesrService";
+import { syncAuth0User } from "./services/userService";
 
 const theme = darkTheme;
 

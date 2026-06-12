@@ -29,6 +29,10 @@ function buildSelect(userId: number | null) {
     VotesInFavor: true,
     VotesAgainst: true,
     NumberComments: true,
+    CommentBoycott: {
+      where: { DeletedByUser: false },
+      select: { CommentBoycottID: true },
+    },
     MongoDocumentId: true,
     CreatorID: true,
     AppUser_Boycott_CreatorIDToAppUser: {
@@ -97,7 +101,7 @@ async function mapBoycottToFrontend(
     creation_date: b.PublicationDate.toISOString(),
     votes: String(b.VotesInFavor - b.VotesAgainst),
     voted_by_user: userId === null ? undefined : (b.UserVotesBoycott?.[0]?.IsInFavor ?? null),
-    coments: String(b.NumberComments),
+    coments: String(b.CommentBoycott?.length ?? 0),
     evidences: String(boycottDoc?.evidence?.length ?? 0),
     state: b.BoycottState?.StateName ?? "",
     caseNumber: b.CaseNumber ?? undefined,

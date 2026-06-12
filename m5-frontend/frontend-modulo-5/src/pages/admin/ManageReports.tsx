@@ -15,8 +15,10 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import ReplyOutlinedIcon from '@mui/icons-material/ReplyOutlined';
 import { commentApi } from '../../services/api';
 import { closeReport } from '../../services/commentsService';
-
+import { updateReportReply } from '../../services/commentsService';
 import { manageReportsStyles } from '../styles/ManageReportsStyles';
+import { User } from '@auth0/auth0-react';
+import { useAuth } from '../../context/authContext';
 
 type ReportStatus = 'Pending' | 'Approved' | 'Rejected';
 
@@ -119,6 +121,7 @@ export default function ManageReports() {
   const [error, setError] = useState<string | null>(null);
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState('');
+  const { user } = useAuth();
 
   const visibleItems = useMemo(() => {
     if (currentTab === 'Posts') {
@@ -231,7 +234,15 @@ export default function ManageReports() {
     return registerData;
   };
 
-  const handleSendReply = () => {
+  const handleSendReply = async (reportId: number) => {
+    /* if (!user){
+        console.error("user.id not found: ", 666);
+        return
+    } else {
+        console.log(replyText)
+        const response = await updateReportReply(reportId, replyText, user?.appUserId);
+        console.log(response)
+    } */
     setReplyOpen(false);
     setReplyText('');
   };
@@ -294,17 +305,17 @@ export default function ManageReports() {
         <Typography sx={{ color: theme.palette.grey[400], fontSize: 12 }}>
           {useBackend
             ? loading
-              ? 'Cargando reportes desde el backend...'
+              ? ' '
               : error
               ? error
-              : 'Reportes cargados desde el backend de M3.'
-            : 'No se ha configurado el backend M3. Usando datos de ejemplo.'}
+              : ' '
+            : ' '}
         </Typography>
-        {useBackend && !loading && !error && (
+        {/* {useBackend && !loading && !error && (
           <Typography sx={{ color: theme.palette.grey[400], fontSize: 12 }}>
             Endpoint: {reportsEndpoint}
           </Typography>
-        )}
+        )} */}
       </Box>
 
       <Box sx={manageReportsStyles.tabsRow(theme)}>
@@ -373,21 +384,21 @@ export default function ManageReports() {
                     sx={{ ...manageReportsStyles.actionButton(theme), whiteSpace: 'nowrap' , color: '#fff', backgroundColor: '#b02525', '&:hover': { backgroundColor: '#9b1c1c' }}}>
                     Reject
                   </Button>
-                  <Button
+{                  <Button
                     variant="contained"
                     color="info"
                     startIcon={<ReplyOutlinedIcon />}
                     onClick={() => setReplyOpen(true)}
                     sx={{ ...manageReportsStyles.actionButton(theme), whiteSpace: 'nowrap' , color: '#fff', backgroundColor: '#3182ce', '&:hover': { backgroundColor: '#2b6cb0' }}}>
                     Reply
-                  </Button>
+                  </Button>}
                 </>
               ) : (
                 <>
                   <Box sx={manageReportsStyles.statusTag(theme, activeReport.status)}>
                     {activeReport.status}
                   </Box>
-                  <Button
+{                  <Button
                     variant="contained"
                     color="info"
                     startIcon={<ReplyOutlinedIcon />}
@@ -395,7 +406,7 @@ export default function ManageReports() {
                     sx={manageReportsStyles.actionButton(theme)}
                   >
                     Reply
-                  </Button>
+                  </Button>}
                 </>
               )}
             </Box>
@@ -417,7 +428,7 @@ export default function ManageReports() {
                 sx={manageReportsStyles.replyInput(theme)}
               />
               <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
-                <Button variant="contained" color="primary" disabled={!replyText.trim()} onClick={handleSendReply} sx={manageReportsStyles.actionButton(theme)}>
+                <Button variant="contained" color="primary" disabled={!replyText.trim()} onClick={() => handleSendReply(activeReport.id)} sx={manageReportsStyles.actionButton(theme)}>
                   Send
                 </Button>
                 <Button variant="outlined" color="error" onClick={() => { setReplyOpen(false); setReplyText(''); }} sx={manageReportsStyles.actionButton(theme)}>

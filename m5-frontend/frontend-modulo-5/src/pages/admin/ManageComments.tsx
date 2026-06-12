@@ -228,17 +228,17 @@ export default function ManageComments() {
         <Typography sx={{ color: theme.palette.grey[400], fontSize: 12 }}>
           {useBackend
             ? loading
-              ? 'Cargando reports desde el backend...'
+              ? ' '
               : error
               ? error
               : ''
-            : 'Backend de M3 no configurado. Mostrando datos de ejemplo.'}
+            : ' '}
         </Typography>
-        {useBackend && !loading && !error && (
+        {/* {useBackend && !loading && !error && (
           <Typography sx={{ color: theme.palette.grey[400], fontSize: 12 }}>
             Endpoint: {commentsEndpoint}
           </Typography>
-        )}
+        )} */}
       </Box>
 
       <Box sx={{ mt: 2, overflowX: 'auto', overflowY: 'auto', maxHeight: 400 }}>

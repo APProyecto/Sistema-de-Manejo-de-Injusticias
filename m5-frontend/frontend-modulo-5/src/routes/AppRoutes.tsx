@@ -22,12 +22,14 @@ import ManageUsers from '../pages/admin/ManageUsers';
 import ManageReports from '../pages/admin/ManageReports';
 import Statistics from '../pages/admin/Statistics';
 import Queries from '../pages/admin/Queries';
+import CompanyBoycotts from '../pages/admin/CompanyBoycotts';
 import UserHistory from '../pages/admin/UserHistory';
 import MostFollowedCases from '../pages/admin/MostFollowedCases';
 import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
 import Catalogues from '../pages/admin/Catalogues';
 import Logs from '../pages/admin/Logs';
 import ManageComments from '../pages/admin/ManageComments';
+import ManageSuggestions from '../pages/admin/ManageSuggestions';
 import DynamicLayout from '../layouts/DynamicLayout';
 import Register from '../pages/public/Register';
 
@@ -107,6 +109,11 @@ export default function AppRoutes() {
             <ManageComments />
           </ProtectedRoute>
         } />
+        <Route path="/admin/manage-suggestions" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <ManageSuggestions />
+          </ProtectedRoute>
+        } />
         <Route path="/admin/statistics" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <Statistics />
@@ -115,6 +122,11 @@ export default function AppRoutes() {
         <Route path="/admin/queries" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <Queries />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/company-boycotts" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <CompanyBoycotts />
           </ProtectedRoute>
         } />
         <Route path="/admin/user-history" element={

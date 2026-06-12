@@ -6,6 +6,7 @@ import {
     createReportBoycott,
     closeReportBoycott,
     updateReportStatus,
+    updateReportComment,
     getCommentReportCount,
     getBoycottReportCount
 } from "./reports.controller";
@@ -19,6 +20,7 @@ router.post("/createComment", createCommentReport);
 router.post("/createBoycottReport", createReportBoycott);
 router.post("/closeReport", closeReportBoycott);
 router.put("/updateStatus", updateReportStatus);
+router.post("/updateReply", updateReportComment);
 
 
 export default router;

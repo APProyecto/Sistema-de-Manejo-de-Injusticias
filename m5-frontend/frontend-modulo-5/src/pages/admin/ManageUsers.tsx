@@ -30,9 +30,9 @@ import {
   getAllAccountStates,
   getUserProfilePictureUrl,
   postChangeUserState,
-} from "../../services/uesrService";
+} from "../../services/userService";
 
-import type { AccountState } from "../../services/uesrService";
+import type { AccountState } from "../../services/userService";
 import type { User } from "../../types";
 
 interface ManageUserRow {
