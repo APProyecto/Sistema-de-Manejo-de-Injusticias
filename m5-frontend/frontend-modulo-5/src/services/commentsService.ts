@@ -105,6 +105,18 @@ export const updateReportStatus = async (
   return response.data.report;
 }
 
+export const updateReportReply = async (
+  reportId: number,
+  reply: string,
+  userId: number,
+): Promise<CommentReport> => {
+  const response = await commentApi.put<{ ok: boolean; report: CommentReport }>(
+    `/api/reports/updateReply`,
+    { reportId, reply, userId },
+  );
+  return response.data.report;
+}
+
 export const closeReport = async (reportId: number, adminId: number, adminReply: string, stateId: number): Promise<CommentReport> => {
   const response = await commentApi.put<{ ok: boolean; report: CommentReport }>(`/api/reports/closeReport`, { reportId, adminId, adminReply, stateId });
   return response.data.report;
