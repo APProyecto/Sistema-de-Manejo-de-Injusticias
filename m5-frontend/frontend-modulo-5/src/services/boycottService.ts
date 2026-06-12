@@ -98,73 +98,73 @@ const tryEndpoints = async <T>(
 };
 
 // Obtener todos los boycotts (con filtros)
-export const getBoycotts = async (filters?: {
-  industria?: string;
-  pais?: string;
-  tipo_injusticia?: string;
-  orden?: string;
-}, userId?: number): Promise<PostCardData[]> => {
+export const getBoycotts = async (
+  filters?: {
+    industria?: string;
+    pais?: string;
+    tipo_injusticia?: string;
+    orden?: string;
+  },
+  userId?: number,
+  page: number = 1
+): Promise<{ data: PostCardData[]; total: number }> => {
   const response = await boycottApi.get<ApiResponse<PostCardData[]>>('/api/boycotts', {
     params: {
       ...filters,
       ...(userId === undefined ? {} : { userId }),
-      page: 1,
+      page,
       pageSize: 10,
-      orderBy: 'votes'
+      orderBy: 'votes',
     },
   });
-  
-  return response.data.data;
+
+  return {
+    data: response.data.data,
+    total: (response.data as any).total ?? response.data.data.length,
+  };
 };
 
 export const getMyBoycotts = async (
-  creatorId: number
-): Promise<PostCardData[]> => {
-  const response = await boycottApi.get<MyBoycottsResponse>(
-    "/api/boycotts/mine",
-    {
-      params: {
-        creatorId,
-      },
-    }
-  );
+  creatorId: number,
+  page: number = 1
+): Promise<{ data: PostCardData[]; hasMore: boolean }> => {
+  const pageSize = 10;
 
-  const getEntityBoycottPictureUrl = (
-  entityId?: number | string | null
-): string => {
-  if (!entityId) return "";
+  const response = await boycottApi.get<MyBoycottsResponse>("/api/boycotts/mine", {
+    params: { creatorId, page, pageSize },
+  });
 
-  return `${import.meta.env.VITE_API_MODULE1}/api/files/entityBoycott/${entityId}/picture`;
-};
+  const getEntityBoycottPictureUrl = (entityId?: number | string | null): string => {
+    if (!entityId) return "";
+    return `${import.meta.env.VITE_API_MODULE1}/api/files/entityBoycott/${entityId}/picture`;
+  };
 
-  return response.data.data.map((item): PostCardData => ({
+  const data = response.data.data.map((item): PostCardData => ({
     id: item.BoycottID,
-
     username: "You",
     user_picture: "",
-
     indicted: item.Entity.EntityName,
     indicted_picture: getEntityBoycottPictureUrl(item.Entity.EntityID),
-
     case: item.InjusticeType.InjusticeName,
     case_picture: "",
-
     title: item.Title,
-
     description: item.Description ?? "",
-
     creation_date: item.PublicationDate,
-
     is_favorite: false,
     votes: String(item.VotesInFavor - item.VotesAgainst),
     voted_by_user: null,
-
     coments: String(item.NumberComments),
     evidences: "0",
-
     state: item.BoycottState.StateName,
     caseNumber: item.CaseNumber ?? undefined,
   }));
+
+  const total: number | undefined = (response.data as any).total;
+
+  return {
+    data,
+    hasMore: total !== undefined ? data.length + (page - 1) * pageSize < total : data.length === pageSize,
+  };
 };
 
 export const searchBoycotts = async (
@@ -175,7 +175,8 @@ export const searchBoycotts = async (
     injusticeTypeId?: number;
     orderBy?: number; // 1: Most Recent, 2: Oldest, 3: Most relevant, 4: Less relevant
   },
-  userId?: number
+  userId?: number,
+  page: number =1
 ): Promise<{ data: PostCardData[]; total: number }> => {
   let orderByParam: 'createdAt' | 'votes' | 'relevance' | undefined;
   let orderDirectionParam: 'asc' | 'desc' = 'desc';
@@ -212,12 +213,10 @@ export const searchBoycotts = async (
       orderBy: orderByParam,
       orderDirection: orderDirectionParam,
       ...(userId === undefined ? {} : { userId }),
-      page: 1,
+      page,
       pageSize: 10,
     },
   });
-
-  console.log('[searchBoycotts] response:', response);
 
   return {
     data: response.data.data,
@@ -392,14 +391,25 @@ export const setFavorite = async (id: number, isFavorite: boolean, userId?: numb
 };
 
 // Obtener boycotts favoritos
-export const getFavorites = async (userId?: number): Promise<PostCardData[]> => {
-  const data = await tryEndpoints<ApiResponse<PostCardData[]> | { success: boolean; data: PostCardData[] }>([
-    { method: 'get', url: '/api/boycotts/favorites', params: userId ? { userId } : undefined },
-    { method: 'get', url: '/api/boycotts/favoritos' },
-    { method: 'get', url: '/api/admin/boycotts/favorites', params: userId ? { userId } : undefined },
+export const getFavorites = async (
+  userId?: number,
+  page: number = 1
+): Promise<{ data: PostCardData[]; hasMore: boolean }> => {
+  const pageSize = 10;
+
+  const result = await tryEndpoints<ApiResponse<PostCardData[]> | { success: boolean; data: PostCardData[] }>([
+    { method: 'get', url: '/api/boycotts/favorites', params: { ...(userId ? { userId } : {}), page, pageSize } },
+    { method: 'get', url: '/api/boycotts/favoritos', params: { page, pageSize } },
+    { method: 'get', url: '/api/admin/boycotts/favorites', params: { ...(userId ? { userId } : {}), page, pageSize } },
   ]);
 
-  return (data as any).data ?? [];
+  const data: PostCardData[] = (result as any).data ?? [];
+  const total: number | undefined = (result as any).total;
+
+  return {
+    data,
+    hasMore: total !== undefined ? data.length + (page - 1) * pageSize < total : data.length === pageSize,
+  };
 };
 
 // Reportar un boycott
