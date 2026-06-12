@@ -1,6 +1,6 @@
 import { commentApi } from "./api";
 
-import type { Comment, CommentReport, CreateCommentReport } from "../types";
+import type { Comment, CommentReport, CreateCommentReport, ReportMotive } from "../types";
 
 export const getComments = async (
   id: number,
@@ -92,8 +92,16 @@ export const createCommentReport = async (
   const response = await commentApi.post<{
     ok: boolean;
     report: CommentReport;
-  }>(`/api/reports/createCommentReport`, data);
+  }>(`/api/reports/createComment`, data);
   return response.data.report;
+};
+
+// Catálogo de motivos de reporte (parametrizable)
+export const getReportMotives = async (): Promise<ReportMotive[]> => {
+  const response = await commentApi.get<{ ok: boolean; motives: ReportMotive[] }>(
+    `/api/reports/motives`,
+  );
+  return response.data.motives ?? [];
 };
 
 export const updateReportStatus = async (
@@ -112,3 +120,17 @@ export const closeReport = async (reportId: number, adminId: number, adminReply:
   const response = await commentApi.put<{ ok: boolean; report: CommentReport }>(`/api/reports/closeReport`, { reportId, adminId, adminReply, stateId });
   return response.data.report;
 }
+
+// Buzón de sugerencias
+export const createSuggestion = async (
+  subject: string,
+  description: string,
+  suggestedBy: number,
+) => {
+  const response = await commentApi.post(`/api/suggestions`, {
+    subject,
+    description,
+    suggestedBy,
+  });
+  return response.data;
+};

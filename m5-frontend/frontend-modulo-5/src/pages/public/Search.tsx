@@ -18,10 +18,10 @@ export default function Search() {
 
   const q = searchParams.get('q');
   const filters = {
-    countryId: searchParams.get('country') ? Number(searchParams.get('country')) : undefined,
-    industryTypeId: searchParams.get('industry') ? Number(searchParams.get('industry')) : undefined,
-    injusticeTypeId: searchParams.get('injustice') ? Number(searchParams.get('injustice')) : undefined,
-    orderBy: searchParams.get('orderBy') ?? undefined,
+    countryId: searchParams.get('countryId') ? Number(searchParams.get('countryId')) : undefined,
+    industryTypeId: searchParams.get('industryId') ? Number(searchParams.get('industryId')) : undefined,
+    injusticeTypeId: searchParams.get('injusticeId') ? Number(searchParams.get('injusticeId')) : undefined,
+    orderBy: searchParams.get('orderById') ? Number(searchParams.get('orderById')) : undefined,
   }
 
   useEffect(() => {

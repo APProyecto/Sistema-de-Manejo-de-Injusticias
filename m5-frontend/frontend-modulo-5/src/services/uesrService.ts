@@ -118,6 +118,36 @@ export const getInjusticePictureUrlByBoycottId = (
   return `${authApi.defaults.baseURL}/api/files/injustice-typesBoycott/${id}/picture`;
 };
 
+export interface ManageUser {
+  UserID: number;
+  FirstName: string;
+  LastName: string;
+  UserName: string;
+  Email: string;
+  IsAdmin: boolean;
+  NumberPublications?: number;
+  RegisteredAt?: string;
+  GenderID?: number;
+  CountryID?: number;
+  AccountStateID?: number;
+}
+
+// Lista de usuarios para la pantalla de administración
+export const getUsers = async (): Promise<ManageUser[]> => {
+  const response = await authApi.get<ManageUser[]>('/api/users/listUsers');
+  return response.data ?? [];
+};
+
+// Convierte un usuario normal en administrador
+export const makeAdmin = async (email: string): Promise<void> => {
+  await authApi.post('/api/users/toAdmin', { email });
+};
+
+// Revoca el rol de administrador (lo vuelve usuario normal)
+export const revokeAdmin = async (email: string): Promise<void> => {
+  await authApi.post('/api/users/toUser', { email });
+};
+
 export const syncAuth0User = async (
   token: string,
   email: string,

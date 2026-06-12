@@ -135,6 +135,25 @@ export async function getBoycottReports(req: Request, res: Response){
 }
 
 /*
+    Function: getMotives.
+    Inputs: None.
+    Description: Returns the catalog of report motives so the frontend can show them.
+    Outputs: JSON response with the list of motives or an error message.
+*/
+export async function getMotives(_req: Request, res: Response) {
+	try {
+		const motives = await prisma.motiveReport.findMany({
+			select: { MotiveReportID: true, MotiveName: true },
+			orderBy: { MotiveName: 'asc' },
+		});
+		res.json({ ok: true, motives });
+	} catch (error) {
+		console.error('getMotives error:', error);
+		res.status(500).json({ ok: false, error: 'Internal server error' });
+	}
+}
+
+/*
     Function: createCommentReport.
     Inputs: Request object containing userDescription, commentId, motiveReportId, ReportedBy, asubject in the body.
     Description: Creates a new report for a specific comment in a boycott.

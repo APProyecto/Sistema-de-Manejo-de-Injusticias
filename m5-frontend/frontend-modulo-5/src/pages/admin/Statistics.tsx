@@ -1,4 +1,4 @@
-import { Container, Typography, Card, CardContent, Button, Box, useTheme, Divider, Grid } from '@mui/material';
+import { Container, Typography, Card, Box, useTheme, Divider, Grid } from '@mui/material';
 import { StatisticsStyles } from '../styles/StatisticsStyles';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { PieChart } from '@mui/x-charts/PieChart';
@@ -6,6 +6,13 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
+import { useEffect, useState } from 'react';
+import {
+  getPlatformKpis,
+  getIndustriesMostBoycotts,
+  getBoycottsByInjustice,
+  type PlatformKpis,
+} from '../../services/statisticsService';
 
 export default function Statistics() {
   const theme = useTheme();
@@ -15,22 +22,33 @@ export default function Statistics() {
   const blue = '#3498DB';
   const orange = '#E67E22';
 
+  const [kpis, setKpis] = useState<PlatformKpis | null>(null);
+  const [IndustriesMoreBoycotts, setIndustriesMoreBoycotts] = useState<{ industry: string; value: number }[]>([]);
+  const [BoycottsByInjusticeCategory, setBoycottsByInjusticeCategory] = useState<{ label: string; value: number }[]>([]);
+
+  useEffect(() => {
+    getPlatformKpis()
+      .then(setKpis)
+      .catch((error) => console.error('Error loading platform KPIs:', error));
+
+    getIndustriesMostBoycotts()
+      .then((data) => setIndustriesMoreBoycotts(data.industries))
+      .catch((error) => console.error('Error loading industries:', error));
+
+    getBoycottsByInjustice()
+      .then((data) =>
+        setBoycottsByInjusticeCategory(
+          data.categories.map((c) => ({ label: c.category, value: c.value })),
+        ),
+      )
+      .catch((error) => console.error('Error loading injustice categories:', error));
+  }, []);
 
   {/* a */}
   let UsersByRegions =[
     {region:'Europa',value:20},
     {region:'America',value:10},
     {region:'Asia',value:30}
-  ];
-
-  {/* b */}
-  let IndustriesMoreBoycotts =[
-    {industry:'Fast food',value:20},
-    {industry:'Tech',value:10},
-    {industry:'Clotches',value:30},
-    {industry:'Energy',value:50},
-    {industry:'Motorsport',value:5},
-    {industry:'Pharmaceutical',value:10}
   ];
 
   {/* d */}
@@ -57,16 +75,6 @@ export default function Statistics() {
     {reason:'lack of evidence',value:40},
     {reason:'inappropriate language',value:5},
     {reason:'out of context',value:6}
-  ];
-
-  {/* i */}
-  let BoycottsByInjusticeCategory =[
-    {category:'False information',value:20},
-    {category:'duplicate content',value:10},
-    {category:'lack of evidence',value:40},
-    {category:'inappropriate language',value:5},
-    {category:'out of context',value:6},
-    {category:'others',value:60}
   ];
 
   {/* j */}
@@ -96,8 +104,7 @@ export default function Statistics() {
                 </Box>
 
                 <Box sx={{...StatisticsStyles.LabelBox(theme),pl:1}}>
-                  <Typography variant='h4' sx={StatisticsStyles.TopLabelNumber(theme)}>13.800</Typography>
-                  {/* WIP : Usar numeros reales */}
+                  <Typography variant='h4' sx={StatisticsStyles.TopLabelNumber(theme)}>{kpis?.totalUsers ?? 0}</Typography>
                 </Box>
               </Box>
               <PeopleAltIcon sx={{m:'Auto',fontSize:57, color:theme.palette.primary.main}}/>
@@ -114,8 +121,7 @@ export default function Statistics() {
                 </Box>
 
                 <Box sx={{...StatisticsStyles.LabelBox(theme),pl:1}}>
-                  <Typography variant='h4' sx={StatisticsStyles.TopLabelNumber(theme)}>1850</Typography>
-                  {/* WIP : Usar numeros reales */}
+                  <Typography variant='h4' sx={StatisticsStyles.TopLabelNumber(theme)}>{kpis?.historicalBoycotts ?? 0}</Typography>
                 </Box>
               </Box>
               <TrendingUpIcon sx={{m:'Auto',fontSize:57, color: orange}}/>
@@ -132,8 +138,7 @@ export default function Statistics() {
                 </Box>
 
                 <Box sx={{...StatisticsStyles.LabelBox(theme),pl:1}}>
-                  <Typography variant='h4' sx={StatisticsStyles.TopLabelNumber(theme)}>187</Typography>
-                  {/* WIP : Usar numeros reales */}
+                  <Typography variant='h4' sx={StatisticsStyles.TopLabelNumber(theme)}>{kpis?.globalPendingReports ?? 0}</Typography>
                 </Box>
               </Box>
               <ReportProblemIcon sx={{m:'Auto',fontSize:57, color:red}}/>
@@ -146,12 +151,11 @@ export default function Statistics() {
             <Box sx={{display:'flex',p:0}}>
               <Box sx={{...StatisticsStyles.BoxGraphic(theme)}}>
                 <Box sx={{...StatisticsStyles.LabelBox(theme),pl:1}}>
-                  <Typography variant='h6' sx={StatisticsStyles.TopLabel(theme)}>Pending reports</Typography>
+                  <Typography variant='h6' sx={StatisticsStyles.TopLabel(theme)}>Total favorites</Typography>
                 </Box>
 
                 <Box sx={{...StatisticsStyles.LabelBox(theme),pl:1}}>
-                  <Typography variant='h4' sx={StatisticsStyles.TopLabelNumber(theme)}>187</Typography>
-                  {/* WIP : Usar numeros reales */}
+                  <Typography variant='h4' sx={StatisticsStyles.TopLabelNumber(theme)}>{kpis?.totalFavorites ?? 0}</Typography>
                 </Box>
               </Box>
               <StarBorderIcon sx={{m:'Auto',fontSize:57, color:blue}}/>
@@ -280,7 +284,7 @@ export default function Statistics() {
               <PieChart
                 series={[
                   {
-                    data: FavoritesByCategory,
+                    data: BoycottsByInjusticeCategory,
                     outerRadius: 100,
                     arcLabel: (item) => `${item.label}`
                   },

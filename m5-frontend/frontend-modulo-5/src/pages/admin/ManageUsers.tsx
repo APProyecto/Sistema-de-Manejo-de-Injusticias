@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -20,6 +20,7 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
 import { manageUsersStyles } from '../styles/ManageUsersStyles';
+import { getUsers, makeAdmin, revokeAdmin } from '../../services/uesrService';
 
 interface ManageUserRow {
   id: number;
@@ -30,54 +31,33 @@ interface ManageUserRow {
   status: 'Active' | 'Suspended' | 'Deactivated' | 'Pending';
 }
 
-const initialUsers: ManageUserRow[] = [
-  {
-    id: 1,
-    name: 'User1',
-    username: '@user1',
-    email: 'user1@example.com',
-    role: 'user',
-    status: 'Active',
-  },
-  {
-    id: 2,
-    name: 'User2',
-    username: '@user2',
-    email: 'user2@example.com',
-    role: 'user',
-    status: 'Suspended',
-  },
-  {
-    id: 3,
-    name: 'User3',
-    username: '@user3',
-    email: 'user3@example.com',
-    role: 'admin',
-    status: 'Active',
-  },
-  {
-    id: 4,
-    name: 'User4',
-    username: '@user4',
-    email: 'user4@example.com',
-    role: 'user',
-    status: 'Deactivated',
-  },
-  {
-    id: 5,
-    name: 'User5',
-    username: '@user5',
-    email: 'user5@example.com',
-    role: 'admin',
-    status: 'Pending',
-  },
-];
-
 export default function ManageUsers() {
   const theme = useTheme();
   const [tabIndex, setTabIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [users, setUsers] = useState<ManageUserRow[]>(initialUsers);
+  const [users, setUsers] = useState<ManageUserRow[]>([]);
+
+  const loadUsers = async () => {
+    try {
+      const data = await getUsers();
+      setUsers(
+        data.map((user): ManageUserRow => ({
+          id: user.UserID,
+          name: `${user.FirstName ?? ''} ${user.LastName ?? ''}`.trim() || user.UserName,
+          username: `@${user.UserName}`,
+          email: user.Email,
+          role: user.IsAdmin ? 'admin' : 'user',
+          status: user.AccountStateID === 1 ? 'Active' : 'Suspended',
+        })),
+      );
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -91,17 +71,30 @@ export default function ManageUsers() {
     });
   }, [users, searchTerm, tabIndex]);
 
-  const handleRoleToggle = (id: number) => {
-    setUsers((current) =>
-      current.map((user) =>
-        user.id === id
-          ? {
-              ...user,
-              role: user.role === 'user' ? 'admin' : 'user',
-            }
-          : user,
-      ),
-    );
+  const handleRoleToggle = async (id: number) => {
+    const target = users.find((user) => user.id === id);
+    if (!target) return;
+
+    const makingAdmin = target.role === 'user';
+
+    try {
+      if (makingAdmin) {
+        await makeAdmin(target.email);
+      } else {
+        await revokeAdmin(target.email);
+      }
+
+      setUsers((current) =>
+        current.map((user) =>
+          user.id === id
+            ? { ...user, role: makingAdmin ? 'admin' : 'user' }
+            : user,
+        ),
+      );
+    } catch (error) {
+      console.error('Error changing user role:', error);
+      alert('Could not change the user role. Please try again.');
+    }
   };
 
   const handleStatusChange = (id: number, status: ManageUserRow['status']) => {

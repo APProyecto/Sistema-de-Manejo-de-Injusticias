@@ -15,6 +15,7 @@ interface RawMyBoycott {
   BoycottID: number;
   Title: string;
   Description?: string;
+  EvidenceCount?: number;
   CaseNumber: string | null;
   PublicationDate: string;
   LastUpdateDate: string | null;
@@ -160,7 +161,7 @@ export const getMyBoycotts = async (
     voted_by_user: null,
 
     coments: String(item.NumberComments),
-    evidences: "0",
+    evidences: String(item.EvidenceCount ?? 0),
 
     state: item.BoycottState.StateName,
     caseNumber: item.CaseNumber ?? undefined,

@@ -16,6 +16,7 @@ export default function CreateBoycott() {
   const [countryId, setCountryId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [caseNumber, setCaseNumber] = useState('');
   const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const [isDraggingEvidence, setIsDraggingEvidence] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState<simpleEntity | null>(null);
@@ -75,6 +76,7 @@ export default function CreateBoycott() {
         countryId: countryId!,
         injusticeTypeId: categoryId!,
         boycottStateId: 1, // Activo
+        caseNumber: caseNumber.trim() ? Number(caseNumber.trim()) : undefined,
       };
 
       const result = await createBoycott(boycottData);
@@ -352,6 +354,18 @@ export default function CreateBoycott() {
                   placeholder="Type a detailed description of the injustice.."
                   value={description}
                   onChange={(event) => setDescription(event.target.value)}
+                  sx={createBoycottStyles.textarea(theme)}
+                />
+              </Box>
+
+              <Box>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Case number (Optional)</Typography>
+                <TextField
+                  fullWidth
+                  type="number"
+                  placeholder="Judicial case / file number"
+                  value={caseNumber}
+                  onChange={(event) => setCaseNumber(event.target.value)}
                   sx={createBoycottStyles.textarea(theme)}
                 />
               </Box>

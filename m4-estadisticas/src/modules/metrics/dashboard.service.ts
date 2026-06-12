@@ -331,6 +331,79 @@ export async function getPlatformKpis() {
     };
   });
 }
+/*
+  Service: getIndustriesWithMostBoycotts.
+  Description: Returns the industries ranked by number of active boycotts.
+*/
+export async function getIndustriesWithMostBoycotts() {
+  return getOrSetCache("industries-most-boycotts", async () => {
+    const boycotts = await prisma.boycott.findMany({
+      where: {
+        DeletedByUser: false,
+        DeletedAt: null,
+      },
+      select: {
+        Entity: {
+          select: {
+            IndustryType: {
+              select: { IndustryName: true },
+            },
+          },
+        },
+      },
+    });
+
+    const counts = new Map<string, number>();
+    for (const boycott of boycotts) {
+      const industryName = boycott.Entity?.IndustryType?.IndustryName ?? "Unknown";
+      counts.set(industryName, (counts.get(industryName) ?? 0) + 1);
+    }
+
+    const industries = Array.from(counts.entries())
+      .map(([industry, value]) => ({ industry, value }))
+      .sort((a, b) => b.value - a.value);
+
+    return { industries, total: boycotts.length };
+  });
+}
+
+/*
+  Service: getBoycottsByInjusticeCategory.
+  Description: Returns the number and percentage of active boycotts per injustice category.
+*/
+export async function getBoycottsByInjusticeCategory() {
+  return getOrSetCache("boycotts-by-injustice", async () => {
+    const boycotts = await prisma.boycott.findMany({
+      where: {
+        DeletedByUser: false,
+        DeletedAt: null,
+      },
+      select: {
+        InjusticeType: {
+          select: { InjusticeName: true },
+        },
+      },
+    });
+
+    const counts = new Map<string, number>();
+    for (const boycott of boycotts) {
+      const categoryName = boycott.InjusticeType?.InjusticeName ?? "Unknown";
+      counts.set(categoryName, (counts.get(categoryName) ?? 0) + 1);
+    }
+
+    const total = boycotts.length;
+    const categories = Array.from(counts.entries())
+      .map(([category, value]) => ({
+        category,
+        value,
+        percentage: total > 0 ? Math.round((value / total) * 1000) / 10 : 0,
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    return { categories, total };
+  });
+}
+
 /* Diagnostics
 export async function getDebugReportData() {
   const [

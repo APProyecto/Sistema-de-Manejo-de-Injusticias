@@ -143,8 +143,13 @@ export interface CreateCommentReport {
   UserDescription: string;
   MotiveReportID: number;
   ReportedBy: number;
-  commentId: number;
+  CommentId: number;
   Subject: string;
+}
+
+export interface ReportMotive {
+  MotiveReportID: number;
+  MotiveName: string;
 }
 
 export interface CommentReport {
