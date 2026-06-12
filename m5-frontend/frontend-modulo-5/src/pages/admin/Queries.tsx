@@ -251,7 +251,7 @@ export default function Quereis() {
               },
             }}
             sx={QueriesStyles.Select(theme)}
-            >
+          >
             <MenuItem value={0}>All</MenuItem>
             {injusticeTypes.map((c) => (
               <MenuItem key={c.InjusticeTypeID} value={c.InjusticeTypeID}>
@@ -424,7 +424,7 @@ export default function Quereis() {
         flexItem
         sx={{ ...QueriesStyles.Divider(theme), m: 0 }}
       />
-      <Box sx={{overflowY:'auto',maxHeight:'56vh'}}>
+
       {rows.map((row) => (
         <Box
           key={row.boycottId}
@@ -523,7 +523,6 @@ export default function Quereis() {
           </Box>
         </Box>
       ))}
-      </Box>
     </Container>
   );
 }
