@@ -17,7 +17,8 @@ export async function getAuditPublications(req: Request, res: Response) {
       countryId,
       author,
       indicted,
-      orderByVotes = "inFavor", // Opciones: "inFavor", "against", o "desc" para descendente
+      entityId,
+      orderByVotes = "none",
     } = req.query;
 
     const where: any = {};
@@ -42,7 +43,9 @@ export async function getAuditPublications(req: Request, res: Response) {
       };
     }
 
-    if (indicted) {
+    if (entityId) {
+      where.EntityID = Number(entityId); // 👈 filtro directo por ID, más eficiente
+    } else if (indicted) {
       where.Entity = {
         EntityName: { contains: indicted as string },
       };
@@ -74,9 +77,15 @@ export async function getAuditPublications(req: Request, res: Response) {
         },
       },
       orderBy:
-        orderByVotes === "against"
-          ? { VotesAgainst: "desc" }
-          : { VotesInFavor: "desc" },
+        orderByVotes === "inFavorDesc"
+          ? { VotesInFavor: "desc" }
+          : orderByVotes === "inFavorAsc"
+            ? { VotesInFavor: "asc" }
+            : orderByVotes === "againstDesc"
+              ? { VotesAgainst: "desc" }
+              : orderByVotes === "againstAsc"
+                ? { VotesAgainst: "asc" }
+                : { PublicationDate: "desc" }, // default: "inFavorDesc"
     });
 
     const enrichedData = await Promise.all(
@@ -106,6 +115,37 @@ export async function getAuditPublications(req: Request, res: Response) {
     });
   } catch (error) {
     console.error("getAuditPublications error:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export async function getFilterOptions(req: Request, res: Response) {
+  try {
+    const [entities, injusticeTypes, countries, boycottStates] =
+      await Promise.all([
+        prisma.entity.findMany({
+          select: { EntityID: true, EntityName: true },
+          orderBy: { EntityName: "asc" },
+        }),
+        prisma.injusticeType.findMany({
+          select: { InjusticeTypeID: true, InjusticeName: true },
+          orderBy: { InjusticeName: "asc" },
+        }),
+        prisma.country.findMany({
+          select: { CountryID: true, CountryName: true },
+          orderBy: { CountryName: "asc" },
+        }),
+        prisma.boycottState.findMany({
+          select: { BoycottStateID: true, StateName: true },
+          orderBy: { StateName: "asc" },
+        }),
+      ]);
+
+    return res.json({
+      data: { entities, injusticeTypes, countries, boycottStates },
+    });
+  } catch (error) {
+    console.error("getFilterOptions error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 }

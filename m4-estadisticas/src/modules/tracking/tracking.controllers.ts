@@ -9,6 +9,11 @@ import {
   getBoycottDocumentByMysqlId,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
+import {
+  getUserProfilePictureUrl,
+  getEntityPictureUrlByBoycottId
+} from '../../../../m5-frontend/frontend-modulo-5/src/services/userService'
+
 /*
     Function: getMostFollowedCases.
     Inputs: Request object containing indictedFilter and injusticeFilter in the query. Default values for indictedFilter and injusticeFilter are "Category".
@@ -21,38 +26,47 @@ export async function getMostFollowedCases(req: Request, res: Response) {
     const injusticeFilter = req.query.injusticeFilter?.toString();
 
     const followersCount = await prisma.userFavoriteBoycott.groupBy({
-      by: ['BoycottID'],
+      by: ["BoycottID"],
       _count: {
-        _all: true
-      }
+        _all: true,
+      },
     });
 
     const FindCases = await prisma.boycott.findMany({
-      distinct: ['BoycottID'],
+      distinct: ["BoycottID"],
       where: {
         InjusticeType: {
-          ...(injusticeFilter !== "Category" ? { InjusticeName: injusticeFilter } : {}),
+          ...(injusticeFilter !== "Category"
+            ? { InjusticeName: injusticeFilter }
+            : {}),
         },
         Entity: {
           CategoryEntity: {
-            ...(indictedFilter !== "Category" ? { CategoryName: indictedFilter }: {}),
+            ...(indictedFilter !== "Category"
+              ? { CategoryName: indictedFilter }
+              : {}),
           },
-        }
+        },
       },
       select: {
         BoycottID: true,
         InjusticeType: {
           select: {
             InjusticeName: true,
-          }
+          },
         },
         Entity: {
           select: {
             EntityID: true,
             EntityName: true,
+            CategoryEntity: {
+              select: {
+                CategoryName: true,
+              },
+            },
           },
         },
-      }
+      },
     });
 
     const summary = [];
@@ -61,10 +75,11 @@ export async function getMostFollowedCases(req: Request, res: Response) {
         if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
           let element = {
             entityname: FindCases[j].Entity.EntityName,
-            entityPicture: getEntityPicture(FindCases[j].Entity.EntityID),
+            entityPicture: await getEntityPictureUrlByBoycottId(FindCases[j].BoycottID),
+            entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
             injusticeType: FindCases[j].InjusticeType.InjusticeName,
-            followers: followersCount[i]._count,
-          }
+            followers: followersCount[i]._count._all,
+          };
           summary.push(element);
         }
       }
@@ -84,56 +99,11 @@ export async function getMostFollowedCases(req: Request, res: Response) {
   }
 }
 
-async function getEntityPicture(entId: number) {
-  try {
-    const CurrentMongoDocument = await getEntityDocumentByEntityId(entId);
-
-    if (!CurrentMongoDocument?.picture?.mongoFileId) {
-      console.error("getEntityPicture picture not found");
-      return null;
-    }
-
-    const fileBuffer = await downloadFileFromGridFS(
-      CurrentMongoDocument.picture.mongoFileId.toString(),
-    );
-
-    return fileBuffer;
-  } catch (error) {
-    console.error("getEntityPicture error:", error);
-    return null;
-  }
-}
-
-async function getAppUserPicture(userId: number) {
-  try {
-    const CurrentMongoDocument = await getAppUserDocumentByUserId(userId);
-
-    if (!CurrentMongoDocument?.picture?.mongoFileId) {
-      console.error("getAppUserPicture picture not found");
-      return null;
-    }
-
-    const fileBuffer = await downloadFileFromGridFS(
-      CurrentMongoDocument.picture.mongoFileId.toString(),
-    );
-
-    return fileBuffer;
-  } catch (error) {
-    console.error("getAppUserPicture error:", error);
-    return null;
-  }
-}
-
 async function getBoycottDesc(boycottId: number) {
   try {
     const CurrentMongoDocument = await getBoycottDocumentByMysqlId(boycottId);
 
-    if (!CurrentMongoDocument?.description) {
-      console.error("getBoycottDesc description not found");
-      return null;
-    }
-
-    const description = CurrentMongoDocument.description;
+    const description = CurrentMongoDocument?.description.toString() ?? "";
 
     return description;
   } catch (error) {
@@ -152,7 +122,8 @@ async function getBoycottDesc(boycottId: number) {
 
 export async function getUserPostAndComments(req: Request, res: Response) {
   try {
-    const { userName, CategoryFilter } = req.query;
+    const userName = req.query.userName?.toString();
+    const CategoryFilter = req.query.CategoryFilter?.toString();
 
     const userId = await prisma.appUser.findFirst({
       where: {
@@ -163,7 +134,7 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       },
     });
 
-    const AppUserPicture = getAppUserPicture(Number(userId));
+    const AppUserPicture = await getUserProfilePictureUrl(Number(userId));
 
     const UserPost = await prisma.boycott.findMany({
       where: {
@@ -188,10 +159,11 @@ export async function getUserPostAndComments(req: Request, res: Response) {
     const enrichPost = [];
 
     for (let i = 0; i < UserPost.length; i++) {
+      const desc = await getBoycottDesc(UserPost[i].BoycottID);
       let post = {
         Title: UserPost[i].Title,
         State: UserPost[i].BoycottState.StateName,
-        Description: getBoycottDesc(UserPost[i].BoycottID),
+        Description: desc,
       };
       enrichPost.push(post);
     }
@@ -241,9 +213,9 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       select: {
         Boycott: {
           select: {
+            BoycottID:true,
             Entity: {
               select: {
-                EntityID: true,
                 EntityName: true,
               },
             },
@@ -252,18 +224,23 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       },
     });
 
-    interface entityInter {EntityName: string; EntityPicture:Promise<Buffer<ArrayBufferLike> | null>}
+    interface entityInter {
+      EntityName: string;
+      EntityPicture: string;
+    }
     let enrichEntities: entityInter[] = [];
 
     for (let i = 0; i < entityFollowing.length; i++) {
       let entity = {
         EntityName: entityFollowing[i].Boycott.Entity.EntityName,
-        EntityPicture: getEntityPicture(
-          entityFollowing[i].Boycott.Entity.EntityID,
-        ),
+        EntityPicture: await getEntityPictureUrlByBoycottId(entityFollowing[i].Boycott.BoycottID),
       };
-      if(!enrichEntities.some(InEntity => InEntity.EntityName === entity.EntityName)){
-        enrichEntities.push(entity)
+      if (
+        !enrichEntities.some(
+          (InEntity) => InEntity.EntityName === entity.EntityName,
+        )
+      ) {
+        enrichEntities.push(entity);
       }
     }
 
@@ -295,11 +272,19 @@ export async function getUserPostAndComments(req: Request, res: Response) {
 */
 export async function getByEntity(req: Request, res: Response) {
   try {
-    const { indicted, dateFrom, dateTo, status } = req.query;
+    const { indicted, entityId, dateFrom, dateTo, status } = req.query;
 
     const where: any = {};
 
     if (indicted) {
+      where.Entity = {
+        EntityName: { contains: indicted as string },
+      };
+    }
+
+    if (entityId) {
+      where.EntityID = Number(entityId);
+    } else if (indicted) {
       where.Entity = {
         EntityName: { contains: indicted as string },
       };
