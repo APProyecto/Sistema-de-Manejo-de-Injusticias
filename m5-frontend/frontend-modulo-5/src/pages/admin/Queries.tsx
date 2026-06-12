@@ -493,7 +493,7 @@ export default function Quereis() {
 
           <Box sx={{ width: "18%", display: "flex", my: 1 }}>
             <Typography variant="body2" sx={{ m: "Auto" }}>
-              {row.date}
+              {new Date(row.date).toLocaleDateString("es-ES")}
             </Typography>
           </Box>
           <Divider
