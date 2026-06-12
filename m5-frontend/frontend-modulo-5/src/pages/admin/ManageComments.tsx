@@ -241,7 +241,7 @@ export default function ManageComments() {
         )}
       </Box>
 
-      <Box sx={{ mt: 2, overflowX: 'auto' }}>
+      <Box sx={{ mt: 2, overflowX: 'auto', overflowY: 'auto', maxHeight: 400 }}>
         <Box sx={manageCommentsStyles.gridHeader(theme)}>
           <Typography sx={manageCommentsStyles.headerCell(theme)}>Date</Typography>
           <Typography sx={{ ...manageCommentsStyles.headerCell(theme), textAlign: 'center' }}>Status</Typography>

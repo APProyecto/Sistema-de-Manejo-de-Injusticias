@@ -87,12 +87,9 @@ export const getCommentReports = async (
 };
 
 export const createCommentReport = async (
-  data: CreateCommentReport,
+  UserDescription: string, MotiveReportID: number, ReportedBy: number, CommentId: number, Subject: string
 ): Promise<CommentReport> => {
-  const response = await commentApi.post<{
-    ok: boolean;
-    report: CommentReport;
-  }>(`/api/reports/createCommentReport`, data);
+  const response = await commentApi.post(`/api/reports/createComment`, {UserDescription, MotiveReportID, ReportedBy, CommentId, Subject});
   return response.data.report;
 };
 

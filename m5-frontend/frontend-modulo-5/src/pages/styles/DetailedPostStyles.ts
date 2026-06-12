@@ -2,16 +2,23 @@ import type { SxProps, Theme } from '@mui/material';
 
 export const detailedPostStyles = {
   mainContainer: (theme: Theme): SxProps<Theme> => ({
-    display: 'flex',
-    flexDirection: 'row',
-    boxSizing: 'border-box',
-    height: 'calc(100vh - 64px)', // adjust to your header height
-    overflow: 'hidden',
-    width: '100%',
-    maxWidth: '100% !important',
-    padding: '0 !important',
-    background: theme.palette.background.default,
-  }),
+  display: 'flex',
+  flexDirection: {
+    xs: 'column',
+    md: 'row',
+  },
+  boxSizing: 'border-box',
+  height: '100%',
+  minHeight: 0,
+  overflow: {
+    xs: 'auto',
+    md: 'hidden',
+  },
+  width: '100%',
+  maxWidth: '100% !important',
+  padding: '0 !important',
+  background: theme.palette.background.default,
+}),
 
 
   indictedContainer: (theme: Theme): SxProps<Theme> => ({
@@ -21,26 +28,61 @@ export const detailedPostStyles = {
   }),
 
   centerContainer: (theme: Theme): SxProps<Theme> => ({
-    flex: 1,
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    height: '100%',
-    padding: '35px !important',
-    maxWidth: 'none !important',
-  }),
+  flex: 1,
+  minHeight: 0,
+  overflowY: {
+    xs: 'visible',
+    md: 'auto',
+  },
+  overflowX: 'hidden',
+  height: {
+    xs: 'auto',
+    md: '100%',
+  },
+  padding: {
+    xs: '24px 20px !important',
+    md: '35px !important',
+  },
+  maxWidth: 'none !important',
+}),
 
-  rightContainer: (theme: Theme): SxProps<Theme> => ({
-    width: '25vw',
-    minWidth: '220px',
-    maxWidth: '300px',
-    flexShrink: 0,
-    minheight: '100%',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    padding: '20px !important',
-    borderLeft: `1px solid ${theme.palette.divider}`,
-    backgroundColor: 'transparent',
-  }),
+rightContainer: (theme: Theme): SxProps<Theme> => ({
+  width: {
+    xs: '100%',
+    md: '25vw',
+  },
+  minWidth: {
+    xs: 0,
+    md: '220px',
+  },
+  maxWidth: {
+    xs: '100%',
+    md: '300px',
+  },
+  flexShrink: 0,
+  minHeight: {
+    xs: 'auto',
+    md: '100%',
+  },
+  overflowY: {
+    xs: 'visible',
+    md: 'auto',
+  },
+  overflowX: 'hidden',
+  padding: {
+    xs: '20px !important',
+    md: '20px !important',
+  },
+  borderLeft: {
+    xs: 'none',
+    md: `1px solid ${theme.palette.divider}`,
+  },
+  borderTop: {
+    xs: `1px solid ${theme.palette.divider}`,
+    md: 'none',
+  },
+  backgroundColor: 'transparent',
+}),
 
   // ── Post header ──
   postHeader: (theme: Theme): SxProps<Theme> => ({

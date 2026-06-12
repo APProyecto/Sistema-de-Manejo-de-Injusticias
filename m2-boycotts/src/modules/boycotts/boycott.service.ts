@@ -120,6 +120,8 @@ function deriveEvidenceType(contentType?: string): "pdf" | "image" | "video" | "
   Salida: ids del boycott y del documento Mongo.
 */
 export async function crearBoycott(input: CrearBoycottInput) {
+
+  console.log('input recibido', input);
   const boycott = await prisma.boycott.create({
     data: {
       Title: input.title,

@@ -1,10 +1,10 @@
 import {
-    Typography,
-    Button,
-    Box,
-    Container,
-    useTheme,
-    Drawer,
+  Typography,
+  Button,
+  Box,
+  Container,
+  useTheme,
+  Drawer,
 } from "@mui/material";
 
 import { sideMenuStyles } from "../styles/SideMenuStyles";

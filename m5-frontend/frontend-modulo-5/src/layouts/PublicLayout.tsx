@@ -9,6 +9,7 @@ import type { User } from "../types";
 export default function PublicLayout() {
     const [user, setUser] = useState<User | null>(null);
     const [signedIn, setSignedIn] = useState(false);
+    const [sideMenuOpen, setSideMenuOpen] = useState(false);
     const navigate = useNavigate();
 
     const onLoginSuccess=(userData: User) => {
@@ -23,14 +24,21 @@ export default function PublicLayout() {
 
     return (
         <Container>
-            <PublicHeader onLoginSuccess={onLoginSuccess}/>
+            <PublicHeader onLoginSuccess={onLoginSuccess} onOpenSideMenu={() => setSideMenuOpen(true)}/>
             <Container sx={
             {display:'flex', 
             flexDirection:'row', 
-            height: 'calc(100vh - 90px)',
-            overflow: 'hidden'
+            height: {
+            xs: "auto",
+            md: "calc(100vh - 90px)",
+            },
+            overflow: {
+            xs: "visible",
+            md: "hidden",
+            },
             }}>
-                <SideMenuUnsigned onLoginSuccess={onLoginSuccess} />
+                <SideMenuUnsigned onLoginSuccess={onLoginSuccess} open={sideMenuOpen}
+          onClose={() => setSideMenuOpen(false)}  />
             <Outlet/>
             </Container>
         </Container>
