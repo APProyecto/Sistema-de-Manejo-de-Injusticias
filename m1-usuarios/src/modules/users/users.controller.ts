@@ -133,6 +133,7 @@ export async function checkRol(req: Request, res: Response) {
       where : {AdminID : ID?.UserID},
       select : {IsSuperAdmin : true}
     });
+
     if(rol){
       return res.json({
         result : '1',
@@ -156,7 +157,7 @@ export async function convertAdminToUser(req: Request, res: Response) {
     
     if (!Number.isInteger(ID?.UserID)) {
       return res.status(400).json({
-        error: "Invalid or missing genderId",
+        error: "Invalid",
       });
     }
     const Id = Number(ID?.UserID);
@@ -167,6 +168,10 @@ export async function convertAdminToUser(req: Request, res: Response) {
 
     const rol = await prisma.normalUser.create({
       data : {NormalUserID : Id},
+    });
+    const isAdminchange = await prisma.appUser.update({
+      where : {UserID : Id},
+      data : {IsAdmin : false},
     });
     if(rol){
       return res.json({
@@ -191,7 +196,7 @@ export async function convertUserToAdmin(req: Request, res: Response) {
     
     if (!Number.isInteger(ID?.UserID)) {
       return res.status(400).json({
-        error: "Invalid or missing genderId",
+        error: "Invalid",
       });
     }
     const Id = Number(ID?.UserID);
@@ -199,6 +204,11 @@ export async function convertUserToAdmin(req: Request, res: Response) {
     const Deleterol = await prisma.normalUser.delete({
       where : {NormalUserID : Id},
     })
+
+    const isAdminchange = await prisma.appUser.update({
+      where : {UserID : ID},
+      data : {IsAdmin : true},
+    });
 
     const rol = await prisma.admin.create({
       data : {AdminID : Id,
@@ -214,7 +224,7 @@ export async function convertUserToAdmin(req: Request, res: Response) {
       result : '0',
     });
   } catch (error) {
-    console.error("Rol error:", error);
+    console.error("Error:", error);
 
     return res.status(500).json({
       error: "Internal server error",
