@@ -20,12 +20,16 @@ import { QueriesStyles } from "../styles/QueriesStyles";
 import { useNavigate } from "react-router-dom";
 import QueryNavegation from "./QueryNavigation";
 import { statsApi } from "../../services/api";
-import { getEntityPictureUrlByBoycottId } from "../../services/userService";
+import {
+  getEntityPictureUrlByBoycottId,
+  getUserProfilePictureUrl,
+} from "../../services/userService";
 
 interface AuditPublication {
   boycottId: number;
   title: string;
   author: string;
+  authorId: number;
   indicted: string;
   injusticeCategory: string;
   date: string;
@@ -439,6 +443,7 @@ export default function Quereis() {
         >
           <Box sx={{ width: "14%", display: "flex", my: 1 }}>
             <Avatar
+              src={getUserProfilePictureUrl(row.authorId)}
               alt="Logo"
               style={{ width: 30, height: 30 }}
               sx={{ m: 1, my: "Auto" }}

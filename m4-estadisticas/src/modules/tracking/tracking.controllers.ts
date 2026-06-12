@@ -11,8 +11,8 @@ import {
 
 import {
   getUserProfilePictureUrl,
-  getEntityPictureUrlByBoycottId
-} from '../../../../m5-frontend/frontend-modulo-5/src/services/userService'
+  getEntityPictureUrlByBoycottId,
+} from "../../../../m5-frontend/frontend-modulo-5/src/services/userService";
 
 /*
     Function: getMostFollowedCases.
@@ -75,7 +75,9 @@ export async function getMostFollowedCases(req: Request, res: Response) {
         if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
           let element = {
             entityname: FindCases[j].Entity.EntityName,
-            entityPicture: await getEntityPictureUrlByBoycottId(FindCases[j].BoycottID),
+            entityPicture: await getEntityPictureUrlByBoycottId(
+              FindCases[j].BoycottID,
+            ),
             entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
             injusticeType: FindCases[j].InjusticeType.InjusticeName,
             followers: followersCount[i]._count._all,
@@ -213,7 +215,7 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       select: {
         Boycott: {
           select: {
-            BoycottID:true,
+            BoycottID: true,
             Entity: {
               select: {
                 EntityName: true,
@@ -233,7 +235,9 @@ export async function getUserPostAndComments(req: Request, res: Response) {
     for (let i = 0; i < entityFollowing.length; i++) {
       let entity = {
         EntityName: entityFollowing[i].Boycott.Entity.EntityName,
-        EntityPicture: await getEntityPictureUrlByBoycottId(entityFollowing[i].Boycott.BoycottID),
+        EntityPicture: await getEntityPictureUrlByBoycottId(
+          entityFollowing[i].Boycott.BoycottID,
+        ),
       };
       if (
         !enrichEntities.some(
@@ -309,7 +313,7 @@ export async function getByEntity(req: Request, res: Response) {
         Title: true,
         PublicationDate: true,
         AppUser_Boycott_CreatorIDToAppUser: {
-          select: { UserName: true },
+          select: { UserName: true, UserID: true },
         },
         Entity: {
           select: {
@@ -348,6 +352,7 @@ export async function getByEntity(req: Request, res: Response) {
         title: boycott.Title,
         //description: mongoDoc?.description ?? null,
         author: boycott.AppUser_Boycott_CreatorIDToAppUser?.UserName,
+        authorId: boycott.AppUser_Boycott_CreatorIDToAppUser?.UserID,
         date: boycott.PublicationDate,
         status: boycott.BoycottState?.StateName,
       });

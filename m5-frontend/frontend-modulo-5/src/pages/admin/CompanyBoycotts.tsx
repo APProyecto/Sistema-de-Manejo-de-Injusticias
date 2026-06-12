@@ -22,6 +22,7 @@ import PostInteracionButton from "../../components/common/PostInteractionButton"
 import { Circle } from "@mui/icons-material";
 import { statsApi } from "../../services/api";
 import { getEntityPictureUrlByBoycottId } from "../../services/userService";
+import { getUserProfilePictureUrl } from "../../services/userService";
 
 export default function CompanyBoycotts() {
   const [indictedInput, setIndictedInput] = useState("");
@@ -97,6 +98,7 @@ export default function CompanyBoycotts() {
         boycottId: number;
         title: string;
         author: string;
+        authorId: number;
         date: string;
         status: string;
       }[];
@@ -110,6 +112,7 @@ export default function CompanyBoycotts() {
       boycottId: number;
       title: string;
       author: string;
+      authorId: number;
       date: string;
       status: string;
     }[];
@@ -335,6 +338,7 @@ export default function CompanyBoycotts() {
                   >
                     <Box sx={{ display: "flex" }}>
                       <Avatar
+                        src={getUserProfilePictureUrl(boycott.authorId)}
                         style={{ width: 50, height: 50 }}
                         sx={{ mx: 1, my: "Auto" }}
                       />

@@ -61,7 +61,7 @@ export async function getAuditPublications(req: Request, res: Response) {
         VotesAgainst: true,
         //NumberReports: true,
         AppUser_Boycott_CreatorIDToAppUser: {
-          select: { UserName: true },
+          select: { UserName: true, UserID: true },
         },
         Entity: {
           select: { EntityName: true },
@@ -96,6 +96,7 @@ export async function getAuditPublications(req: Request, res: Response) {
           boycottId: b.BoycottID,
           title: b.Title,
           author: b.AppUser_Boycott_CreatorIDToAppUser?.UserName,
+          authorId: b.AppUser_Boycott_CreatorIDToAppUser?.UserID,
           indicted: b.Entity?.EntityName,
           injusticeCategory: b.InjusticeType?.InjusticeName,
           date: b.PublicationDate,
