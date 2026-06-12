@@ -282,7 +282,7 @@ export async function getRejectedReportsByMotive() {
     JOIN ReportBoycott rb ON r.ReportID = rb.ReportBoycottID
     JOIN MotiveReport m ON r.MotiveReportID = m.MotiveReportID
     JOIN ReportState rs ON r.ReportStateID = rs.ReportStateID
-    WHERE rs.StateName = 'Rechazado'
+    WHERE LOWER(rs.StateName) IN ('rejected', 'rechazado')
     GROUP BY m.MotiveReportID, m.MotiveName
     ORDER BY total DESC
   `;
