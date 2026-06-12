@@ -19,7 +19,6 @@ export default function Home() {
   const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
 
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   // Carga inicial
   useEffect(() => {
@@ -60,9 +59,10 @@ export default function Home() {
       .finally(() => setLoadingMore(false));
   }, [page, hasMore, loadingMore, resolvedUserId]);
 
-  // IntersectionObserver
-  useEffect(() => {
+  // Callback ref — se conecta exactamente cuando el nodo entra al DOM
+  const bottomRef = useCallback((node: HTMLDivElement | null) => {
     if (observerRef.current) observerRef.current.disconnect();
+    if (!node) return;
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -71,9 +71,7 @@ export default function Home() {
       { threshold: 0.1 }
     );
 
-    if (bottomRef.current) observerRef.current.observe(bottomRef.current);
-
-    return () => observerRef.current?.disconnect();
+    observerRef.current.observe(node);
   }, [loadMore]);
 
   if (loading) return <LoadingScreen />;
