@@ -21,6 +21,7 @@ import { QueriesStyles } from "../styles/QueriesStyles";
 import PostInteracionButton from "../../components/common/PostInteractionButton";
 import { Circle } from "@mui/icons-material";
 import { statsApi } from "../../services/api";
+import { getEntityPictureUrlByBoycottId } from "../../services/userService";
 
 export default function CompanyBoycotts() {
   const [indictedInput, setIndictedInput] = useState("");
@@ -296,6 +297,9 @@ export default function CompanyBoycotts() {
                 }}
               >
                 <Avatar
+                  src={getEntityPictureUrlByBoycottId(
+                    entity.boycotts[0]?.boycottId,
+                  )}
                   style={{ width: 50, height: 50 }}
                   sx={{ mx: 1, my: "Auto" }}
                 />

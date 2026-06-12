@@ -20,6 +20,7 @@ import { QueriesStyles } from "../styles/QueriesStyles";
 import { useNavigate } from "react-router-dom";
 import QueryNavegation from "./QueryNavigation";
 import { statsApi } from "../../services/api";
+import { getEntityPictureUrlByBoycottId } from "../../services/userService";
 
 interface AuditPublication {
   boycottId: number;
@@ -454,6 +455,7 @@ export default function Quereis() {
 
           <Box sx={{ width: "14%", display: "flex", my: 1 }}>
             <Avatar
+              src={getEntityPictureUrlByBoycottId(row.boycottId)}
               alt="Logo"
               style={{ width: 30, height: 30 }}
               sx={{ m: 1, my: "Auto" }}
