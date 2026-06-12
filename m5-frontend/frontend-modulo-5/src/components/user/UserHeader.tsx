@@ -10,7 +10,13 @@ import MenuIcon from "@mui/icons-material/Menu";
 import {
   getUserProfilePictureUrl,
 } from "../../services/uesrService";
-export default function UserHeader() {
+
+
+interface UserHeaderProps {
+  onOpenSideMenu: () => void;
+}
+
+export default function UserHeader({ onOpenSideMenu }: UserHeaderProps) {
   const theme = useTheme();
   const navigate = useNavigate();
   const handleProfileClick = () => {
@@ -30,12 +36,15 @@ export default function UserHeader() {
   return (
   <AppBar sx={headerStyles.appBar(theme)}>
     <Toolbar sx={headerStyles.toolbar(theme)}>
-      {/* Menú móvil izquierda */}
-      <IconButton sx={headerStyles.mobileMenuButton(theme)}>
-        <MenuIcon />
+      
+      <IconButton
+          sx={headerStyles.mobileMenuButton(theme)}
+          onClick={onOpenSideMenu}
+        >
+          <MenuIcon />
       </IconButton>
 
-      {/* Logo centrado en móvil */}
+      
       <Box sx={headerStyles.logoContainer(theme)}>
         <img
           src={LogoSrc}
@@ -47,12 +56,12 @@ export default function UserHeader() {
         />
       </Box>
 
-      {/* Barra de búsqueda solo desktop */}
+      
       <Box sx={headerStyles.searchContainer(theme)}>
         <Searchbar />
       </Box>
 
-      {/* Avatar derecha */}
+      
       <Box sx={headerStyles.authContainer(theme)}>
         <Button
           color="inherit"
