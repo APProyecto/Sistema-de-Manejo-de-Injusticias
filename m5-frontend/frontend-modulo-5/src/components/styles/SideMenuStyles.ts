@@ -4,7 +4,7 @@ export const sideMenuStyles = {
 
   container: (theme: Theme): SxProps<Theme> => ({
     display: {xs: 'none',
-              md: 'flex',},
+              sm: 'flex',},
     flexDirection: 'column',
     marginX: 0,
     paddingTop: '100px',
@@ -20,7 +20,7 @@ export const sideMenuStyles = {
   }),
   adminModeContainer: (theme: Theme): SxProps<Theme> => ({
     display: {xs: 'none',
-              md: 'flex',},
+              sm: 'flex',},
     flexDirection: 'column',
     marginX: 0,
     paddingBottom: '30px',
@@ -152,7 +152,7 @@ export const sideMenuStyles = {
   }),
   unsignedContainer: (theme: Theme): SxProps<Theme> => ({
     display: {xs: 'none',
-              md: 'flex',},
+              sm: 'flex',},
     flexDirection: 'column',
     marginX: 0,
     paddingY: '40px',
