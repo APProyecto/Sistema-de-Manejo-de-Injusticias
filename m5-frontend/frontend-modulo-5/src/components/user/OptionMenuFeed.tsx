@@ -151,7 +151,9 @@ export default function OptionMenuFeed({ favorite, boycottId, onFavoriteChanged 
         </MenuItem>
       </Menu>
 
-      <Dialog open={isReportOpen} onClose={handleCloseReport}>
+      <Dialog open={isReportOpen} onClose={handleCloseReport} onKeyDown={(e) => {
+    e.stopPropagation();
+  }}>
         <DialogTitle>Reportar publicación</DialogTitle>
         <DialogContent>
           <TextField

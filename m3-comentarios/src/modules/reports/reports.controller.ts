@@ -311,4 +311,21 @@ export async function getBoycottReportCount(req: Request, res: Response){
 	}
 }
 
+export async function updateReportComment(req: Request, res: Response) {
+	try {
+		const { reportId, comment, userId } = req.body;
+		console.log(req.body);
+		const updatedReport = await prisma.report.update({
+			where: { ReportID: parseInt(reportId as string) },
+			data: {
+				AdminAnswer: comment,
+				ModifiedBy: parseInt(userId as string),
+			}
+		});
 
+		res.json({ ok: true, report: updatedReport });
+	} catch (error) {
+		console.error('updateReportComment error:', error);
+		res.status(500).json({ ok: false, error: 'Internal server error' });
+	}
+}
