@@ -136,7 +136,14 @@ export default function Quereis() {
   };
 
   return (
-    <Container sx={{ p: 5, backgroundColor: theme.palette.background.default }}>
+    <Container
+      sx={{
+        p: 5,
+        backgroundColor: theme.palette.background.default,
+        height: "100vh",
+        overflowY: "auto",
+      }}
+    >
       <QueryNavegation />
       <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
         <Button variant="outlined" onClick={clearFilters}>
