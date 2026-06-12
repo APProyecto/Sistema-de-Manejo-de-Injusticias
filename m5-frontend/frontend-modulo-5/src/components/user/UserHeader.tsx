@@ -7,9 +7,7 @@ import DefaultAvatar from '../../assets/pfpDefaultImage.png';
 import Searchbar from '../common/SearchBar';
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import {
-  getUserProfilePictureUrl,
-} from "../../services/uesrService";
+import { getUserProfilePictureUrl } from '../../services/userService';
 
 
 interface UserHeaderProps {

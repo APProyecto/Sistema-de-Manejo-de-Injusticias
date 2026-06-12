@@ -7,7 +7,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import {
   logout as logoutService,
   getUserProfilePictureUrl,
-} from "../../services/uesrService";
+} from "../../services/userService";
 import { myVotesStyles } from "../styles/MyVotesStyles";
 import type { PostCardData } from "../../types";
 import PostCard from "../../components/common/PostCard";

@@ -23,7 +23,7 @@ import type { User } from "../../types";
 import {
   postUserProfileModification,
   getUserProfilePictureUrl,
-} from "../../services/uesrService";
+} from "../../services/userService";
 
 export default function EditProfile() {
   const theme = useTheme();

@@ -17,7 +17,7 @@ import AuthLogo from "../../assets/auth0.svg";
 import { GoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
 import { useAuth } from "../../context/authContext";
-import { login as loginService } from "../../services/uesrService";
+import { login as loginService } from "../../services/userService";
 import { useNavigate } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -124,7 +124,7 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
       setSuccess("Logged in successfully!");
       onClose();
       if (loggedUser.isAdmin) navigate("/admin/dashboard");
-      else navigate("/profile");
+      else navigate("/");
     } catch {
       setError("Incorrect credentials");
     }
@@ -145,7 +145,7 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
         (document.activeElement as HTMLElement)?.blur();
         onClose();
         if (loggedUser.isAdmin) navigate("/admin/dashboard");
-        else navigate("/profile");
+        else navigate("/");
       } else {
         setError(data.error || "Google login failed");
       }

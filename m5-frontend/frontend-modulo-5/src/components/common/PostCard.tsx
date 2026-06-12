@@ -20,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDate, formatNumber } from "../../utils/utils";
 import { useAuth } from "../../context/authContext";
 import { voteBoycott } from "../../services/boycottService";
-import { getEntityPictureUrlByBoycottId, getInjusticePictureUrlByBoycottId } from "../../services/uesrService";
+import { getEntityPictureUrlByBoycottId, getInjusticePictureUrlByBoycottId } from "../../services/userService";
 import { useEffect, useState } from "react";
 
 
