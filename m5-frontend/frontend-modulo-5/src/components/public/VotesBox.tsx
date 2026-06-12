@@ -1,13 +1,16 @@
 import { Container, ToggleButton, Typography, useTheme } from "@mui/material";
 import { VotesBoxStyles } from "../styles/VotesBoxStyles";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CancelIcon from "@mui/icons-material/Cancel";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 interface VotesBoxProps {
   votes: string;
   initialVote?: boolean | null;
-  onVoteChange?: (newVote: boolean | null) => Promise<void> | void;
+  onVoteChange?: (
+    newVote: boolean | null,
+    previousVote: boolean | null,
+  ) => Promise<void> | void;
 }
 
 export default function VotesBox({
@@ -18,6 +21,7 @@ export default function VotesBox({
   const theme = useTheme();
   const [vote, setVote] = useState<boolean | null>(initialVote);
   const [isSendingVote, setIsSendingVote] = useState(false);
+  const voteLockRef = useRef(false);
 
   useEffect(() => {
     setVote(initialVote);
@@ -25,8 +29,25 @@ export default function VotesBox({
 
   const handleVote = async (newVote: boolean, event: React.MouseEvent) => {
     event.stopPropagation();
-    const updatedVote = vote === newVote ? null : newVote;
+
+    if (voteLockRef.current) {
+      return;
+    }
+
+    voteLockRef.current = true;
+
     const previousVote = vote;
+
+    // Option 2 UX: switching side is done in 2 clicks.
+    // 1st click removes current vote, 2nd click applies opposite vote.
+    let updatedVote: boolean | null;
+    if (previousVote === newVote) {
+      updatedVote = null;
+    } else if (previousVote !== null && previousVote !== newVote) {
+      updatedVote = null;
+    } else {
+      updatedVote = newVote;
+    }
 
     setVote(updatedVote);
 
@@ -36,12 +57,13 @@ export default function VotesBox({
 
     setIsSendingVote(true);
     try {
-      await onVoteChange(updatedVote);
+      await onVoteChange(updatedVote, previousVote);
     } catch (error) {
       console.error("Error al registrar el voto:", error);
       setVote(previousVote);
     } finally {
       setIsSendingVote(false);
+      voteLockRef.current = false;
     }
   };
 

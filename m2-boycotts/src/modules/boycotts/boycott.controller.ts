@@ -118,7 +118,8 @@ export async function listarBoycotts(req: Request, res: Response): Promise<void>
   try {
     const { pagina, tamano, saltar } = obtenerPaginacion(req.query);
     const orderBy = (req.query.orderBy as string) ?? "createdAt";
-    const userId: number | null = (req as any).user?.id ?? null;
+    const userIdFromQuery = req.query.userId ? parseInt(req.query.userId as string, 10) : null;
+    const userId: number | null = (req as any).user?.id ?? userIdFromQuery ?? null;
 
     const orderClause =
       orderBy === "votes"
@@ -165,7 +166,8 @@ export async function listarBoycotts(req: Request, res: Response): Promise<void>
 export async function buscarBoycotts(req: Request, res: Response): Promise<void> {
   try {
     const { pagina, tamano, saltar } = obtenerPaginacion(req.query);
-    const userId: number | null = (req as any).user?.id ?? null;
+    const userIdFromQuery = req.query.userId ? parseInt(req.query.userId as string, 10) : null;
+    const userId: number | null = (req as any).user?.id ?? userIdFromQuery ?? null;
     const {
       q, categoryId, injusticeTypeId, countryId,
       continentId, industryTypeId, sectorId, orderBy,

@@ -465,6 +465,8 @@ export async function listarMisBoycotts(
 
   type ResultadoVoto = ResultadoSimple & {
     votoActual: boolean | null;
+    votesInFavor?: number;
+    votesAgainst?: number;
   };
 
   export async function votarBoycott(
@@ -501,16 +503,6 @@ export async function listarMisBoycotts(
           },
         });
 
-        await tx.boycott.update({
-          where: { BoycottID: boycottId },
-          data: {
-            VotesInFavor: { increment: isInFavor ? 1 : 0 },
-            VotesAgainst: { increment: isInFavor ? 0 : 1 },
-            ModifiedAt: new Date(),
-            ModifiedBy: userId,
-          },
-        });
-
         return isInFavor;
       }
 
@@ -521,16 +513,6 @@ export async function listarMisBoycotts(
               UserID: userId,
               BoycottID: boycottId,
             },
-          },
-        });
-
-        await tx.boycott.update({
-          where: { BoycottID: boycottId },
-          data: {
-            VotesInFavor: { decrement: isInFavor ? 1 : 0 },
-            VotesAgainst: { decrement: isInFavor ? 0 : 1 },
-            ModifiedAt: new Date(),
-            ModifiedBy: userId,
           },
         });
 
@@ -551,20 +533,23 @@ export async function listarMisBoycotts(
         },
       });
 
-      await tx.boycott.update({
-        where: { BoycottID: boycottId },
-        data: {
-          VotesInFavor: { increment: isInFavor ? 1 : -1 },
-          VotesAgainst: { increment: isInFavor ? -1 : 1 },
-          ModifiedAt: new Date(),
-          ModifiedBy: userId,
-        },
-      });
-
       return isInFavor;
     });
 
-    return { estado: "ok", votoActual: resultado };
+    const updatedBoycott = await prisma.boycott.findUnique({
+      where: { BoycottID: boycottId },
+      select: {
+        VotesInFavor: true,
+        VotesAgainst: true,
+      },
+    });
+
+    return {
+      estado: "ok",
+      votoActual: resultado,
+      votesInFavor: updatedBoycott?.VotesInFavor,
+      votesAgainst: updatedBoycott?.VotesAgainst,
+    };
   }
 
   export async function agregarFavoritoBoycott(

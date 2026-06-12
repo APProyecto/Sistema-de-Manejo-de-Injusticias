@@ -3,7 +3,73 @@ import { mockEntities } from '../data/mockEntities';
 import type { ApiResponse, PostCardData, DetailedPostData, FilterCategories, simpleEntity, CreateBoycottData } from '../types';
 import { authApi, boycottApi } from './api';
 
+
 type HttpMethod = 'get' | 'post' | 'delete';
+
+type VoteResult = {
+  votoActual: boolean | null;
+  votesInFavor?: number;
+  votesAgainst?: number;
+};
+
+interface RawMyBoycott {
+  BoycottID: number;
+  Title: string;
+  Description?: string;
+  CaseNumber: string | null;
+  PublicationDate: string;
+  LastUpdateDate: string | null;
+  VotesInFavor: number;
+  VotesAgainst: number;
+  NumberComments: number;
+  NumberFavorites: number;
+  MongoDocumentId: string | null;
+  DeletedByUser: boolean;
+  CreatorID: number;
+
+  Entity: {
+    EntityID: number;
+    EntityName: string;
+    Description: string | null;
+    MongoDocumentID: string | null;
+    CategoryEntity?: {
+      CategoryEntityID: number;
+      CategoryName: string;
+    };
+    IndustryType?: {
+      IndustryName: string;
+    };
+    Sector?: {
+      SectorName: string;
+    };
+  };
+
+  InjusticeType: {
+    InjusticeTypeID: number;
+    InjusticeName: string;
+  };
+
+  Country: {
+    CountryID: number;
+    CountryName: string;
+    Continent?: {
+      ContinentName: string;
+    };
+  };
+
+  BoycottState: {
+    BoycottStateID: number;
+    StateName: string;
+  };
+}
+
+interface MyBoycottsResponse {
+  ok: boolean;
+  total: number;
+  data: RawMyBoycott[];
+}
+
+const pendingVoteRequests = new Map<string, Promise<VoteResult>>();
 
 const tryEndpoints = async <T>(
   endpoints: Array<{ method: HttpMethod; url: string; data?: unknown; params?: Record<string, unknown> }>
@@ -50,6 +116,56 @@ export const getBoycotts = async (filters?: {
   });
   
   return response.data.data;
+};
+
+export const getMyBoycotts = async (
+  creatorId: number
+): Promise<PostCardData[]> => {
+  const response = await boycottApi.get<MyBoycottsResponse>(
+    "/api/boycotts/mine",
+    {
+      params: {
+        creatorId,
+      },
+    }
+  );
+
+  const getEntityBoycottPictureUrl = (
+  entityId?: number | string | null
+): string => {
+  if (!entityId) return "";
+
+  return `${import.meta.env.VITE_API_MODULE1}/api/files/entityBoycott/${entityId}/picture`;
+};
+
+  return response.data.data.map((item): PostCardData => ({
+    id: item.BoycottID,
+
+    username: "You",
+    user_picture: "",
+
+    indicted: item.Entity.EntityName,
+    indicted_picture: getEntityBoycottPictureUrl(item.Entity.EntityID),
+
+    case: item.InjusticeType.InjusticeName,
+    case_picture: "",
+
+    title: item.Title,
+
+    description: item.Description ?? "",
+
+    creation_date: item.PublicationDate,
+
+    is_favorite: false,
+    votes: String(item.VotesInFavor - item.VotesAgainst),
+    voted_by_user: null,
+
+    coments: String(item.NumberComments),
+    evidences: "0",
+
+    state: item.BoycottState.StateName,
+    caseNumber: item.CaseNumber ?? undefined,
+  }));
 };
 
 export const searchBoycotts = async (
@@ -180,12 +296,46 @@ export const deleteBoycott = async (id: number): Promise<void> => {
 };
 
 // Votar por un boycott
-export const voteBoycott = async (id: number, voto: boolean, userId?: number): Promise<void> => {
-  await tryEndpoints([
-    { method: 'post', url: `/api/boycotts/${id}/vote`, data: { isInFavor: voto, userId }, params: userId ? { userId } : undefined },
-    { method: 'post', url: `/api/boycotts/${id}/voto`, data: { voto } },
-    { method: 'post', url: `/api/boycotts/${id}/votes`, data: { inFavor: voto } },
-  ]);
+export const voteBoycott = async (
+  id: number,
+  voto: boolean,
+  userId?: number,
+): Promise<VoteResult> => {
+  const requestKey = `${id}:${userId ?? 'anon'}:${voto}`;
+
+  const inFlight = pendingVoteRequests.get(requestKey);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const requestPromise = (async (): Promise<VoteResult> => {
+    const endpoints = [
+      { url: `/api/boycotts/${id}/vote`, data: { isInFavor: voto, userId }, params: userId ? { userId } : undefined },
+      { url: `/api/boycotts/${id}/voto`, data: { voto }, params: undefined },
+      { url: `/api/boycotts/${id}/votes`, data: { inFavor: voto }, params: undefined },
+    ];
+
+    let lastError: unknown;
+
+    for (const endpoint of endpoints) {
+      try {
+        const voteResponse = await boycottApi.post<VoteResult>(endpoint.url, endpoint.data, { params: endpoint.params });
+        return voteResponse.data;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError;
+  })();
+
+  pendingVoteRequests.set(requestKey, requestPromise);
+
+  try {
+    return await requestPromise;
+  } finally {
+    pendingVoteRequests.delete(requestKey);
+  }
 };
 
 // Marcar/desmarcar favorito

@@ -10,6 +10,7 @@ import {
   reportarBoycott,
   votarBoycott,
 } from "./boycott.service";
+import { getBoycottDocumentByMysqlId } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
 /*
   Controlador: boycott.crud.controller.ts
@@ -121,7 +122,8 @@ export async function obtenerBoycottHandler(req: Request, res: Response): Promis
       return;
     }
 
-    const detalle = await obtenerBoycottPorId(id);
+    const userId = obtenerUserId(req);
+    const detalle = await obtenerBoycottPorId(id, userId);
     if (!detalle) {
       res.status(404).json({ ok: false, mensaje: "Boycott no encontrado" });
       return;
@@ -247,7 +249,22 @@ export async function misBoycottsHandler(req: Request, res: Response): Promise<v
 
     const data = await listarMisBoycotts(creatorId, incluirEliminados);
 
-    res.json({ ok: true, total: data.length, data });
+const dataWithDescription = await Promise.all(
+  data.map(async (boycott) => {
+    const mongoDoc = await getBoycottDocumentByMysqlId(boycott.BoycottID);
+
+    return {
+      ...boycott,
+      Description: mongoDoc?.description ?? "",
+    };
+  })
+);
+
+res.json({
+  ok: true,
+  total: dataWithDescription.length,
+  data: dataWithDescription,
+});
   } catch (error) {
     console.error("[misBoycotts]", error);
     res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
@@ -286,7 +303,12 @@ export async function votarBoycottHandler(req: Request, res: Response): Promise<
       return;
     }
 
-    res.json({ ok: true, votoActual: resultado.votoActual });
+    res.json({ 
+      ok: true, 
+      votoActual: resultado.votoActual,
+      votesInFavor: resultado.votesInFavor,
+      votesAgainst: resultado.votesAgainst,
+    });
   } catch (error) {
     console.error("[votarBoycott]", error);
     res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
