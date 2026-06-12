@@ -366,31 +366,11 @@ export default function CompanyBoycotts() {
                         width: "20%",
                       }}
                     >
-                      <Box
-                        sx={{
-                          mr: "0",
-                          ml: "Auto",
-                          alignContent: "right",
-                          width: "20%",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            mr: "0",
-                            ml: "Auto",
-                            alignContent: "right",
-                            width: "20%",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          <PostInteracionButton
-                            text={boycott.status}
-                            icon={Circle}
-                            iconColor={handleStateColor(boycott.status)}
-                          />
-                        </Box>
-                      </Box>
+                      <PostInteracionButton
+                        text={boycott.status}
+                        icon={Circle}
+                        iconColor={handleStateColor(boycott.status)}
+                      />
                     </Box>
                   </Box>
                 )),
