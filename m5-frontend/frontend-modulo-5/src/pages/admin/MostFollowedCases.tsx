@@ -35,10 +35,10 @@ export default function MostFollowedCases() {
     let entityname = 'Category';
     let catname = 'Category';
     if(entityid && entityid !== 0){
-      entityname = EntityType.find(item => item.id === EntityTypeSelected)?.name ?? 'Category';
+      entityname = EntityType.find(item => item.id === entityid)?.name ?? 'Category';
     }
     if(catid && catid !== 0){
-      catname = injusticeTypes.find(item => item.InjusticeTypeID === Category)?.InjusticeName ?? 'Category';
+      catname = injusticeTypes.find(item => item.InjusticeTypeID === catid)?.InjusticeName ?? 'Category';
     }
 
     const parameters = new URLSearchParams({
@@ -70,8 +70,7 @@ export default function MostFollowedCases() {
           setInjusticeTypes(res.data.data.injusticeTypes);
         });
      addDefaultCategory();
-  },[])
-
+  },[]);
 
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default}}>
