@@ -58,19 +58,52 @@ export const searchBoycotts = async (
     industryTypeId?: number;
     countryId?: number;
     injusticeTypeId?: number;
-    orderBy?: string;
+    orderBy?: number; // 1: Most Recent, 2: Oldest, 3: Most relevant, 4: Less relevant
   },
   userId?: number
 ): Promise<PostCardData[]> => {
+  // Mapear el orderBy ID a los parámetros que espera el backend
+  let orderByParam: 'createdAt' | 'votes' | 'relevance' | undefined;
+  let orderDirectionParam: 'asc' | 'desc' = 'desc';
+  
+  switch (filters?.orderBy) {
+    case 1: // Most Recent
+      orderByParam = 'createdAt';
+      orderDirectionParam = 'desc';
+      break;
+    case 2: // Oldest
+      orderByParam = 'createdAt';
+      orderDirectionParam = 'asc';
+      break;
+    case 3: // Most relevant
+      orderByParam = 'relevance';
+      orderDirectionParam = 'desc';
+      break;
+    case 4: // Less relevant
+      orderByParam = 'relevance';
+      orderDirectionParam = 'asc';
+      break;
+    default:
+      // Por defecto: Most Recent
+      orderByParam = 'createdAt';
+      orderDirectionParam = 'desc';
+      break;
+  }
+  
   const response = await boycottApi.get<ApiResponse<PostCardData[]>>(`/api/boycotts/search`, {
     params: {
       q,
-      ...filters,
+      ...(filters?.industryTypeId && { industryTypeId: filters.industryTypeId }),
+      ...(filters?.countryId && { countryId: filters.countryId }),
+      ...(filters?.injusticeTypeId && { injusticeTypeId: filters.injusticeTypeId }),
+      orderBy: orderByParam,
+      orderDirection: orderDirectionParam,
       ...(userId === undefined ? {} : { userId }),
       page: 1,
       pageSize: 10,
     },
   });
+  
   console.log(response);
   return response.data.data;
 };
@@ -119,10 +152,10 @@ export const getFilterCategories = async (): Promise<FilterCategories> => {
     industries: industrias.map((i: any) => ({ id: i.IndustryTypeID, name: i.IndustryName })),
     injustices: tiposInjusticia.map((t: any) => ({ id: t.InjusticeTypeID, name: t.InjusticeName })),
     orderOptions: [
-      { id: 0, name: "Most Recent" },
-      { id: 1, name: "Oldest" },
-      { id: 2, name: "Most relevant" },
-      { id: 3, name: "Less relevant" },
+      { id: 1, name: "Most Recent" },
+      { id: 2, name: "Oldest" },
+      { id: 3, name: "Most relevant" },
+      { id: 4, name: "Less relevant" },
     ],
   };
 };
