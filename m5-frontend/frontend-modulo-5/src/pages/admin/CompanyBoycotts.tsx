@@ -37,10 +37,21 @@ export default function CompanyBoycotts() {
   >([]);
 
   const handleStateColor = (state: string) => {
-    if (state === "Open") {
-      return theme.palette.success.main;
-    } else {
-      return theme.palette.background.default;
+    switch (state) {
+      case "Active":
+        return "#4caf50"; // verde
+      case "Under Review":
+        return "#ff9800"; // naranja
+      case "Edited":
+        return "#2196f3"; // azul
+      case "Pending Approval":
+        return "#9c27b0"; // morado
+      case "Rejected":
+        return "#f44336"; // rojo
+      case "Deleted":
+        return "#757575"; // gris
+      default:
+        return theme.palette.background.default;
     }
   };
 
@@ -84,6 +95,7 @@ export default function CompanyBoycotts() {
       boycotts: {
         boycottId: number;
         title: string;
+        description: string | null;
         author: string;
         date: string;
         status: string;
@@ -97,6 +109,7 @@ export default function CompanyBoycotts() {
     boycotts: {
       boycottId: number;
       title: string;
+      description: string | null;
       author: string;
       date: string;
       status: string;
@@ -346,6 +359,20 @@ export default function CompanyBoycotts() {
                           {new Date(boycott.date).toLocaleDateString()}
                         </Typography>
                       </Box>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          width: "75%",
+                          textAlign: "left",
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{ fontWeight: "bold", mx: "Auto" }}
+                        >
+                          {boycott.description ?? "No description available"}
+                        </Typography>
+                      </Box>
                     </Box>
                     <Box
                       sx={{
@@ -355,11 +382,31 @@ export default function CompanyBoycotts() {
                         width: "20%",
                       }}
                     >
-                      <PostInteracionButton
-                        text={boycott.status}
-                        icon={Circle}
-                        iconColor={handleStateColor(boycott.status)}
-                      />
+                      <Box
+                        sx={{
+                          mr: "0",
+                          ml: "Auto",
+                          alignContent: "right",
+                          width: "20%",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            mr: "0",
+                            ml: "Auto",
+                            alignContent: "right",
+                            width: "20%",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          <PostInteracionButton
+                            text={boycott.status}
+                            icon={Circle}
+                            iconColor={handleStateColor(boycott.status)}
+                          />
+                        </Box>
+                      </Box>
                     </Box>
                   </Box>
                 )),
