@@ -274,6 +274,57 @@ export async function listUsers(_req: Request, res: Response) {
   }
 }
 
+
+export async function listNormalUsers(_req: Request, res: Response) {
+  try {
+    const users = await prisma.normalUser.findMany({
+      include: {
+        AppUser_NormalUser_NormalUserIDToAppUser: true,
+      },
+    });
+    
+    const decryptedUsers = users.map((user) => ({
+      ...user,
+      FirstName: safeDecryptText(user.AppUser_NormalUser_NormalUserIDToAppUser.FirstName),
+      LastName: safeDecryptText(user.AppUser_NormalUser_NormalUserIDToAppUser.LastName),
+      Email: safeDecryptText(user.AppUser_NormalUser_NormalUserIDToAppUser.Email),
+    }));
+
+    return res.json(decryptedUsers);
+  } catch (error) {
+    console.error("listUsers error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function listAdminUsers(_req: Request, res: Response) {
+  try {
+    const users = await prisma.admin.findMany({
+      include: {
+        AppUser_Admin_AdminIDToAppUser: true,
+      },
+    });
+    
+    const decryptedUsers = users.map((user) => ({
+      ...user,
+      FirstName: safeDecryptText(user.AppUser_Admin_AdminIDToAppUser.FirstName),
+      LastName: safeDecryptText(user.AppUser_Admin_AdminIDToAppUser.LastName),
+      Email: safeDecryptText(user.AppUser_Admin_AdminIDToAppUser.Email),
+    }));
+
+    return res.json(decryptedUsers);
+  } catch (error) {
+    console.error("listUsers error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
 /**
  * Function: getUserIdByEmail
  * Inputs:
