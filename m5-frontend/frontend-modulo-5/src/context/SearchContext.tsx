@@ -8,7 +8,7 @@ interface SearchContextType {
   filters: FilterValues;
   setSearchText: (text: string) => void;
   setFilters: (filters: FilterValues) => void;
-  performSearch: () => void;
+  performSearch: (overrideFilters?: FilterValues, overrideText?: string) => void;
   clearFilters: () => void;
   hasActiveFilters: boolean; // Asegurar que esto esté definido
 }
@@ -25,24 +25,26 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   });
   const navigate = useNavigate();
 
-  const performSearch = () => {
+  const performSearch = (overrideFilters?: FilterValues, overrideText?: string) => {
+    const activeFilters = overrideFilters ?? filters;
+    const activeText = overrideText ?? searchText;
+    
     const params = new URLSearchParams();
     
-    if (searchText.trim()) {
-      params.set('q', searchText.trim());
+    if (activeText.trim()) {
+      params.set('q', activeText.trim());
     }
-    
-    if (filters.countryId) {
-      params.set('countryId', filters.countryId.toString());
+    if (activeFilters.countryId) {
+      params.set('countryId', activeFilters.countryId.toString());
     }
-    if (filters.industryId) {
-      params.set('industryId', filters.industryId.toString());
+    if (activeFilters.industryId) {
+      params.set('industryId', activeFilters.industryId.toString());
     }
-    if (filters.injusticeId) {
-      params.set('injusticeId', filters.injusticeId.toString());
+    if (activeFilters.injusticeId) {
+      params.set('injusticeId', activeFilters.injusticeId.toString());
     }
-    if (filters.orderById) {
-      params.set('orderById', filters.orderById.toString());
+    if (activeFilters.orderById) {
+      params.set('orderById', activeFilters.orderById.toString());
     }
     
     navigate(`/search?${params.toString()}`);

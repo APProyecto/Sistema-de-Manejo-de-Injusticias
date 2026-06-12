@@ -8,7 +8,6 @@ export const searchBarStyles = {
       sm : 'flex',
     },
     maxWidth: '50rem',
-
   }),
 
   mobileMenuButton: (theme: Theme): SxProps<Theme> => ({

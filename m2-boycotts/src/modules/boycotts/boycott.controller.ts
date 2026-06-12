@@ -166,27 +166,43 @@ export async function listarBoycotts(req: Request, res: Response): Promise<void>
  */
 export async function buscarBoycotts(req: Request, res: Response): Promise<void> {
   try {
-    const { pagina, tamano, saltar } = obtenerPaginacion(req.query);
+    // ── Paginación compatible con page/pageSize del frontend ──────────────
+    const page   = Math.max(1, parseInt((req.query.page  as string) ?? '1',  10) || 1);
+    const size   = Math.min(50, parseInt((req.query.pageSize as string) ?? '10', 10) || 10);
+    const saltar = (page - 1) * size;
+
+    // ── Usuario ───────────────────────────────────────────────────────────
     const userIdFromQuery = req.query.userId ? parseInt(req.query.userId as string, 10) : null;
     const userId: number | null = (req as any).user?.id ?? userIdFromQuery ?? null;
+
+    // ── Parámetros de búsqueda y filtros ─────────────────────────────────
     const {
-      q, categoryId, injusticeTypeId, countryId,
-      continentId, industryTypeId, sectorId, orderBy = "createdAt", orderDirection = "desc",
+      q,
+      categoryId,
+      injusticeTypeId,
+      countryId,
+      continentId,
+      industryTypeId,
+      sectorId,
+      orderBy = 'createdAt',
+      orderDirection = 'desc',
     } = req.query as Record<string, string | undefined>;
 
+    // ── Filtros de entidad ────────────────────────────────────────────────
     const entityFilter: Record<string, unknown> = {};
-    if (categoryId)     entityFilter.CategoryEntityID = Number.parseInt(categoryId, 10);
-    if (industryTypeId) entityFilter.IndustryTypeID   = Number.parseInt(industryTypeId, 10);
-    if (sectorId)       entityFilter.SectorID         = Number.parseInt(sectorId, 10);
+    if (categoryId)     entityFilter.CategoryEntityID = parseInt(categoryId,     10);
+    if (industryTypeId) entityFilter.IndustryTypeID   = parseInt(industryTypeId, 10);
+    if (sectorId)       entityFilter.SectorID         = parseInt(sectorId,       10);
 
+    // ── Cláusula WHERE ────────────────────────────────────────────────────
     const where: Record<string, unknown> = {
-      BoycottState: { StateName: "Active" },
+      BoycottState:  { StateName: 'Active' },
       DeletedByUser: false,
     };
 
-    if (injusticeTypeId) where.InjusticeTypeID = Number.parseInt(injusticeTypeId, 10);
-    if (countryId)       where.CountryID       = Number.parseInt(countryId, 10);
-    if (continentId)     where.Country         = { ContinentID: Number.parseInt(continentId, 10) };
+    if (injusticeTypeId) where.InjusticeTypeID = parseInt(injusticeTypeId, 10);
+    if (countryId)       where.CountryID       = parseInt(countryId,       10);
+    if (continentId)     where.Country         = { ContinentID: parseInt(continentId, 10) };
 
     const tieneEntityFilter = Object.keys(entityFilter).length > 0;
 
@@ -196,109 +212,65 @@ export async function buscarBoycotts(req: Request, res: Response): Promise<void>
         { Entity: entityFilter },
       ];
     } else if (q) {
-      where.OR = [{ Title: { contains: q } }, { Entity: { EntityName: { contains: q } } }];
+      where.OR = [
+        { Title:  { contains: q } },
+        { Entity: { EntityName: { contains: q } } },
+      ];
     } else if (tieneEntityFilter) {
       where.Entity = entityFilter;
     }
 
-    // Construir la cláusula de ordenamiento
-    let ordenClause: any;
-    const direction = orderDirection === "asc" ? "asc" : "desc";
-    
-    switch (orderBy) {
-      case "votes":
-        ordenClause = { VotesInFavor: direction };
-        break;
-      case "title":
-        ordenClause = { Title: direction };
-        break;
-      case "entityName":
-        ordenClause = { Entity: { EntityName: direction } };
-        break;
-      case "relevance":
-        // Para relevancia, necesitas ordenar por coincidencia de búsqueda
-        // Esto requiere un ordenamiento más complejo con Prisma
-        if (q) {
-          // Usar ordenamiento por relevancia (score) cuando hay búsqueda
-          ordenClause = [
-            {
-              _relevance: {
-                fields: ['Title', 'Entity.EntityName'],
-                search: q,
-                sort: direction === "asc" ? "asc" : "desc",
-              },
-            },
-            { PublicationDate: 'desc' } // fallback
-          ];
-        } else {
-          ordenClause = { PublicationDate: direction };
-        }
-        break;
-      case "createdAt":
-      default:
-        ordenClause = { PublicationDate: direction };
-        break;
-    }
+    // ── Ordenamiento ──────────────────────────────────────────────────────
+    const direction = orderDirection === 'asc' ? 'asc' : 'desc';
 
-    // Si hay búsqueda por texto y quieres ordenar por relevancia manual
-    let boycottsQuery: any = {
-      where,
-      select: {
-        ...buildSelect(userId),
-        Entity: {
-          select: {
-            EntityID: true,
-            EntityName: true,
-            MongoDocumentID: true,
-            CategoryEntity: { select: { CategoryName: true } },
-            IndustryType: { select: { IndustryName: true } },
-            Sector: { select: { SectorName: true } },
-          },
+    // "relevance" no tiene soporte nativo sin full-text index;
+    // lo tratamos como ordenamiento por fecha para evitar errores de Prisma.
+    const ordenClause: Record<string, unknown> =
+      orderBy === 'votes'      ? { VotesInFavor: direction }         :
+      orderBy === 'title'      ? { Title: direction }                :
+      orderBy === 'entityName' ? { Entity: { EntityName: direction } } :
+      /* createdAt | relevance | default */ { PublicationDate: direction };
+
+    // ── Query ─────────────────────────────────────────────────────────────
+    const selectBase = {
+      ...buildSelect(userId),
+      Entity: {
+        select: {
+          EntityID:       true,
+          EntityName:     true,
+          MongoDocumentID: true,
+          CategoryEntity: { select: { CategoryName: true } },
+          IndustryType:   { select: { IndustryName: true } },
+          Sector:         { select: { SectorName: true } },
         },
       },
-      orderBy: ordenClause,
-      skip: saltar,
-      take: tamano,
     };
 
-    // Si necesitas ordenamiento personalizado con joins
-    if (orderBy === "entityName") {
-      boycottsQuery = {
-        ...boycottsQuery,
-        include: {
-          Entity: true,
-        },
-        orderBy: {
-          Entity: {
-            EntityName: direction,
-          },
-        },
-      };
-    }
-
     const [boycotts, total] = await Promise.all([
-      prisma.boycott.findMany(boycottsQuery),
+      prisma.boycott.findMany({
+        where,
+        select:  selectBase,
+        orderBy: ordenClause,
+        skip:    saltar,
+        take:    size,
+      }),
       prisma.boycott.count({ where }),
     ]);
 
     const data = await Promise.all(boycotts.map((b) => mapBoycottToFrontend(b, userId)));
 
-    // Agregar información del ordenamiento en la respuesta
-    res.json({ 
-      ok: true, 
-      total, 
-      pagina, 
-      tamano, 
-      totalPaginas: Math.ceil(total / tamano),
-      ordenamiento: {
-        campo: orderBy,
-        direccion: orderDirection,
-      },
-      data 
+    res.json({
+      ok:          true,
+      total,
+      pagina:      page,
+      tamano:      size,
+      totalPaginas: Math.ceil(total / size),
+      ordenamiento: { campo: orderBy, direccion: orderDirection },
+      data,
     });
   } catch (error) {
-    console.error("[buscarBoycotts]", error);
-    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
+    console.error('[buscarBoycotts]', error);
+    res.status(500).json({ ok: false, mensaje: 'Error interno del servidor' });
   }
 }
 

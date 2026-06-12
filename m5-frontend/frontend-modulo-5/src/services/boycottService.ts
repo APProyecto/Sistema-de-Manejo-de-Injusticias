@@ -177,11 +177,10 @@ export const searchBoycotts = async (
     orderBy?: number; // 1: Most Recent, 2: Oldest, 3: Most relevant, 4: Less relevant
   },
   userId?: number
-): Promise<PostCardData[]> => {
-  // Mapear el orderBy ID a los parámetros que espera el backend
+): Promise<{ data: PostCardData[]; total: number }> => {
   let orderByParam: 'createdAt' | 'votes' | 'relevance' | undefined;
   let orderDirectionParam: 'asc' | 'desc' = 'desc';
-  
+
   switch (filters?.orderBy) {
     case 1: // Most Recent
       orderByParam = 'createdAt';
@@ -200,12 +199,11 @@ export const searchBoycotts = async (
       orderDirectionParam = 'asc';
       break;
     default:
-      // Por defecto: Most Recent
       orderByParam = 'createdAt';
       orderDirectionParam = 'desc';
       break;
   }
-  
+
   const response = await boycottApi.get<ApiResponse<PostCardData[]>>(`/api/boycotts/search`, {
     params: {
       q,
@@ -219,9 +217,13 @@ export const searchBoycotts = async (
       pageSize: 10,
     },
   });
-  
-  console.log(response);
-  return response.data.data;
+
+  console.log('[searchBoycotts] response:', response);
+
+  return {
+    data: response.data.data,
+    total: (response.data as any).total ?? response.data.data.length,
+  };
 };
 
 const getEntityPicture = async (id: number): Promise<string | null> => {
