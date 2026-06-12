@@ -145,7 +145,7 @@ export default function LoginWindow({ open, onClose, onLoginSuccess }: LoginWind
         (document.activeElement as HTMLElement)?.blur();
         onClose();
         if (loggedUser.isAdmin) navigate("/admin/dashboard");
-        else navigate("/profile");
+        else navigate("/");
       } else {
         setError(data.error || "Google login failed");
       }
