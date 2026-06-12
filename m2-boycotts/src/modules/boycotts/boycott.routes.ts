@@ -1,12 +1,17 @@
 import { Router } from "express";
-import { listarBoycotts, buscarBoycotts, obtenerFiltros } from "./boycott.controller";
+import { listarBoycotts, buscarBoycotts, listarFavoritosBoycotts, obtenerFiltros } from "./boycott.controller";
 import {
+  agregarFavoritoBoycottHandler,
   actualizarBoycottHandler,
   cambiarEstadoBoycottHandler,
   crearBoycottHandler,
   misBoycottsHandler,
   obtenerBoycottHandler,
+  quitarFavoritoBoycottHandler,
+  reportarBoycottHandler,
+  votarBoycottHandler,
 } from "./boycott.crud.controller";
+import { obtenerEntidadHandler } from "../entities/entity.crud.controller";
 
 /*
   Rutas:boycott.routes.ts
@@ -31,8 +36,23 @@ router.get("/search", buscarBoycotts);
 // GET /api/boycotts/mine      — boycotts creados por el usuario
 router.get("/mine", misBoycottsHandler);
 
+// GET /api/boycotts/favorites — boycotts marcados como favorito por el usuario
+router.get("/favorites", listarFavoritosBoycotts);
+
 // POST /api/boycotts          — crear un boycott
 router.post("/", crearBoycottHandler);
+
+// POST /api/boycotts/:id/vote — registrar/quitar/cambiar voto del usuario
+router.post("/:id/vote", votarBoycottHandler);
+
+// POST /api/boycotts/:id/favorite — agregar favorito
+router.post("/:id/favorite", agregarFavoritoBoycottHandler);
+
+// DELETE /api/boycotts/:id/favorite — quitar favorito
+router.delete("/:id/favorite", quitarFavoritoBoycottHandler);
+
+// POST /api/boycotts/:id/report — reportar publicación
+router.post("/:id/report", reportarBoycottHandler);
 
 // GET /api/boycotts/:id       — detalle de un boycott
 router.get("/:id", obtenerBoycottHandler);
@@ -43,4 +63,11 @@ router.put("/:id", actualizarBoycottHandler);
 // PATCH /api/boycotts/:id/state — eliminacion logica o restaurar (solo el creador)
 router.patch("/:id/state", cambiarEstadoBoycottHandler);
 
+
+// ____________________________________________
+// Entidades 
+// ____________________________________________
+
+// GET /api/boycotts/entities/:id — entidades (indicted)
+router.get("/entities/:id", obtenerEntidadHandler);
 export default router;

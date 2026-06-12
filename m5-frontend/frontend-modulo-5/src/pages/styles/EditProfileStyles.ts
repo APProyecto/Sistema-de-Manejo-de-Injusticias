@@ -58,13 +58,13 @@ export const editProfileStyles = {
     color: theme.palette.text.primary,
   }),
   panel: (): SxProps<Theme> => ({
-    width: '100%',
-    maxWidth: '840px',
-    alignSelf: 'center',
-    backgroundColor: '#47453b',
-    borderRadius: '16px',
-    overflow: 'hidden',
-  }),
+  width: '100%',
+  maxWidth: '840px',
+  alignSelf: 'center',
+  backgroundColor: '#47453b',
+  borderRadius: '16px',
+  padding: '24px',
+}),
   topSection: (): SxProps<Theme> => ({
     display: 'grid',
     gridTemplateColumns: { xs: '1fr', md: '320px 1fr' },
@@ -150,7 +150,12 @@ export const editProfileStyles = {
     fontWeight: theme.typography.h3.fontWeight,
     color: theme.palette.text.primary,
   }),
-  textField: (theme: Theme): SxProps<Theme> => fieldRoot(theme, false),
+  textField: (theme: Theme): SxProps<Theme> => ({
+  ...fieldRoot(theme, false),
+  '& .MuiSelect-select': {
+    textAlign: 'left',
+  },
+}),
   readonlyField: (theme: Theme): SxProps<Theme> => fieldRoot(theme, true),
   actions: (): SxProps<Theme> => ({
     display: 'flex',

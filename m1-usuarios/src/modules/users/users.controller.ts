@@ -848,6 +848,17 @@ export async function getAppUserProfile(
                 appUser.UserID
             );
 
+        const isSuperAdmin = await prisma.Admin.findUnique ({
+              where: {
+                AdminID : appUserId,
+              },
+              select : {
+                IsSuperAdmin : true,
+              },
+        });
+
+        const isAdmin = isSuperAdmin ? true : false;
+
         return res.status(200).json({
             appUserId: appUser.UserID,
             firstName: 
@@ -868,6 +879,12 @@ export async function getAppUserProfile(
             picture:
                 mongoDocument
                     ?.picture ?? null,
+            
+            isSuperAdmin : isSuperAdmin?.IsSuperAdmin || false,
+
+            isAdmin : isAdmin,
+
+            isNormal : !isAdmin,
         });
 
     } catch (error) {
@@ -922,7 +939,7 @@ export async function googleLogin(req: Request, res: Response) {
 
     let appUser = null;
 
-    if (userSearch.found) {
+    if (userSearch.appUserId > -1) {
       appUser = await prisma.appUser.findUnique({
         where: {
           UserID: userSearch.appUserId,
@@ -931,12 +948,14 @@ export async function googleLogin(req: Request, res: Response) {
     }
 
 
-    if (!appUser) {
+    if (userSearch.appUserId === -1) {
+      const randomNum = Math.floor(Math.random() * 10000);
+      const filledNum = String(randomNum).padStart(4, '0');
       appUser = await prisma.appUser.create({
         data: {
           FirstName: encryptText(given_name || ""),
           LastName: encryptText(family_name || ""),
-          UserName: name || email.split("@")[0],
+          UserName: `${email.split('@')[0]}${filledNum}`,
           Email: encryptText(cleanEmail),
           Password: "", 
           IsAdmin: false, 
@@ -1015,6 +1034,8 @@ export async function googleLogin(req: Request, res: Response) {
         username: appUser.UserName,
         email: safeDecryptText(appUser.Email),
         isAdmin: appUser.IsAdmin,
+        isSuperAdmin : false,
+        isNormal : !appUser.isAdmin,
         mongoDocumentId: appUser.MongoDocumentID,
       },
     });
@@ -1089,8 +1110,17 @@ export async function updateAppUserProfile(
       message:
         "appUser updated successfully",
 
-      appUser:
-        updatedAppUser,
+        appUser: {
+          userId: updatedAppUser.UserID,
+          firstName: safeDecryptText(updatedAppUser.FirstName),
+          lastName: safeDecryptText(updatedAppUser.LastName),
+          userName: updatedAppUser.UserName,
+          email: safeDecryptText(updatedAppUser.Email),
+          genderId: updatedAppUser.GenderID,
+          countryId: updatedAppUser.CountryID,
+          accountStateId: updatedAppUser.AccountStateID,
+        },
+      
     });
 
   } catch (error) {

@@ -18,10 +18,13 @@ import { getBoycottDocumentByMysqlId } from "../../../../m0-base-datos/src/servi
  */
 export async function obtenerAdjuntos(req: Request, res: Response): Promise<void> {
   try {
-    const boycottId = parseInt(req.params.boycottId);
+    const rawBoycottId = Array.isArray(req.params.boycottId)
+      ? req.params.boycottId[0]
+      : req.params.boycottId;
+    const boycottId = Number.parseInt(rawBoycottId ?? "", 10);
 
     // Validar que el ID sea un número válido
-    if (isNaN(boycottId)) {
+    if (Number.isNaN(boycottId)) {
       res.status(400).json({ ok: false, mensaje: "El ID del boycott no es válido" });
       return;
     }

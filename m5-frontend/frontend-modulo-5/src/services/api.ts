@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 // URLs de módulos backend
-const API_MODULE1 = import.meta.env.VITE_API_MODULE1 || '';
-const API_MODULE2 = import.meta.env.VITE_API_MODULE2 || '';
-const API_MODULE3 = import.meta.env.VITE_API_MODULE3 || '';
-const API_MODULE4 = import.meta.env.VITE_API_MODULE4 || '';
+const API_MODULE1 = import.meta.env.VITE_API_MODULE1 || 'http://localhost:3001';
+const API_MODULE2 = import.meta.env.VITE_API_MODULE2 || 'http://localhost:3002';
+const API_MODULE3 = import.meta.env.VITE_API_MODULE3 || 'http://localhost:3003';
+const API_MODULE4 = import.meta.env.VITE_API_MODULE4 || 'http://localhost:3004';
 
 // Cliente para cada módulo
 export const authApi = axios.create({ baseURL: API_MODULE1 });

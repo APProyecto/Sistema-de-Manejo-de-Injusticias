@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -16,11 +16,14 @@ import {
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { commentApi } from '../../services/api';
 import { manageCommentsStyles } from '../styles/ManageCommentsStyles';
+import { useAuth } from '../../context/authContext';
+import { getCommentReports, updateReportStatus } from '../../services/commentsService';
+import type { CommentReport } from '../../types';
 
 type CommentStatus = 'Pending' | 'Approved' | 'Rejected';
 
@@ -33,19 +36,40 @@ interface CommentRow {
   description: string;
 }
 
-const initialComments: CommentRow[] = [
-  { id: 1, date: '13/04/2026', status: 'Pending', reason: 'Fake News', original: 'This people use pink slime.', description: 'Accusations are proven to be false.' },
-  { id: 2, date: '17/04/2026', status: 'Pending', reason: 'Hate Speech', original: 'These libs are getting crazy nowadays.', description: 'Hate based on political preferences.' },
-  { id: 3, date: '19/04/2026', status: 'Pending', reason: 'Inappropriate', original: 'Do women even have a word on this?', description: 'Comment includes sexism and misogyny.' },
-  { id: 4, date: '20/04/2026', status: 'Approved', reason: 'Resolved', original: 'Thanks for the info.', description: 'Helpful comment.' },
-  { id: 5, date: '22/04/2026', status: 'Rejected', reason: 'Spam', original: 'Buy cheap watches now!', description: 'Promotional spam.' },
-];
+const normalizeCommentReport = (item: CommentReport, index: number): CommentRow => {
+  const raw = item as any;
+  const reportId = raw.ReportID ?? raw.reportId ?? raw.id ?? Number(raw.comment_id) ?? index + 1;
+  const stateName = item.ReportState?.StateName?.toString().toLowerCase();
+
+  return {
+    id: Number(reportId),
+    date: item.ReportedAt ? new Date(item.ReportedAt).toLocaleDateString('es-ES') : 'Sin fecha',
+    status:
+      stateName === 'approved'
+        ? 'Approved'
+        : stateName === 'rejected'
+        ? 'Rejected'
+        : 'Pending',
+    reason: item.MotiveReport?.MotiveName ?? 'Sin motivo',
+    original: item.ReportComment?.CommentBoycott?.Description ?? 'Sin comentario original',
+    description: item.UserDescription ?? '',
+  };
+};
+
+const initialComments: CommentRow[] = [];
 
 export default function ManageComments() {
   const theme = useTheme();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [comments, setComments] = useState<CommentRow[]>(initialComments);
   const [statusFilter, setStatusFilter] = useState<'All' | CommentStatus>('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const rowsPerPage = 5;
+  const useBackend = Boolean(import.meta.env.VITE_API_MODULE3);
+  const commentsEndpoint = '/api/reports';
 
   const counts = useMemo(() => {
     const total = comments.length;
@@ -65,6 +89,46 @@ export default function ManageComments() {
     });
   }, [comments, searchTerm, statusFilter]);
 
+  const pageCount = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
+  const currentPageItems = useMemo(
+    () => filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage),
+    [filtered, currentPage, rowsPerPage]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  useEffect(() => {
+    if (currentPage > pageCount) {
+      setCurrentPage(pageCount);
+    }
+  }, [currentPage, pageCount]);
+
+  useEffect(() => {
+    if (!useBackend) {
+      return;
+    }
+
+    const fetchReports = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const reports = await getCommentReports();
+        const normalizedComments: CommentRow[] = reports.map(normalizeCommentReport);
+        setComments(normalizedComments);
+      } catch (fetchError) {
+        setError('No se pudo cargar el backend de reports. No hay datos para mostrar.');
+        setComments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, [useBackend]);
+
   const statusBg = (status: CommentStatus) => {
     switch (status) {
       case 'Pending':
@@ -76,16 +140,30 @@ export default function ManageComments() {
     }
   };
 
-  const handleApprove = (id: number) => {
-    setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Approved' } : c)));
+  const handleApprove = async (id: number) => {
+    try {
+      if (!user) {
+        setError('No hay usuario autenticado.');
+        return;
+      }
+      await updateReportStatus(id, 1, user.id);
+      setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Approved' } : c)));
+    } catch {
+      setError('No se pudo actualizar el estado del reporte.');
+    }
   };
 
-  const handleReject = (id: number) => {
-    setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Rejected' } : c)));
-  };
-
-  const handleDelete = (id: number) => {
-    setComments((cur) => cur.filter((c) => c.id !== id));
+  const handleReject = async (id: number) => {
+    try {
+      if (!user) {
+        setError('No hay usuario autenticado.');
+        return;
+      }
+      await updateReportStatus(id, 2, user.id);
+      setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Rejected' } : c)));
+    } catch {
+      setError('No se pudo actualizar el estado del reporte.');
+    }
   };
 
   return (
@@ -146,6 +224,23 @@ export default function ManageComments() {
         </Box>
       </Box>
 
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+        <Typography sx={{ color: theme.palette.grey[400], fontSize: 12 }}>
+          {useBackend
+            ? loading
+              ? 'Cargando reports desde el backend...'
+              : error
+              ? error
+              : ''
+            : 'Backend de M3 no configurado. Mostrando datos de ejemplo.'}
+        </Typography>
+        {useBackend && !loading && !error && (
+          <Typography sx={{ color: theme.palette.grey[400], fontSize: 12 }}>
+            Endpoint: {commentsEndpoint}
+          </Typography>
+        )}
+      </Box>
+
       <Box sx={{ mt: 2, overflowX: 'auto' }}>
         <Box sx={manageCommentsStyles.gridHeader(theme)}>
           <Typography sx={manageCommentsStyles.headerCell(theme)}>Date</Typography>
@@ -156,7 +251,7 @@ export default function ManageComments() {
           <Typography sx={{ ...manageCommentsStyles.headerCell(theme), textAlign: 'center' }}>Actions</Typography>
         </Box>
 
-        {filtered.map((c, i) => (
+        {currentPageItems.map((c, i) => (
           <Box key={c.id} sx={manageCommentsStyles.row(theme, i)}>
             <Typography sx={{ color: theme.palette.common.white }}>{c.date}</Typography>
             <Chip label={c.status} sx={{ ...manageCommentsStyles.statusCell(theme), backgroundColor: statusBg(c.status), color: '#ffffff', minWidth: 120, textAlign: 'center', display: 'flex', justifyContent: 'center' }} />
@@ -172,18 +267,55 @@ export default function ManageComments() {
                   <Button variant="contained" color="error" startIcon={<CancelOutlinedIcon />} onClick={() => handleReject(c.id)} sx={{ ...manageCommentsStyles.actionButton(theme), whiteSpace: 'nowrap' , color: '#fff', backgroundColor: '#b02525', '&:hover': { backgroundColor: '#9b1c1c' }}}>
                     Reject
                   </Button>
-                  <IconButton color="error" onClick={() => handleDelete(c.id)} sx={manageCommentsStyles.actionButton(theme)}>
-                    <DeleteOutlineIcon sx={{ color: '#ff0000'}} />
-                  </IconButton>
+                  
                 </>
               ) : (
-                <IconButton color="error" onClick={() => handleDelete(c.id)} sx={manageCommentsStyles.actionButton(theme)}>
-                  <DeleteOutlineIcon sx={{ color: '#ff0000'}} />
-                </IconButton>
-              )}
+                <Typography sx={{ color: theme.palette.grey[400], fontSize: 14 }}>-</Typography>
+              )  
+            }
             </Box>
           </Box>
         ))}
+      </Box>
+
+      <Box sx={manageCommentsStyles.paginationRow(theme)}>
+        <Typography>{`Showing ${currentPageItems.length} rows of ${filtered.length}`}</Typography>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            sx={manageCommentsStyles.pageButton(theme)}
+          >
+            Previous
+          </Button>
+
+          {Array.from({ length: pageCount }, (_, index) => (
+            <Button
+              key={index}
+              size="small"
+              variant={currentPage === index + 1 ? 'contained' : 'outlined'}
+              onClick={() => setCurrentPage(index + 1)}
+              sx={{
+                ...manageCommentsStyles.pageButton(theme),
+                ...(currentPage === index + 1 ? { backgroundColor: '#ffffff', color: '#000000' } : {}),
+              }}
+            >
+              {index + 1}
+            </Button>
+          ))}
+
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={currentPage === pageCount}
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, pageCount))}
+            sx={manageCommentsStyles.pageButton(theme)}
+          >
+            Next
+          </Button>
+        </Box>
       </Box>
     </Container>
   );

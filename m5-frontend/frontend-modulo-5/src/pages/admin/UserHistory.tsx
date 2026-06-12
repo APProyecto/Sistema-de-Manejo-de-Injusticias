@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { UserHistoryStyles } from '../styles/UserHistoryStyles';
 import { QueriesStyles } from '../styles/QueriesStyles';
 import UserPFP from '../../assets/pfpDefaultImage.png';
+import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
+import MetaLogo from '../../assets/MetaLogo.png'
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import TuneIcon from '@mui/icons-material/Tune';
@@ -32,6 +34,16 @@ const Queries = [
             postAuthor: 'User1234',
             comment:'I want to see Starbucks go bankrupt and cease to exist! The brand deserves it.'
           }
+        ],
+        followedEntities:[
+          {
+            entityPFP:StarbucksLogo,
+            entity: 'Starbucks'
+          },
+          {
+            entityPFP:MetaLogo,
+            entity: 'Meta'
+          }
         ]
     },
   ];
@@ -40,15 +52,31 @@ export default function UserHistory() {
   const theme = useTheme();
   const navigate = useNavigate();
 
-  const [userSearchBar, setUserSearchBar] = useState('None');
+  const [user, setUserS] = useState<any|null>(null);
+
+  const [userSearchBar, setUserSearchBar] = useState('');
   const [userSelected, setUser] = useState('None');
   const [postSelected, setPostSelected] = useState('None');
   const [commentSelected, setCommentSelected] = useState('None');
+  const [entitySelected, setEntitySelected] = useState('None');
 
 
   const handleNavigation = (path: string) => {
     navigate(path);
   };
+
+  const searchUser = async () => {
+
+    const parameters = new URLSearchParams({
+      userName: userSearchBar,
+      CategoryFilter:'Category'
+    });
+
+    await fetch(`http://localhost:3004/api/tracking/getUserHistory?${parameters.toString()}`)
+      .then(response => response.json())
+      .then(data => setUserS(data))
+      .catch(error => console.error('Error:', error));
+    };
 
   const handleStateColor = (state: string) => {
         if(state === 'Open'){
@@ -64,15 +92,18 @@ export default function UserHistory() {
       
       <Box>
         <TextField
-          value={userSearchBar}
           placeholder="Search..."
+          value={userSearchBar}
+          onChange={(e) => setUserSearchBar(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              console.log(userSearchBar);
+              searchUser();
+            }
+          }}
           variant="outlined"
           size="medium"
           sx={UserHistoryStyles.searchField(theme)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              setUserSearchBar(userSearchBar);
-            }}}
           slotProps={{
             input: {
               startAdornment: (
@@ -160,6 +191,32 @@ export default function UserHistory() {
               </Box>
             ))
             }
+          </Box>
+
+          <Box sx={{mx:2,my:4,pb:1, background:theme.palette.grey[200],borderRadius:5}}>
+            <Box sx={{display:'flex'}}>
+              <Typography variant='h5' sx={UserHistoryStyles.subTitle(theme)}>Followed Companies</Typography>
+            </Box>
+            <Box sx={{display:'flex',flexWrap:'wrap',px:3}}>
+              {Query.followedEntities.map((Entity) =>(
+                <Box key={Entity.entity} sx={{...UserHistoryStyles.Box(theme),m:1}}
+                onClick={()=>{setEntitySelected(Entity.entity);}}>
+                {/* WIP : Falta hacer que al clickear la entidad haga algo */}
+            
+                  <Box sx={{display:'flex',mx:2}}>
+                    <Avatar
+                    src={Entity.entityPFP}
+                        alt="Logo"
+                        style={{ width: 50, height: 50}}
+                        sx={{ mx:1, my: 'Auto'}}
+                    />
+                    <Typography variant='h4' sx={{my:'Auto',fontWeight:'bold'}}>{Entity.entity}</Typography>
+                  </Box>
+          
+                </Box>
+              ))
+              }
+            </Box>
           </Box>
 
         </Box>
