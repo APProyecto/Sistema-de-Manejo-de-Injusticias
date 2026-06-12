@@ -69,7 +69,6 @@ export default function CasesOfInjustice() {
 
       <Container>
         <Container sx={CasesOfInjusticeStyles.headerCases(theme)}>
-          <Typography>Picture</Typography>
           <Typography>Case</Typography>
           
         </Container>
