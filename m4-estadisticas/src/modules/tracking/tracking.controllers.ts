@@ -3,11 +3,14 @@ import { prisma } from "../../config/prisma";
 
 import { downloadFileFromGridFS } from "../../../../m0-base-datos/src/services/gridfs.service";
 
-import {
+/**
+ * import {
   getEntityDocumentByEntityId,
   getAppUserDocumentByUserId,
   getBoycottDocumentByMysqlId,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
+ */
+
 
 /*
     Function: getMostFollowedCases.
@@ -61,7 +64,12 @@ export async function getMostFollowedCases(req: Request, res: Response) {
         if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
           let element = {
             entityname: FindCases[j].Entity.EntityName,
+<<<<<<< Updated upstream
             entityPicture: getEntityPicture(FindCases[j].Entity.EntityID),
+=======
+            entityPicture: null,
+            entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
+>>>>>>> Stashed changes
             injusticeType: FindCases[j].InjusticeType.InjusticeName,
             followers: followersCount[i]._count,
           }
@@ -163,7 +171,11 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       },
     });
 
+<<<<<<< Updated upstream
     const AppUserPicture = getAppUserPicture(Number(userId));
+=======
+    const AppUserPicture = null;
+>>>>>>> Stashed changes
 
     const UserPost = await prisma.boycott.findMany({
       where: {
@@ -258,9 +270,13 @@ export async function getUserPostAndComments(req: Request, res: Response) {
     for (let i = 0; i < entityFollowing.length; i++) {
       let entity = {
         EntityName: entityFollowing[i].Boycott.Entity.EntityName,
+<<<<<<< Updated upstream
         EntityPicture: getEntityPicture(
           entityFollowing[i].Boycott.Entity.EntityID,
         ),
+=======
+        EntityPicture: "",
+>>>>>>> Stashed changes
       };
       if(!enrichEntities.some(InEntity => InEntity.EntityName === entity.EntityName)){
         enrichEntities.push(entity)
