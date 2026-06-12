@@ -9,6 +9,11 @@ import {
   getBoycottDocumentByMysqlId,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
+import {
+  getUserProfilePictureUrl,
+  getEntityPictureUrlByBoycottId
+} from '../../../../m5-frontend/frontend-modulo-5/src/services/userService'
+
 /*
     Function: getMostFollowedCases.
     Inputs: Request object containing indictedFilter and injusticeFilter in the query. Default values for indictedFilter and injusticeFilter are "Category".
@@ -70,7 +75,7 @@ export async function getMostFollowedCases(req: Request, res: Response) {
         if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
           let element = {
             entityname: FindCases[j].Entity.EntityName,
-            entityPicture: await getEntityPicture(FindCases[j].Entity.EntityID),
+            entityPicture: await getEntityPictureUrlByBoycottId(FindCases[j].BoycottID),
             entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
             injusticeType: FindCases[j].InjusticeType.InjusticeName,
             followers: followersCount[i]._count._all,
@@ -91,46 +96,6 @@ export async function getMostFollowedCases(req: Request, res: Response) {
       ok: false,
       error: "Internal server error",
     });
-  }
-}
-
-async function getEntityPicture(entId: number) {
-  try {
-    const CurrentMongoDocument = await getEntityDocumentByEntityId(entId);
-
-    if (!CurrentMongoDocument?.picture?.mongoFileId) {
-      console.error("getEntityPicture picture not found");
-      return null;
-    }
-
-    const fileBuffer = await downloadFileFromGridFS(
-      CurrentMongoDocument.picture.mongoFileId.toString(),
-    );
-
-    return fileBuffer;
-  } catch (error) {
-    console.error("getEntityPicture error:", error);
-    return null;
-  }
-}
-
-async function getAppUserPicture(userId: number) {
-  try {
-    const CurrentMongoDocument = await getAppUserDocumentByUserId(userId);
-
-    if (!CurrentMongoDocument?.picture?.mongoFileId) {
-      console.error("getAppUserPicture picture not found");
-      return null;
-    }
-
-    const fileBuffer = await downloadFileFromGridFS(
-      CurrentMongoDocument.picture.mongoFileId.toString(),
-    );
-
-    return fileBuffer;
-  } catch (error) {
-    console.error("getAppUserPicture error:", error);
-    return null;
   }
 }
 
@@ -169,7 +134,7 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       },
     });
 
-    const AppUserPicture = await getAppUserPicture(Number(userId));
+    const AppUserPicture = await getUserProfilePictureUrl(Number(userId));
 
     const UserPost = await prisma.boycott.findMany({
       where: {
@@ -248,9 +213,9 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       select: {
         Boycott: {
           select: {
+            BoycottID:true,
             Entity: {
               select: {
-                EntityID: true,
                 EntityName: true,
               },
             },
@@ -261,16 +226,14 @@ export async function getUserPostAndComments(req: Request, res: Response) {
 
     interface entityInter {
       EntityName: string;
-      EntityPicture: Buffer<ArrayBufferLike> | null;
+      EntityPicture: string;
     }
     let enrichEntities: entityInter[] = [];
 
     for (let i = 0; i < entityFollowing.length; i++) {
       let entity = {
         EntityName: entityFollowing[i].Boycott.Entity.EntityName,
-        EntityPicture: await getEntityPicture(
-          entityFollowing[i].Boycott.Entity.EntityID,
-        ),
+        EntityPicture: await getEntityPictureUrlByBoycottId(entityFollowing[i].Boycott.BoycottID),
       };
       if (
         !enrichEntities.some(

@@ -12,12 +12,12 @@ import { Circle} from '@mui/icons-material';
 import PostInteracionButton from '../../components/common/PostInteractionButton';
 import QueryNavegation from './QueryNavigation';
 import { Edited, UnderReview } from '../styles/ButtonStyles';
-import {getUserProfilePictureUrl} from '../../services/userService'
+
 
 
 interface userQuery {ok:boolean;
   username: string; 
-  userPicture:Promise<Buffer<ArrayBufferLike> | null>;
+  userPicture:string;
   posts:[{
     Title:string;
     State:string;
@@ -30,7 +30,7 @@ interface userQuery {ok:boolean;
   }];
   Follows:[{
     EntityName:string;
-    EntityPicture:Promise<Buffer<ArrayBufferLike> | null>;
+    EntityPicture:string;
   }]
 }
 
@@ -122,7 +122,7 @@ export default function UserHistory() {
 
           <Box sx={{display:'flex',mx:2}}>
             <Avatar
-            src={UserPFP}
+            src={Query.userPicture}
                 alt="Logo"
                 style={{ width: 50, height: 50}}
                 sx={{ mx:1, my: 'Auto'}}
@@ -199,7 +199,7 @@ export default function UserHistory() {
             
                   <Box sx={{display:'flex',mx:2}}>
                     <Avatar
-                    src={StarbucksLogo}
+                    src={Entity.EntityPicture}
                         alt="Logo"
                         style={{ width: 50, height: 50}}
                         sx={{ mx:1, my: 'Auto'}}

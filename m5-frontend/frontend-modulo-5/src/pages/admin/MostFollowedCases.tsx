@@ -13,7 +13,7 @@ interface followsQuery{
   ok:boolean;
   mostFollowed:[{
     entityname:string;
-    entityPicture:Promise<Buffer<ArrayBufferLike> | null>;
+    entityPicture:string;
     entityType:string;
     injusticeType:string;
     followers:number;
