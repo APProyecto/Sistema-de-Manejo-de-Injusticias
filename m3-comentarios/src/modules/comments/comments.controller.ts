@@ -30,6 +30,15 @@ const SORT_OPTIONS: Record<
 export async function getComments(req: Request, res: Response) {
   try {
     const { BoycottID, SortBy, LoggedUserID } = req.query;
+    const boycottId = Number.parseInt(String(BoycottID ?? ""), 10);
+
+    if (!Number.isInteger(boycottId) || boycottId <= 0) {
+      res.status(400).json({
+        ok: false,
+        error: "BoycottID is required and must be a positive integer",
+      });
+      return;
+    }
 
     const sortCode = SortBy !== undefined ? parseInt(SortBy as string) : 0;
     const sortOption = SORT_OPTIONS[sortCode] ?? SORT_OPTIONS[0];
@@ -39,7 +48,7 @@ export async function getComments(req: Request, res: Response) {
 
     const comments = await prisma.commentBoycott.findMany({
       where: {
-        BoycottID: parseInt(BoycottID as string),
+        BoycottID: boycottId,
         CommentStateID: 1,
       },
       select: {

@@ -1,13 +1,9 @@
 import { Box, Button, Container, MenuItem, TextField, Typography, useTheme } from '@mui/material';
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { createBoycottStyles } from '../styles/CreateBoycottStyles';
-import { getFilterCategories } from '../../services/boycottService';
+import { attachEvidenceToBoycott, createBoycott, getFilterCategories, uploadEvidenceFiles } from '../../services/boycottService';
 import type { FilterCategories, simpleEntity } from '../../types';
 import EntitySearchBar from '../../components/user/EntitySearchBar';
-import { mockEntities } from '../../data/mockEntities';
-
-// En tu componente CreateBoycott
-import { createBoycott } from '../../services/boycottService';
 import { useAuth } from '../../context/authContext';
 type Step = 1 | 2;
 
@@ -15,7 +11,6 @@ export default function CreateBoycott() {
   const theme = useTheme();
   const evidenceInputRef = useRef<HTMLInputElement | null>(null);
   const [step, setStep] = useState<Step>(1);
-  const [entity, setEntity] = useState('Other');
   const [categoryId, setCategoryId] = useState<number | null>(null); 
   const [industryId, setIndustryId] = useState<number | null>(null);
   const [countryId, setCountryId] = useState<number | null>(null);
@@ -32,7 +27,7 @@ export default function CreateBoycott() {
   
   // Obtener el usuario actual (ajusta según tu auth)
   const { user } = useAuth(); 
-  const userId = user?.appUserId || 1; // Temporal, reemplazar con tu auth real
+  const userId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
 
   useEffect(() => {
     getFilterCategories().then(setFilterCategories);
@@ -64,6 +59,11 @@ export default function CreateBoycott() {
       return;
     }
 
+    if (!userId) {
+      alert('No se pudo identificar el usuario para crear el boycott.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -78,6 +78,15 @@ export default function CreateBoycott() {
       };
 
       const result = await createBoycott(boycottData);
+
+      const boycottId = Number(
+        (result as any)?.boycottId ?? (result as any)?.id ?? (result as any)?.BoycottID
+      );
+
+      if (evidenceFiles.length > 0 && Number.isInteger(boycottId) && boycottId > 0) {
+        const uploadedEvidence = await uploadEvidenceFiles(evidenceFiles);
+        await attachEvidenceToBoycott(boycottId, uploadedEvidence);
+      }
       
       console.log('Boycott creado:', result);
       
@@ -134,21 +143,6 @@ export default function CreateBoycott() {
     }
   };
 
-  const getCategoryName = (id: number | null): string => {
-    if (!id) return '';
-    return injustices.find(c => c.id === id)?.name || '';
-  };
-
-  const getIndustryName = (id: number | null): string => {
-    if (!id) return '';
-    return industries.find(i => i.id === id)?.name || '';
-  };
-
-  const getCountryName = (id: number | null): string => {
-    if (!id) return '';
-    return countries.find(c => c.id === id)?.name || '';
-  };
-
   const getCategoryIdFromName = (categoryName: string): number | null => {
     const categoryMap: Record<string, number> = {
       'Company': 1,
@@ -159,31 +153,6 @@ export default function CreateBoycott() {
       'Other': 6,
     };
     return categoryMap[categoryName] || null;
-  };
-
-  const getCategoryNameFromId = (categoryId: number): string => {
-    const categoryMap: Record<number, string> = {
-      1: 'Company',
-      2: 'Organization',
-      3: 'Person',
-      4: 'Institution',
-      5: 'Government',
-      6: 'Other',
-    };
-    return categoryMap[categoryId] || 'Unknown';
-  };
-
-  // Resumen de datos para depuración
-  const getSummary = () => {
-    return {
-      title,
-      description,
-      entity: selectedEntity,
-      injusticeType: getCategoryName(categoryId),
-      country: getCountryName(countryId),
-      industry: getIndustryName(industryId),
-      evidenceCount: evidenceFiles.length,
-    };
   };
 
   return (
@@ -388,7 +357,7 @@ export default function CreateBoycott() {
               </Box>
 
               <Box>
-                <Typography sx={createBoycottStyles.fieldLabel()}>Evidence (Optional - Coming Soon)</Typography>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Evidence (Optional)</Typography>
                 <Box
                   sx={isDraggingEvidence ? createBoycottStyles.uploadBoxActive(theme) : createBoycottStyles.uploadBox()}
                   onClick={handleEvidenceClick}
@@ -411,7 +380,7 @@ export default function CreateBoycott() {
                       Drag and drop files here or click to browse
                     </Typography>
                     <Typography sx={createBoycottStyles.uploadHint}>
-                      You can attach images, documents and other evidence files (Coming soon)
+                      You can attach images, documents and other evidence files
                     </Typography>
 
                     {evidenceFiles.length > 0 && (

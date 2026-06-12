@@ -1,5 +1,4 @@
 // src/services/boycottService.ts
-import { mockEntities } from '../data/mockEntities';
 import type { ApiResponse, PostCardData, DetailedPostData, FilterCategories, simpleEntity, CreateBoycottData } from '../types';
 import { authApi, boycottApi } from './api';
 
@@ -231,6 +230,7 @@ const getEntityPicture = async (id: number): Promise<string | null> => {
     });
     return URL.createObjectURL(response.data);
   } catch (error) {
+    console.error(`Error loading entity picture ${id}:`, error);
     console.log(`No picture found for entity ${id}`);
     return null;
   }
@@ -400,6 +400,37 @@ export const getFavorites = async (userId?: number): Promise<PostCardData[]> => 
   return (data as any).data ?? [];
 };
 
+export const getMyBoycotts = async (creatorId: number): Promise<PostCardData[]> => {
+  const response = await boycottApi.get<{ ok: boolean; total: number; data: any[] }>(
+    '/api/boycotts/mine',
+    {
+      params: { creatorId },
+    }
+  );
+
+  const rows = response.data.data ?? [];
+
+  return rows.map((item: any) => ({
+    id: Number(item.BoycottID),
+    username: 'You',
+    user_picture: '',
+    indicted: item.Entity?.EntityName ?? 'Unknown',
+    indicted_picture: '',
+    case: item.InjusticeType?.InjusticeName ?? 'Unknown',
+    case_picture: '',
+    title: item.Title ?? '',
+    description: '',
+    creation_date: item.PublicationDate ?? new Date().toISOString(),
+    is_favorite: false,
+    votes: String((item.VotesInFavor ?? 0) - (item.VotesAgainst ?? 0)),
+    voted_by_user: null,
+    coments: String(item.NumberComments ?? 0),
+    evidences: '0',
+    state: item.BoycottState?.StateName ?? 'Active',
+    caseNumber: item.CaseNumber ? String(item.CaseNumber) : undefined,
+  }));
+};
+
 // Reportar un boycott
 export const reportBoycott = async (
   id: number,
@@ -455,6 +486,83 @@ export const uploadImage = async (file: File): Promise<{ fileId: string; metadat
     fileId: response.data.data.mongoFileId || response.data.data.gridFsId,
     metadata: response.data.data,
   };
+};
+
+type BoycottEvidenceMetadata = {
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+  mongoFileId: string;
+  gridFsId: string;
+};
+
+export const uploadEvidenceFiles = async (files: File[]): Promise<BoycottEvidenceMetadata[]> => {
+  if (!files.length) {
+    return [];
+  }
+
+  const uploaded = await Promise.all(files.map((file) => uploadImage(file)));
+
+  return uploaded.map(({ metadata }) => {
+    const fileName = String(metadata.fileName ?? metadata.filename ?? 'archivo');
+    const fileSize = Number(metadata.fileSize ?? metadata.size ?? 0);
+    const contentType = String(metadata.contentType ?? 'application/octet-stream');
+    const mongoFileId = String(metadata.mongoFileId ?? metadata.gridFsId ?? '');
+    const gridFsId = String(metadata.gridFsId ?? metadata.mongoFileId ?? '');
+
+    return {
+      fileName,
+      fileSize,
+      contentType,
+      mongoFileId,
+      gridFsId,
+    };
+  }).filter((item) => Boolean(item.mongoFileId));
+};
+
+export const attachEvidenceToBoycott = async (
+  boycottId: number,
+  evidence: BoycottEvidenceMetadata[]
+): Promise<void> => {
+  if (!evidence.length) {
+    return;
+  }
+
+  await boycottApi.post(`/api/boycotts/${boycottId}/attachments`, {
+    evidence,
+  });
+};
+
+export const downloadEvidenceFile = async (fileId: string): Promise<Blob> => {
+  console.log('📥 [downloadEvidenceFile] Iniciando descarga con fileId:', fileId);
+  const url = `/api/upload/${encodeURIComponent(fileId)}`;
+  console.log('📥 [downloadEvidenceFile] URL completa:', url);
+  
+  try {
+    const response = await boycottApi.get(url, {
+      responseType: 'blob',
+    });
+    console.log('✅ [downloadEvidenceFile] Descarga exitosa, blob size:', response.data.size);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ [downloadEvidenceFile] Error:', error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
+
+export type BoycottAttachment = {
+  id: string;
+  nombre: string;
+  tipo?: string | null;
+  tamano?: number | null;
+};
+
+export const getBoycottAttachments = async (boycottId: number): Promise<BoycottAttachment[]> => {
+  const response = await boycottApi.get<{ ok: boolean; data: BoycottAttachment[] }>(
+    `/api/boycotts/${boycottId}/attachments`
+  );
+
+  return response.data.data ?? [];
 };
 
 // Crear una entidad con imagen

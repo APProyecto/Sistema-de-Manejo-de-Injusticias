@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Box,
   Button,
   Container,
   Typography,
@@ -43,6 +44,13 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
 
   const onPostClick = () => {
     navigate(`/detailed-post/${data.id}`);
+  };
+
+  const onPostKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onPostClick();
+    }
   };
 
   const onUsernameClick = () => {
@@ -100,7 +108,13 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
   };
 
   return (
-    <Button sx={PostCardStyles.container(theme)} onClick={onPostClick}>
+    <Box
+      sx={PostCardStyles.container(theme)}
+      onClick={onPostClick}
+      onKeyDown={onPostKeyDown}
+      role="button"
+      tabIndex={0}
+    >
       <Container sx={PostCardStyles.topContainer(theme)}>
         {/* Profile Picture */}
         <Avatar
@@ -204,6 +218,6 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
           iconColor={handleStateColor(data.state)}
         ></PostInteracionButton>
       </Container>
-    </Button>
+    </Box>
   );
 }

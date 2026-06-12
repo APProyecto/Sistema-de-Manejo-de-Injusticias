@@ -101,7 +101,7 @@ export interface Indicted {
 }
 
 export interface Evidence {
-  id: number;
+  id: string | number;
   name: string;
   type: 'pdf' | 'image' | 'video' | 'file'
   extension: string;

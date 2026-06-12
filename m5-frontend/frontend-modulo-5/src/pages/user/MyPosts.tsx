@@ -1,33 +1,45 @@
-import { Container, Typography, Card, CardContent, Button, Box, useTheme } from '@mui/material';
-import { homeStyles } from '../styles/HomeStyles';
+import { Container, Typography, useTheme } from '@mui/material';
 import type { PostCardData } from '../../types';
 import PostCard from '../../components/common/PostCard';
-import OptionMenuMyPosts from '../../components/user/OptionMenuMyPosts';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { myPostsStyles } from '../styles/MyPostsStyles';
-import { useEffect, useState} from "react";
-import { useAuth } from "../../context/authContext";
-import {
-  getMyBoycotts
-} from "../../services/boycottService";
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../context/authContext';
+import { getMyBoycotts } from '../../services/boycottService';
+import LoadingScreen from '../../components/common/LoadingScreen';
 
 export default function MyPosts() {
 
   const theme = useTheme();
-  const { user, login } = useAuth();
+  const { user } = useAuth();
+  const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
   const [posts, setPosts] = useState<PostCardData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const loadMyBoycotts = async () => {
-    if (!user?.appUserId) return;
+    const fetchMyPosts = async () => {
+      if (!resolvedUserId) {
+        setPosts([]);
+        setLoading(false);
+        return;
+      }
 
-    const data = await getMyBoycotts(user.appUserId);
-    setPosts(data);
-  };
+      try {
+        const result = await getMyBoycotts(resolvedUserId);
+        setPosts(result);
+      } catch (error) {
+        console.error('Error loading my posts:', error);
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  loadMyBoycotts();
-}, [user]);
+    void fetchMyPosts();
+  }, [resolvedUserId]);
 
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <Container sx={myPostsStyles.mainContainer(theme)}>
@@ -38,9 +50,7 @@ export default function MyPosts() {
         {posts.length === 0 && (
           <Typography>You have not created any boycotts yet.</Typography>
         )}
-        
         {posts.map((data) => (
-          
           <PostCard 
           key={data.id}
           data={data}

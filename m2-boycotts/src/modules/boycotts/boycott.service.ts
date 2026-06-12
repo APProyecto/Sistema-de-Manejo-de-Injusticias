@@ -319,7 +319,7 @@ export async function obtenerBoycottPorId(id: number, userId: number | null = nu
     })),
     state: boycott.BoycottState.StateName,
     evidences: (boycottDoc?.evidence ?? []).map((f, i) => ({
-      id: i + 1,
+      id: String(f.mongoFileId ?? f.gridFsId ?? i + 1),
       name: f.fileName,
       type: deriveEvidenceType(f.contentType),
       extension: f.fileName.split(".").pop() ?? "",
