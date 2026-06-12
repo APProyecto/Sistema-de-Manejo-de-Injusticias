@@ -425,7 +425,7 @@ export default function Quereis() {
         sx={{ ...QueriesStyles.Divider(theme), m: 0 }}
       />
 
-      {rows.map((row) => (
+      {sortedRows.map((row) => (
         <Box
           key={row.boycottId}
           sx={{
