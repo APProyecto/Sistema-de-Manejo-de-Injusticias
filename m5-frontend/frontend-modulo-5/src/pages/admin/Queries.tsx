@@ -137,10 +137,11 @@ export default function Quereis() {
 
   return (
     <Container
+      maxWidth={false}
       sx={{
         p: 5,
         backgroundColor: theme.palette.background.default,
-        height: "100vh",
+        height: "calc(100vh - 64px)",
         overflowY: "auto",
       }}
     >
