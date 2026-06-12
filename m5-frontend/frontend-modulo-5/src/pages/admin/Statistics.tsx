@@ -107,6 +107,18 @@ export default function Statistics() {
   const purple = '#9B59B6';
   const lightGreen = '#58D68D';
 
+  const [favoritesByCategoryMale, setFavoritesByCategoryMale] = useState<
+  { id: number; label: string; value: number }[]
+>([]);
+
+const [favoritesByCategoryFemale, setFavoritesByCategoryFemale] = useState<
+  { id: number; label: string; value: number }[]
+>([]);
+
+const [favoritesByCategoryOther, setFavoritesByCategoryOther] = useState<
+  { id: number; label: string; value: number }[]
+>([]);
+
   const elementMapBoxSx = {
     display: 'flex',
     flexDirection: 'column',
@@ -153,7 +165,7 @@ export default function Statistics() {
   const [usersByRegions, setUsersByRegions] = useState<{ region: string; value: number }[]>([]);
   const [industriesMoreBoycotts, setIndustriesMoreBoycotts] = useState<{ industry: string; value: number }[]>([]);
   const [favoritesByCountry, setFavoritesByCountry] = useState<{ country: string; value: number }[]>([]);
-  const [favoritesByCategory, setFavoritesByCategory] = useState<{ id: number; label: string; value: number }[]>([]);
+const [favoritesByCategory, setFavoritesByCategory] = useState<{ id: number; label: string; value: number; percentage: number }[]>([]);
   const [topReasonsReportRejection, setTopReasonsReportRejection] = useState<{ reason: string; value: number }[]>([]);
   const [boycottsByInjusticeCategory, setBoycottsByInjusticeCategory] = useState<{ id: number; label: string; value: number }[]>([]);
   const [boycottsDistributionPerRegion, setBoycottsDistributionPerRegion] = useState<{ region: string; value: number }[]>([]);
@@ -169,6 +181,14 @@ export default function Statistics() {
   const [pendingModerationReports, setPendingModerationReports] = useState<number>(0);
 
   const [loading, setLoading] = useState<boolean>(true);
+
+  const formatPieLabel = (item: { label?: string; value?: number; percentage?: number }) => {
+  const label = item.label ?? 'Unknown';
+  const value = item.value ?? 0;
+  const percentage = item.percentage ?? 0;
+
+  return `${label} ${value} (${percentage.toFixed(2)}%)`;
+};
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -190,6 +210,18 @@ export default function Statistics() {
           fetch(`${API_BASE_URL}/analytics/boycott-report-status-totals`, { signal: abortController.signal }),
           fetch(`${API_BASE_URL}/analytics/top5-users-by-boycotts`, { signal: abortController.signal }),
           fetch(`${API_BASE_URL}/analytics/boycott-rankings`, { signal: abortController.signal }),
+          fetch(
+  `${API_BASE_URL}/analytics/boycotts-by-injustice-category-gender?${new URLSearchParams({ genderId: '1' }).toString()}`,
+  { signal: abortController.signal }
+),
+fetch(
+  `${API_BASE_URL}/analytics/boycotts-by-injustice-category-gender?${new URLSearchParams({ genderId: '2' }).toString()}`,
+  { signal: abortController.signal }
+),
+fetch(
+  `${API_BASE_URL}/analytics/boycotts-by-injustice-category-gender?${new URLSearchParams({ genderId: '3' }).toString()}`,
+  { signal: abortController.signal }
+),
         ]);
 
         for (const response of responses) {
@@ -198,37 +230,44 @@ export default function Statistics() {
           }
         }
 
-        const [
-          kpisResult,
-          usersByContinentResult,
-          boycottsByIndustryResult,
-          countriesWithMoreFavoritesResult,
-          boycottsByInjusticeCategoryResult,
-          rejectedReportsByMotiveResult,
-          boycottsSummaryByInjusticeCategoryResult,
-          boycottsByUserContinentResult,
-          leadingIndustryByContinentResult,
-          companiesByBoycottCountResult,
-          avgResolutionTimeResult,
-          boycottReportStatusTotalsResult,
-          top5UsersByBoycottsResult,
-          boycottRankingsResult,
-        ] = await Promise.all([
-          responses[0].json() as Promise<PlatformKpisResponse>,
-          responses[1].json() as Promise<ApiListResponse<UsersByRegionItem>>,
-          responses[2].json() as Promise<ApiListResponse<IndustryItem>>,
-          responses[3].json() as Promise<ApiListResponse<FavoritesByCountryItem>>,
-          responses[4].json() as Promise<ApiListResponse<CategoryItem>>,
-          responses[5].json() as Promise<ApiListResponse<RejectedMotiveItem>>,
-          responses[6].json() as Promise<ApiListResponse<CategoryItem>>,
-          responses[7].json() as Promise<ApiListResponse<UsersByRegionItem>>,
-          responses[8].json() as Promise<ApiListResponse<LeadingIndustryItem>>,
-          responses[9].json() as Promise<ApiListResponse<CompanyBoycottItem>>,
-          responses[10].json() as Promise<AvgResolutionTimeResponse>,
-          responses[11].json() as Promise<ApiListResponse<ReportStatusItem>>,
-          responses[12].json() as Promise<ApiListResponse<TopUserItem>>,
-          responses[13].json() as Promise<ApiListResponse<BoycottRankingItem>>,
-        ]);
+const [
+  kpisResult,
+  usersByContinentResult,
+  boycottsByIndustryResult,
+  countriesWithMoreFavoritesResult,
+  boycottsByInjusticeCategoryResult,
+  rejectedReportsByMotiveResult,
+  boycottsSummaryByInjusticeCategoryResult,
+  boycottsByUserContinentResult,
+  leadingIndustryByContinentResult,
+  companiesByBoycottCountResult,
+  avgResolutionTimeResult,
+  boycottReportStatusTotalsResult,
+  top5UsersByBoycottsResult,
+  boycottRankingsResult,
+  maleFavoritesByCategoryResult,
+  femaleFavoritesByCategoryResult,
+  otherFavoritesByCategoryResult,
+] = await Promise.all([
+  responses[0].json() as Promise<PlatformKpisResponse>,
+  responses[1].json() as Promise<ApiListResponse<UsersByRegionItem>>,
+  responses[2].json() as Promise<ApiListResponse<IndustryItem>>,
+  responses[3].json() as Promise<ApiListResponse<FavoritesByCountryItem>>,
+  responses[4].json() as Promise<ApiListResponse<CategoryItem>>,
+  responses[5].json() as Promise<ApiListResponse<RejectedMotiveItem>>,
+  responses[6].json() as Promise<ApiListResponse<CategoryItem>>,
+  responses[7].json() as Promise<ApiListResponse<UsersByRegionItem>>,
+  responses[8].json() as Promise<ApiListResponse<LeadingIndustryItem>>,
+  responses[9].json() as Promise<ApiListResponse<CompanyBoycottItem>>,
+  responses[10].json() as Promise<AvgResolutionTimeResponse>,
+  responses[11].json() as Promise<ApiListResponse<ReportStatusItem>>,
+  responses[12].json() as Promise<ApiListResponse<TopUserItem>>,
+  responses[13].json() as Promise<ApiListResponse<BoycottRankingItem>>,
+  responses[14].json() as Promise<ApiListResponse<CategoryItem>>,
+  responses[15].json() as Promise<ApiListResponse<CategoryItem>>,
+  responses[16].json() as Promise<ApiListResponse<CategoryItem>>,
+  
+]);
 
         if (kpisResult.ok) {
           setTotalUsers(kpisResult.data.totalUsers);
@@ -258,8 +297,35 @@ export default function Statistics() {
           }))
         );
 
-        setFavoritesByCategory(
-          boycottsByInjusticeCategoryResult.data.map((item, index) => ({
+setFavoritesByCategory(
+  boycottsByInjusticeCategoryResult.data.map((item, index) => ({
+    id: index + 1,
+    label: item.category,
+    value: item.total,
+    percentage: item.percentage ?? 0,
+  }))
+);
+
+setFavoritesByCategoryMale(
+  maleFavoritesByCategoryResult.data.map((item, index) => ({
+    id: index + 1,
+    label: item.category,
+    value: item.total,
+    percentage: item.percentage ?? 0,
+  }))
+);
+
+setFavoritesByCategoryFemale(
+  femaleFavoritesByCategoryResult.data.map((item, index) => ({
+    id: index + 1,
+    label: item.category,
+    value: item.total,
+    percentage: item.percentage ?? 0,
+  }))
+);
+
+        setFavoritesByCategoryOther(
+          otherFavoritesByCategoryResult.data.map((item, index) => ({
             id: index + 1,
             label: item.category,
             value: item.total,
@@ -273,13 +339,14 @@ export default function Statistics() {
           }))
         );
 
-        setBoycottsByInjusticeCategory(
-          boycottsSummaryByInjusticeCategoryResult.data.map((item, index) => ({
-            id: index + 1,
-            label: item.category,
-            value: item.total,
-          }))
-        );
+setBoycottsByInjusticeCategory(
+  boycottsSummaryByInjusticeCategoryResult.data.map((item, index) => ({
+    id: index + 1,
+    label: item.category,
+    value: item.total,
+    percentage: item.percentage ?? 0,
+  }))
+);
 
         setBoycottsDistributionPerRegion(
           boycottsByUserContinentResult.data.map((item) => ({
@@ -549,7 +616,8 @@ export default function Statistics() {
                     {
                       data: favoritesByCategory,
                       outerRadius: 100,
-                      arcLabel: 'label',
+                      arcLabel: (item) => formatPieLabel(item),
+                      arcLabelMinAngle: 15,
                     },
                   ]}
                   sx={{
@@ -859,6 +927,70 @@ export default function Statistics() {
           </Card>
         </Grid>
       </Grid>
+
+      <Grid size={{ xs: 12, md: 6 }}>
+  <Card sx={StatisticsStyles.CardGraphic(theme)}>
+    <Box sx={StatisticsStyles.BoxGraphic(theme)}>
+      <Box sx={StatisticsStyles.LabelBox(theme)}>
+        <Typography variant="h6" sx={StatisticsStyles.LabelGraphic(theme)}>
+          e. Favorite campaigns by category Male
+        </Typography>
+      </Box>
+      {favoritesByCategoryMale.length > 0 ? (
+        <PieChart
+          series={[
+            {
+              data: favoritesByCategoryMale,
+              outerRadius: 100,
+              arcLabel: (item) => `${item.label}`,
+            },
+          ]}
+          sx={{
+            '& .MuiChartsTooltip-cell': {
+              color: theme.palette.background.default,
+            },
+          }}
+          height={300}
+        />
+      ) : (
+        renderNoData()
+      )}
+    </Box>
+  </Card>
+</Grid>
+
+<Grid size={{ xs: 12, md: 6 }}>
+  <Card sx={StatisticsStyles.CardGraphic(theme)}>
+    <Box sx={StatisticsStyles.BoxGraphic(theme)}>
+      <Box sx={StatisticsStyles.LabelBox(theme)}>
+        <Typography variant="h6" sx={StatisticsStyles.LabelGraphic(theme)}>
+          f. Favorite campaigns by category Female
+        </Typography>
+      </Box>
+      {favoritesByCategoryFemale.length > 0 ? (
+        <PieChart
+          series={[
+            {
+              data: favoritesByCategoryFemale,
+              outerRadius: 100,
+              arcLabel: (item) => `${item.label}`,
+            },
+          ]}
+          sx={{
+            '& .MuiChartsTooltip-cell': {
+              color: theme.palette.background.default,
+            },
+          }}
+          height={300}
+        />
+      ) : (
+        renderNoData()
+      )}
+    </Box>
+  </Card>
+</Grid>
+
+
     </Container>
   );
 }
