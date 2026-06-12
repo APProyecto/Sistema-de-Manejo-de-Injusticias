@@ -1,18 +1,9 @@
 import { Request, Response } from "express";
 import { prisma } from "../../config/prisma";
 
-import { downloadFileFromGridFS } from "../../../../m0-base-datos/src/services/gridfs.service";
-
 import {
-  getEntityDocumentByEntityId,
-  getAppUserDocumentByUserId,
   getBoycottDocumentByMysqlId,
 } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
-
-import {
-  getUserProfilePictureUrl,
-  getEntityPictureUrlByBoycottId,
-} from "../../../../m5-frontend/frontend-modulo-5/src/services/userService";
 
 /*
     Function: getMostFollowedCases.
@@ -70,31 +61,34 @@ export async function getMostFollowedCases(req: Request, res: Response) {
     });
 
     const summary = [];
+
     for (let i = 0; i < followersCount.length; i++) {
       for (let j = 0; j < FindCases.length; j++) {
         if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
-          let element = {
+          const element = {
             entityname: FindCases[j].Entity.EntityName,
-            entityPicture: await getEntityPictureUrlByBoycottId(
-              FindCases[j].BoycottID,
-            ),
+
+            // Se deja null para evitar importar funciones del frontend en M4.
+            entityPicture: null,
+
             entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
             injusticeType: FindCases[j].InjusticeType.InjusticeName,
             followers: followersCount[i]._count._all,
           };
+
           summary.push(element);
         }
       }
     }
 
-    res.json({
+    return res.json({
       ok: true,
       mostFollowed: [...summary].sort((a, b) => b.followers - a.followers),
     });
   } catch (error) {
     console.error("getMostFollowedCases error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       ok: false,
       error: "Internal server error",
     });
@@ -136,7 +130,8 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       },
     });
 
-    const AppUserPicture = await getUserProfilePictureUrl(Number(userId));
+    // Se deja null para evitar importar funciones del frontend en M4.
+    const AppUserPicture = null;
 
     const UserPost = await prisma.boycott.findMany({
       where: {
@@ -162,11 +157,13 @@ export async function getUserPostAndComments(req: Request, res: Response) {
 
     for (let i = 0; i < UserPost.length; i++) {
       const desc = await getBoycottDesc(UserPost[i].BoycottID);
-      let post = {
+
+      const post = {
         Title: UserPost[i].Title,
         State: UserPost[i].BoycottState.StateName,
         Description: desc,
       };
+
       enrichPost.push(post);
     }
 
@@ -199,12 +196,13 @@ export async function getUserPostAndComments(req: Request, res: Response) {
     const flatComments = [];
 
     for (let i = 0; i < UserComments.length; i++) {
-      let comment = {
+      const comment = {
         Title: UserComments[i].Boycott.Title,
         User: UserComments[i].Boycott.AppUser_Boycott_CreatorIDToAppUser
           .UserName,
         Description: UserComments[i].Description,
       };
+
       flatComments.push(comment);
     }
 
@@ -228,17 +226,19 @@ export async function getUserPostAndComments(req: Request, res: Response) {
 
     interface entityInter {
       EntityName: string;
-      EntityPicture: string;
+      EntityPicture: string | null;
     }
-    let enrichEntities: entityInter[] = [];
+
+    const enrichEntities: entityInter[] = [];
 
     for (let i = 0; i < entityFollowing.length; i++) {
-      let entity = {
+      const entity = {
         EntityName: entityFollowing[i].Boycott.Entity.EntityName,
-        EntityPicture: await getEntityPictureUrlByBoycottId(
-          entityFollowing[i].Boycott.BoycottID,
-        ),
+
+        // Se deja null para evitar importar funciones del frontend en M4.
+        EntityPicture: null,
       };
+
       if (
         !enrichEntities.some(
           (InEntity) => InEntity.EntityName === entity.EntityName,
@@ -248,7 +248,7 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       }
     }
 
-    res.json({
+    return res.json({
       ok: true,
       username: userName,
       userPicture: AppUserPicture,
@@ -257,9 +257,9 @@ export async function getUserPostAndComments(req: Request, res: Response) {
       Follows: enrichEntities,
     });
   } catch (error) {
-    console.error("getMostFollowedCases error:", error);
+    console.error("getUserPostAndComments error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       ok: false,
       error: "Internal server error",
     });
@@ -296,8 +296,14 @@ export async function getByEntity(req: Request, res: Response) {
 
     if (dateFrom || dateTo) {
       where.PublicationDate = {};
-      if (dateFrom) where.PublicationDate.gte = new Date(dateFrom as string);
-      if (dateTo) where.PublicationDate.lte = new Date(dateTo as string);
+
+      if (dateFrom) {
+        where.PublicationDate.gte = new Date(dateFrom as string);
+      }
+
+      if (dateTo) {
+        where.PublicationDate.lte = new Date(dateTo as string);
+      }
     }
 
     if (status) {
@@ -313,44 +319,51 @@ export async function getByEntity(req: Request, res: Response) {
         Title: true,
         PublicationDate: true,
         AppUser_Boycott_CreatorIDToAppUser: {
-          select: { UserName: true, UserID: true },
+          select: {
+            UserName: true,
+            UserID: true,
+          },
         },
         Entity: {
           select: {
             EntityID: true,
             EntityName: true,
-            //MongoDocumentID: true,
+            // MongoDocumentID: true,
           },
         },
         BoycottState: {
-          select: { StateName: true },
+          select: {
+            StateName: true,
+          },
         },
       },
       orderBy: {
-        Entity: { EntityName: "asc" },
+        Entity: {
+          EntityName: "asc",
+        },
       },
     });
 
     const grouped: any = {};
 
     for (const boycott of boycotts) {
-      const entityId = boycott.Entity.EntityID;
+      const currentEntityId = boycott.Entity.EntityID;
 
-      if (!grouped[entityId]) {
-        grouped[entityId] = {
-          entityId,
+      if (!grouped[currentEntityId]) {
+        grouped[currentEntityId] = {
+          entityId: currentEntityId,
           entityName: boycott.Entity.EntityName,
-          //mongoDocumentId: boycott.Entity.MongoDocumentID,
+          // mongoDocumentId: boycott.Entity.MongoDocumentID,
           boycotts: [],
         };
       }
 
-      //const mongoDoc = await getBoycottDocumentByMysqlId(boycott.BoycottID);
+      // const mongoDoc = await getBoycottDocumentByMysqlId(boycott.BoycottID);
 
-      grouped[entityId].boycotts.push({
+      grouped[currentEntityId].boycotts.push({
         boycottId: boycott.BoycottID,
         title: boycott.Title,
-        //description: mongoDoc?.description ?? null,
+        // description: mongoDoc?.description ?? null,
         author: boycott.AppUser_Boycott_CreatorIDToAppUser?.UserName,
         authorId: boycott.AppUser_Boycott_CreatorIDToAppUser?.UserID,
         date: boycott.PublicationDate,
@@ -364,6 +377,9 @@ export async function getByEntity(req: Request, res: Response) {
     });
   } catch (error) {
     console.error("getByEntity error:", error);
-    return res.status(500).json({ error: "Internal server error" });
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
   }
 }
