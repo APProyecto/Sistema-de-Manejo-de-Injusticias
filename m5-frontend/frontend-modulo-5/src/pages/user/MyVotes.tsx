@@ -130,19 +130,6 @@ export default function MyVotes() {
           </Button>
         </Container>
       </Container>
-
-      <Typography sx={myVotesStyles.title(theme)}>My Votes</Typography>
-
-      <Container sx={myVotesStyles.postsContainer()}>
-        {votedPosts.map((post) => (
-          <PostCard
-            key={post.id}
-            data={post}
-            inFeed={false}
-            voteSelection={post.voted_by_user ? "positive" : "negative"}
-          />
-        ))}
-      </Container>
     </Container>
   );
 }
