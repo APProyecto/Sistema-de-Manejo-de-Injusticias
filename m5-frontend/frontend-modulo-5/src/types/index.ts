@@ -17,6 +17,22 @@ export interface User {
   role? : UserRole;
 }
 
+export interface simpleEntity {
+  id: number;
+  categoryId: number; // 1: Company, 2: Organization, 3: Person, 4: Institution, 5: Government, 6: Other
+  name: string;
+  picture: string | null;
+}
+
+export const entityCategories = {
+  Company: 1,
+  Organization: 2,
+  Person: 3,
+  Institution: 4,
+  Government: 5,
+  Other: 6
+};
+
 export interface Category {
   id: number,
   name: string,
@@ -59,6 +75,21 @@ export interface PostCardData {
   state: string;
   caseNumber?: string;
 }
+
+// src/types/index.ts
+
+export type CreateBoycottData = {
+  title: string;
+  description: string;
+  entityId: number;
+  injusticeTypeId: number;
+  countryId: number;
+  createdBy: number; // Este se mapeará a creatorId
+  creatorUsername?: string; // Opcional
+  caseNumber?: number; // Opcional
+  industryId?: number;
+  evidence?: File[];
+};
 
 export interface Indicted {
   id: number;
@@ -132,17 +163,6 @@ export interface CommentReport {
     };
   };
 }
-
-export interface CreateBoycottData {
-  nombre_entidad: string;
-  categoria: string;
-  logo?: string;
-  industria: string;
-  pais: string;
-  tipo_injusticia: string;
-  descripcion: string;
-}
-
 export interface FilterCategories {
   countries: Category[],
   industries: Category[],
@@ -161,4 +181,47 @@ export interface ApiResponse<T> {
     total: number;
     pages: number;
   };
+}
+export interface AuditFields {
+  CreatedAt: string | null;
+  CreatedBy: string | null;
+  ModifiedAt: string | null;
+  ModifiedBy: string | null;
+}
+
+export interface Gender extends AuditFields {
+  GenderID: number;
+  GenderName: string;
+}
+
+export interface Continent extends AuditFields {
+  ContinentID: number;
+  ContinentName: string;
+}
+
+export interface Country extends AuditFields {
+  CountryID: number;
+  CountryName: string;
+  ContinentID: number;
+  Continent?: Continent;
+}
+
+export interface CategoryEntity {
+  CategoryEntityID: number;
+  CategoryName: string;
+  CreatedAt?: string | null;
+  CreatedBy?: string | null;
+  ModifiedAt?: string | null;
+  ModifiedBy?: string | null;
+}
+
+export interface InjusticeType {
+  InjusticeTypeID: number;
+  InjusticeName: string;
+  MongoDocumentID?: string | null;
+  NumberBoycotts?: number;
+  CreatedAt?: string | null;
+  CreatedBy?: string | null;
+  ModifiedAt?: string | null;
+  ModifiedBy?: string | null;
 }

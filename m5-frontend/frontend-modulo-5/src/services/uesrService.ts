@@ -105,3 +105,51 @@ export const getUserProfilePictureUrl = (
 
   return `${authApi.defaults.baseURL}/api/files/appUser/${id}/picture`;
 };
+
+export const getEntityPictureUrl = (
+  id: number,
+  version?: string
+): string => {
+  const query = version ? `?v=${encodeURIComponent(version)}` : "";
+
+  return `${authApi.defaults.baseURL}/api/files/entityBoycott/${id}/picture`;
+};
+
+
+export const syncAuth0User = async (
+  token: string,
+  email: string,
+  name: string
+): Promise<User> => {
+  const response = await authApi.get("/api/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "x-user-email": email,
+      "x-user-name": name,
+    },
+  });
+
+  const backendUser = response.data;
+
+  const user: User = {
+    appUserId: backendUser.UserID,
+    appUserName: backendUser.UserName,
+    firstName: backendUser.FirstName,
+    lastName: backendUser.LastName,
+    email: backendUser.Email,
+    country: String(backendUser.CountryID),
+    gender: backendUser.GenderID ? String(backendUser.GenderID) : null,
+    accountStatus: backendUser.AccountStateID,
+    picture: backendUser.MongoDocumentID
+      ? getUserProfilePictureUrl(backendUser.UserID)
+      : null,
+    isSuperAdmin: false,
+    isAdmin: backendUser.IsAdmin ?? false,
+    isNormal: !(backendUser.IsAdmin ?? false),
+  };
+
+  localStorage.setItem("token", token);
+  localStorage.setItem("user", JSON.stringify(user));
+
+  return user;
+};

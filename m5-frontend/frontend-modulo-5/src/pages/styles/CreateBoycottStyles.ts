@@ -37,8 +37,7 @@ export const createBoycottStyles = {
   panel: (theme: Theme): SxProps<Theme> => ({
     width: '100%',
     maxWidth: '1140px',
-    marginLeft: { xs: 0, lg: '15%' },
-    color: theme.palette.text.primary,
+    color: 'theme.palette.text.primary',
   }),
   breadcrumb: (): SxProps<Theme> => ({
     color: '#c4c8c8',
@@ -57,10 +56,13 @@ export const createBoycottStyles = {
     marginBottom: '6px',
   }),
   subtitle: (): SxProps<Theme> => ({
+    
+    display: 'flex',
+    justifyContent: 'center',
     color: '#d1d4d4',
     fontSize: { xs: '16px', md: '18px' },
     lineHeight: 1.45,
-    maxWidth: '920px',
+    width: '100%',
   }),
   formSection: (): SxProps<Theme> => ({
     display: 'flex',
@@ -147,6 +149,7 @@ export const createBoycottStyles = {
   primaryButton: (theme: Theme): SxProps<Theme> => ({
     minHeight: '52px',
     borderRadius: '26px',
+    padding: '5px 30px',
     textTransform: 'none',
     backgroundColor: theme.palette.primary.main,
     color: '#111111',

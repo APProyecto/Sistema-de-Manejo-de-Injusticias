@@ -1,5 +1,6 @@
 // src/services/boycottService.ts
-import type { ApiResponse, PostCardData, CreateBoycottData, DetailedPostData, FilterCategories } from '../types';
+import { mockEntities } from '../data/mockEntities';
+import type { ApiResponse, PostCardData, DetailedPostData, FilterCategories, simpleEntity, CreateBoycottData } from '../types';
 import { authApi, boycottApi } from './api';
 
 type HttpMethod = 'get' | 'post' | 'delete';
@@ -52,7 +53,7 @@ export const getBoycotts = async (filters?: {
       ...(userId === undefined ? {} : { userId }),
       page: 1,
       pageSize: 10,
-      orderBy: 'votes',
+      orderBy: 'votes'
     },
   });
   
@@ -82,6 +83,41 @@ export const searchBoycotts = async (
   return response.data.data;
 };
 
+const getEntityPicture = async (id: number): Promise<string | null> => {
+  try {
+    const response = await authApi.get(`/api/files/entities/${id}/picture`, {
+      responseType: 'blob',
+    });
+    return URL.createObjectURL(response.data);
+  } catch (error) {
+    console.log(`No picture found for entity ${id}`);
+    return null;
+  }
+}
+
+export const searchEntities = async (
+  inputValue: string,
+  categoryId: number,
+): Promise<simpleEntity[]> => {
+  const response = await boycottApi.get<ApiResponse<simpleEntity[]>>(`/api/entities`, {
+    params: {
+      q: inputValue,
+      categoryEntityId: categoryId
+    },
+  });
+
+  const entitiesWithPictures = await Promise.all(
+    response.data.data.map(async (entity) => ({
+      id: entity.id,
+      categoryId: entity.categoryId,
+      name: entity.name,
+      picture: await getEntityPicture(entity.id), 
+    }))
+  );
+
+  return entitiesWithPictures;
+};
+
 export const getFilterCategories = async (): Promise<FilterCategories> => {
   const response = await boycottApi.get(`/api/boycotts/filters`);
   const { paises, industrias, tiposInjusticia } = response.data.data;
@@ -108,9 +144,35 @@ export const getBoycottById = async (id: number, userId?: number): Promise<Detai
   return response.data.data;
 };
 
-// Crear un nuevo boycott
-export const createBoycott = async (data: CreateBoycottData): Promise<PostCardData> => {
-  const response = await boycottApi.post<ApiResponse<PostCardData>>('/api/boycotts', data);
+/**
+ * Función: createBoycott
+ * Descripción: Crea un nuevo boycott sin evidencias
+ * Inputs: Datos del boycott del formulario
+ * Outputs: Boycott creado
+ */
+// src/services/boycottService.ts
+
+export const createBoycott = async (data: {
+  title: string;
+  description: string;
+  creatorId: number; // ← Cambiar de createdBy a creatorId
+  entityId: number;
+  countryId: number;
+  injusticeTypeId: number;
+  boycottStateId?: number;
+  creatorUsername?: string;
+  caseNumber?: number;
+}): Promise<PostCardData> => {
+  const payload = {
+    ...data,
+    boycottStateId: data.boycottStateId || 1, // Valor por defecto
+  };
+
+  const response = await boycottApi.post<ApiResponse<PostCardData>>(
+    '/api/boycotts',
+    payload
+  );
+  
   return response.data.data;
 };
 
@@ -230,4 +292,103 @@ export const testGetUsers = async (): Promise<any[]> => {
   const response = await authApi.get<any[]>('/api/users/listUsers');
 
   return response.data;
+};
+
+
+// Subir una imagen al servidor
+export const uploadImage = async (file: File): Promise<{ fileId: string; metadata: any }> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await boycottApi.post<ApiResponse<{ mongoFileId: string; gridFsId: string; filename: string; contentType: string; size: number }>>(
+    '/api/upload',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+
+  return {
+    fileId: response.data.data.mongoFileId || response.data.data.gridFsId,
+    metadata: response.data.data,
+  };
+};
+
+// Crear una entidad con imagen
+export const createEntityWithImage = async (
+  entityData: {
+    entityName: string;
+    description?: string;
+    categoryEntityId: number;
+    industryTypeId?: number;
+    sectorId?: number;
+    userId: number;
+  },
+  imageFile?: File
+): Promise<{ entityId: number; entityName: string }> => {
+  
+  let pictureMetadata = null;
+
+  // Si hay imagen, subirla primero
+  if (imageFile) {
+    try {
+      const uploadResult = await uploadImage(imageFile);
+      
+      // Crear el metadata de la imagen en el formato que espera el backend
+      pictureMetadata = {
+        mongoFileId: uploadResult.metadata.mongoFileId,
+        gridFsId: uploadResult.metadata.gridFsId,
+        filename: uploadResult.metadata.filename,
+        contentType: uploadResult.metadata.contentType,
+        size: uploadResult.metadata.size,
+        uploadDate: new Date(),
+      };
+    } catch (error) {
+      console.error('Error al subir la imagen:', error);
+      throw new Error('No se pudo subir la imagen. Por favor, intenta de nuevo.');
+    }
+  }
+
+  // Crear la entidad con la metadata de la imagen
+  const response = await boycottApi.post<ApiResponse<{ entityId: number }>>('/api/entities', {
+    ...entityData,
+    picture: pictureMetadata, // Si no hay imagen, esto será null
+  });
+
+  return {
+    entityId: response.data.data.entityId,
+    entityName: entityData.entityName,
+  };
+};
+
+// Función para actualizar solo la imagen de una entidad existente
+export const updateEntityImage = async (
+  entityId: number,
+  entityName: string,
+  imageFile: File
+): Promise<void> => {
+  // Subir la nueva imagen
+  const uploadResult = await uploadImage(imageFile);
+  
+  const pictureMetadata = {
+    mongoFileId: uploadResult.metadata.mongoFileId,
+    gridFsId: uploadResult.metadata.gridFsId,
+    filename: uploadResult.metadata.filename,
+    contentType: uploadResult.metadata.contentType,
+    size: uploadResult.metadata.size,
+    uploadDate: new Date(),
+  };
+
+  // Actualizar la imagen de la entidad
+  await boycottApi.post(`/api/entities/${entityId}/picture`, {
+    picture: pictureMetadata,
+    entityName, // El backend necesita el entityName para el upsert
+  });
+};
+
+// Función para eliminar la imagen de una entidad
+export const deleteEntityImage = async (entityId: number): Promise<void> => {
+  await boycottApi.delete(`/api/entities/${entityId}/picture`);
 };

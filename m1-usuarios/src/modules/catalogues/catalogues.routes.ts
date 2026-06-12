@@ -19,6 +19,12 @@ import {
   updateCategoryEntity,
   deleteCategoryEntity,
 
+  getEntities,
+  getEntityById,
+  createEntity,
+  updateEntity,
+  deleteEntity,
+
   getInjusticeTypes,
   getInjusticeTypeById,
   createInjusticeType,
@@ -55,5 +61,12 @@ router.get("/injustice-types/:injusticeTypeId", getInjusticeTypeById);
 router.post("/injustice-types", createInjusticeType);
 router.put("/injustice-types/:injusticeTypeId", updateInjusticeType);
 router.delete("/injustice-types/:injusticeTypeId", deleteInjusticeType);
+
+// Entity
+router.get("/entities", getEntities);
+router.get("/entities/:entityId", getEntityById);
+router.post("/entities", createEntity);
+router.put("/entities/:entityId", updateEntity);
+router.delete("/entities/:entityId", deleteEntity);
 
 export default router;

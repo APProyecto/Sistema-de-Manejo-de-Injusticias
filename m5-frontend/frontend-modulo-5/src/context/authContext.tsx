@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import type { ReactNode } from "react";
 import type { User, UserRole } from "../types";
 
@@ -34,7 +41,6 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Cargar sesión guardada al iniciar la app
     const userStr = localStorage.getItem("user");
 
     if (userStr) {
@@ -46,11 +52,13 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
         localStorage.removeItem("user");
       }
     }
+
     setIsLoading(false);
   }, []);
 
-  const login = (userData: User): User => {
+  const login = useCallback((userData: User): User => {
     const normalizedUser = normalizeUser(userData);
+
     const userWithRole: User = {
       ...normalizedUser,
       role: normalizedUser.isAdmin ? "admin" : "user",
@@ -60,19 +68,23 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     setUser(userWithRole);
 
     return userWithRole;
-  };
-  const logout = () => {
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-  };
+  }, []);
 
-  // Función para verificar si el usuario tiene un rol específico
-  const hasRole = (roles: UserRole | UserRole[]): boolean => {
-    if (!user) return false;
+  const hasRole = useCallback(
+    (roles: UserRole | UserRole[]): boolean => {
+      if (!user) return false;
 
-    const rolesArray = Array.isArray(roles) ? roles : [roles];
-    return rolesArray.includes(user?.role || "user");
-  };
+      const rolesArray = Array.isArray(roles) ? roles : [roles];
+      return rolesArray.includes(user.role || "user");
+    },
+    [user],
+  );
 
   const contextValue = useMemo(
     () => ({
@@ -84,7 +96,7 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
       logout,
       hasRole,
     }),
-    [user, isLoading],
+    [user, isLoading, login, logout, hasRole],
   );
 
   return (
@@ -96,8 +108,10 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
+
   return context;
 }

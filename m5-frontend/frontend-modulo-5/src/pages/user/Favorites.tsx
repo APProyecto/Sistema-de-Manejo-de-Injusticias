@@ -5,6 +5,7 @@ import { myPostsStyles } from '../styles/MyPostsStyles';
 import { useEffect, useState } from 'react';
 import { getFavorites } from '../../services/boycottService';
 import { useAuth } from '../../context/authContext';
+import LoadingScreen from '../../components/common/LoadingScreen';
 
 export default function Favorites() {
 
@@ -34,13 +35,14 @@ export default function Favorites() {
     fetchFavorites();
   }, [resolvedUserId]);
 
+  if(loading) return (<LoadingScreen/>);
+
   return (
     <Container sx={myPostsStyles.mainContainer(theme)}>
       <Container sx={myPostsStyles.topContainer(theme)}>
         <Typography variant='h2'>Favorites</Typography>
       </Container>
       <Container sx={myPostsStyles.container(theme)}>
-        {loading ? <Typography>Cargando favoritos...</Typography> : null}
         {error ? <Typography>{error}</Typography> : null}
         {data.map((data) => (
           <PostCard 
