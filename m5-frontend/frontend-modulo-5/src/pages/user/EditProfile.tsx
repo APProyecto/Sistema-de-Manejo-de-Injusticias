@@ -104,7 +104,7 @@ export default function EditProfile() {
     );
 
     const finalPicture = response.picture
-      ? getUserProfilePictureUrl(userId, response.picture.mongoFileId)
+      ? getUserProfilePictureUrl(userId)
       : profilePicture;
 
     const updatedUser: User = {
