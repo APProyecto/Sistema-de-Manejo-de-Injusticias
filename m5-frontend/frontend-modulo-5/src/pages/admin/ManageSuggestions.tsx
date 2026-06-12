@@ -39,7 +39,7 @@ interface SuggestionRow {
 }
 
 const normalizeSuggestion = (item: Suggestion, index: number): SuggestionRow => {
-    const stateName = item.SuggestionState?.StateName?.toString().toLowerCase();
+    const stateId = item.SuggestionStateID;
     return {
         id: item.SuggestionID ?? index + 1,
         date: item.SuggestedAt ? new Date(item.SuggestedAt).toLocaleDateString('es-ES') : 'No date',
@@ -47,9 +47,9 @@ const normalizeSuggestion = (item: Suggestion, index: number): SuggestionRow => 
         description: item.Description ?? '',
         username: item.SuggestedByUser?.Username ?? 'Unknown',
         status:
-        stateName === 'approved'
+        stateId === 2
             ? 'Approved'
-            : stateName === 'rejected'
+            : stateId === 3
             ? 'Rejected'
             : 'Pending',
         adminAnswer: item.AdminAnswer ?? null,

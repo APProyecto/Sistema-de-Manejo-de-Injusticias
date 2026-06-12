@@ -6,9 +6,10 @@ export interface Suggestion {
     Description: string;
     SuggestedAt: string;
     AdminAnswer: string | null;
+    SuggestionStateID: number;
     SuggestionState: { StateName: string };
     SuggestedByUser?: { Username: string; ProfilePicture: string | null };
-    }
+}
 
 export const createSuggestion = async (data: {
     subject: string;
