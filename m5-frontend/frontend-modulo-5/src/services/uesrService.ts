@@ -13,6 +13,10 @@ interface ProfileResponse {
   data: User
 }
 
+export interface AccountState {
+  AccountStateID : number,
+  StateName :  string,
+}
 interface UpdateUserProfileData {
   firstName?: string;
   lastName?: string;
@@ -66,6 +70,56 @@ export const logout = async (): Promise<void> => {
 export const getUserProfile = async (id: number): Promise<ProfileResponse> => {
   const response = await authApi.get<ProfileResponse>(`/api/users/${id}`)
   return response.data
+}
+
+export const getAllAccountStates = async () : Promise<AccountState[]> => {
+  const response = await authApi.get<AccountState[]>(`/api/users/AccountStates`);
+  return response.data
+}
+
+
+export const getAllNormalUsers = async () : Promise<User[]> => {
+  const response = await authApi.get<User[]>(`/api/users/AllNormalUsers`);
+  return response.data
+}
+
+export const getAllAdmins = async () : Promise<User[]> => {
+  const response = await authApi.get<User[]>(`/api/users/AllAdmins`);
+  return response.data
+}
+
+export const postConvertUserToAdmin = async (id: number): Promise<ProfileResponse> =>{
+  const response = await authApi.post<ProfileResponse>("/api/users/toAdmin", 
+    {
+      ID: {
+        UserID: id,
+      }
+    });
+
+    return response.data;
+}
+
+export const postConvertAdminToUser = async (id: number): Promise<ProfileResponse> =>{
+  const response = await authApi.post<ProfileResponse>("/api/users/toUser", 
+    {
+      ID: {
+        UserID: id,
+      }
+    });
+
+    return response.data;
+}
+
+export const postChangeUserState = async (idUser: number, idStatus: number): Promise<ProfileResponse> =>{
+  const response = await authApi.post<ProfileResponse>("/api/users/changeStatus", 
+    {
+
+        UserID: idUser,
+        AccountStateID: idStatus,
+      
+    });
+
+    return response.data;
 }
 
 export const getUserProfilePicture = async (id: number): Promise<ProfileResponse> => {

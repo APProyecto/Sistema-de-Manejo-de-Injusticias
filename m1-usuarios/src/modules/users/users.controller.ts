@@ -151,38 +151,108 @@ export async function checkRol(req: Request, res: Response) {
     });
   }
 }
+
+export async function changeUserStatus(req: Request, res: Response) {
+  try {
+    const {UserID, AccountStateID} = req.body;
+
+
+    if (!Number.isInteger(UserID) || UserID <= 0) {
+      return res.status(400).json({
+        error: "Invalid UserID",
+      });
+    }
+
+    if (!Number.isInteger(AccountStateID) || AccountStateID <= 0) {
+      return res.status(400).json({
+        error: "Invalid UserID",
+      });
+    }
+
+    const changedUser = await prisma.appUser.update({
+      where : {
+        UserID : UserID,
+      },
+      data : {
+        AccountStateID : AccountStateID,
+      }
+    });
+
+    if (!changedUser) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    return res.json({
+      success : true,
+    });
+
+  } catch (error) {
+    console.error("changeUserStatus error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
 export async function convertAdminToUser(req: Request, res: Response) {
   try {
-    const {ID} = req.body;
-    
-    if (!Number.isInteger(ID?.UserID)) {
-      return res.status(400).json({
-        error: "Invalid",
-      });
-    }
-    const Id = Number(ID?.UserID);
-    
-    const Deleterol = await prisma.admin.delete({
-      where : {AdminID : Id},
-    })
+    const { ID } = req.body;
 
-    const rol = await prisma.normalUser.create({
-      data : {NormalUserID : Id},
-    });
-    const isAdminchange = await prisma.appUser.update({
-      where : {UserID : Id},
-      data : {IsAdmin : false},
-    });
-    if(rol){
-      return res.json({
-        result : '1',
+    const Id = Number(ID?.UserID);
+
+    if (!Number.isInteger(Id) || Id <= 0) {
+      return res.status(400).json({
+        error: "Invalid UserID",
       });
     }
+
+    const user = await prisma.appUser.findUnique({
+      where: {
+        UserID: Id,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.admin.deleteMany({
+        where: {
+          AdminID: Id,
+        },
+      });
+
+      await tx.appUser.update({
+        where: {
+          UserID: Id,
+        },
+        data: {
+          IsAdmin: false,
+        },
+      });
+
+      await tx.normalUser.upsert({
+        where: {
+          NormalUserID: Id,
+        },
+        update: {},
+        create: {
+          NormalUserID: Id,
+        },
+      });
+    });
+
     return res.json({
-      result : '0',
+      result: "1",
     });
   } catch (error) {
-    console.error("Rol error:", error);
+    console.error("convertAdminToUser error:", error);
 
     return res.status(500).json({
       error: "Internal server error",
@@ -192,39 +262,63 @@ export async function convertAdminToUser(req: Request, res: Response) {
 
 export async function convertUserToAdmin(req: Request, res: Response) {
   try {
-    const {ID} = req.body;
-    
-    if (!Number.isInteger(ID?.UserID)) {
-      return res.status(400).json({
-        error: "Invalid",
-      });
-    }
+    const { ID } = req.body;
+
     const Id = Number(ID?.UserID);
-    
-    const Deleterol = await prisma.normalUser.delete({
-      where : {NormalUserID : Id},
-    })
 
-    const isAdminchange = await prisma.appUser.update({
-      where : {UserID : ID},
-      data : {IsAdmin : true},
-    });
-
-    const rol = await prisma.admin.create({
-      data : {AdminID : Id,
-              IsSuperAdmin: false,
-    },
-    });
-    if(rol){
-      return res.json({
-        result : '1',
+    if (!Number.isInteger(Id) || Id <= 0) {
+      return res.status(400).json({
+        error: "Invalid UserID",
       });
     }
+
+    const user = await prisma.appUser.findUnique({
+      where: {
+        UserID: Id,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.normalUser.deleteMany({
+        where: {
+          NormalUserID: Id,
+        },
+      });
+
+      await tx.appUser.update({
+        where: {
+          UserID: Id,
+        },
+        data: {
+          IsAdmin: true,
+        },
+      });
+
+      await tx.admin.upsert({
+        where: {
+          AdminID: Id,
+        },
+        update: {
+          IsSuperAdmin: false,
+        },
+        create: {
+          AdminID: Id,
+          IsSuperAdmin: false,
+        },
+      });
+    });
+
     return res.json({
-      result : '0',
+      result: "1",
     });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("convertUserToAdmin error:", error);
 
     return res.status(500).json({
       error: "Internal server error",
@@ -277,22 +371,52 @@ export async function listUsers(_req: Request, res: Response) {
 
 export async function listNormalUsers(_req: Request, res: Response) {
   try {
-    const users = await prisma.normalUser.findMany({
-      include: {
-        AppUser_NormalUser_NormalUserIDToAppUser: true,
+    const normalUsers = await prisma.normalUser.findMany({
+      select: {
+        NormalUserID: true,
+
+        AppUser_NormalUser_NormalUserIDToAppUser: {
+          select: {
+            UserID: true,
+            UserName: true,
+            FirstName: true,
+            LastName: true,
+            Email: true,
+            IsAdmin: true,
+            MongoDocumentID: true,
+            GenderID: true,
+            CountryID: true,
+            AccountStateID: true,
+          },
+        },
       },
     });
-    
-    const decryptedUsers = users.map((user) => ({
-      ...user,
-      FirstName: safeDecryptText(user.AppUser_NormalUser_NormalUserIDToAppUser.FirstName),
-      LastName: safeDecryptText(user.AppUser_NormalUser_NormalUserIDToAppUser.LastName),
-      Email: safeDecryptText(user.AppUser_NormalUser_NormalUserIDToAppUser.Email),
-    }));
 
-    return res.json(decryptedUsers);
+    const formattedUsers = normalUsers.map((normalUser) => {
+      const appUser = normalUser.AppUser_NormalUser_NormalUserIDToAppUser;
+
+      return {
+        appUserId: appUser.UserID,
+        appUserName: appUser.UserName,
+        firstName: safeDecryptText(appUser.FirstName),
+        lastName: safeDecryptText(appUser.LastName),
+        email: safeDecryptText(appUser.Email),
+        country: appUser.CountryID,
+        picture: appUser.MongoDocumentID
+          ? `/api/files/appUser/${appUser.UserID}/picture`
+          : null,
+        gender: appUser.GenderID,
+        accountStatus: appUser.AccountStateID,
+        isSuperAdmin: false,
+        isAdmin: appUser.IsAdmin ?? false,
+        isNormal: true,
+        role: "user",
+      };
+    });
+
+    return res.status(200).json(formattedUsers);
   } catch (error) {
-    console.error("listUsers error:", error);
+    console.error("listNormalUsers error:", error);
 
     return res.status(500).json({
       error: "Internal server error",
@@ -302,22 +426,53 @@ export async function listNormalUsers(_req: Request, res: Response) {
 
 export async function listAdminUsers(_req: Request, res: Response) {
   try {
-    const users = await prisma.admin.findMany({
-      include: {
-        AppUser_Admin_AdminIDToAppUser: true,
+    const admins = await prisma.admin.findMany({
+      select: {
+        AdminID: true,
+        IsSuperAdmin: true,
+
+        AppUser_Admin_AdminIDToAppUser: {
+          select: {
+            UserID: true,
+            UserName: true,
+            FirstName: true,
+            LastName: true,
+            Email: true,
+            IsAdmin: true,
+            MongoDocumentID: true,
+            GenderID: true,
+            CountryID: true,
+            AccountStateID: true,
+          },
+        },
       },
     });
-    
-    const decryptedUsers = users.map((user) => ({
-      ...user,
-      FirstName: safeDecryptText(user.AppUser_Admin_AdminIDToAppUser.FirstName),
-      LastName: safeDecryptText(user.AppUser_Admin_AdminIDToAppUser.LastName),
-      Email: safeDecryptText(user.AppUser_Admin_AdminIDToAppUser.Email),
-    }));
 
-    return res.json(decryptedUsers);
+    const formattedUsers = admins.map((admin) => {
+      const appUser = admin.AppUser_Admin_AdminIDToAppUser;
+
+      return {
+        appUserId: appUser.UserID,
+        appUserName: appUser.UserName,
+        firstName: safeDecryptText(appUser.FirstName),
+        lastName: safeDecryptText(appUser.LastName),
+        email: safeDecryptText(appUser.Email),
+        country: appUser.CountryID,
+        picture: appUser.MongoDocumentID
+          ? `/api/files/appUser/${appUser.UserID}/picture`
+          : null,
+        gender: appUser.GenderID,
+        accountStatus: appUser.AccountStateID,
+        isSuperAdmin: admin.IsSuperAdmin,
+        isAdmin: appUser.IsAdmin,
+        isNormal: false,
+        role: admin.IsSuperAdmin ? "master" : "admin",
+      };
+    });
+
+    return res.status(200).json(formattedUsers);
   } catch (error) {
-    console.error("listUsers error:", error);
+    console.error("listAdminUsers error:", error);
 
     return res.status(500).json({
       error: "Internal server error",
@@ -638,6 +793,20 @@ export async function loginUser(req: Request, res: Response) {
       });
     }
 
+    let isSuperAdmin = false;
+    if(appUser.IsAdmin) {
+      const admin = await prisma.admin.findUnique({
+        where : {
+          AdminID : appUser.UserID
+        },
+        select : {
+          IsSuperAdmin : true,
+        }
+      });
+
+      isSuperAdmin = admin?.IsSuperAdmin || false;
+    }
+
     return res.status(200).json({
       message: "Login successful",
       user: {
@@ -646,6 +815,7 @@ export async function loginUser(req: Request, res: Response) {
         lastName: safeDecryptText(appUser.LastName),
         username: appUser.UserName,
         email: safeDecryptText(appUser.Email),
+        isSuperAdmin : isSuperAdmin,
         isAdmin: appUser.IsAdmin,
         mongoDocumentId: appUser.MongoDocumentID,
       },

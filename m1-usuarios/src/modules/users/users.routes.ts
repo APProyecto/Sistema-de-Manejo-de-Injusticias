@@ -16,7 +16,8 @@ import {
   updateAppUserProfile,
   listAdminUsers,
   listNormalUsers,
-  listAccountStates
+  listAccountStates,
+  changeUserStatus
 } from "./users.controller";
 
 const router = Router();
@@ -39,4 +40,5 @@ router.get("/pruebatoken", pruebaToken);
 router.get("/AllAdmins", listAdminUsers);
 router.get("/AllNormalUsers", listNormalUsers);
 router.get("/AccountStates", listAccountStates);
+router.post("/changeStatus",changeUserStatus );
 export default router;
