@@ -20,6 +20,7 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import { manageUsersStyles } from "../styles/ManageUsersStyles";
+import { useAuth } from "../../context/authContext";
 
 import {
   getAllNormalUsers,
@@ -28,6 +29,7 @@ import {
   postConvertAdminToUser,
   getAllAccountStates,
   getUserProfilePictureUrl,
+  postChangeUserState,
 } from "../../services/uesrService";
 
 import type { AccountState } from "../../services/uesrService";
@@ -46,12 +48,17 @@ interface ManageUserRow {
 
 export default function ManageUsers() {
   const theme = useTheme();
+  const { user: currentUser } = useAuth();
+
+  const canManageRoles = Boolean(currentUser?.isSuperAdmin);
+
   const [tabIndex, setTabIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<ManageUserRow[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [accountStates, setAccountStates] = useState<AccountState[]>([]);
   const [changingRoleId, setChangingRoleId] = useState<number | null>(null);
+  const [changingStatusId, setChangingStatusId] = useState<number | null>(null);
 
   const mapUserToManageRow = (
     user: User,
@@ -130,6 +137,11 @@ export default function ManageUsers() {
   }, [users, searchTerm, tabIndex]);
 
   const handleRoleToggle = async (id: number) => {
+    if (!canManageRoles) {
+      console.warn("Only super admins can change user roles.");
+      return;
+    }
+
     const selectedUser = users.find((user) => user.id === id);
 
     if (!selectedUser) return;
@@ -156,22 +168,36 @@ export default function ManageUsers() {
     }
   };
 
-  const handleStatusChange = (id: number, statusId: number) => {
+  const handleStatusChange = async (id: number, statusId: number) => {
     const selectedState = accountStates.find(
       (state) => state.AccountStateID === statusId,
     );
 
-    setUsers((current) =>
-      current.map((user) =>
-        user.id === id
-          ? {
-              ...user,
-              statusId,
-              status: selectedState?.StateName ?? user.status,
-            }
-          : user,
-      ),
-    );
+    if (!selectedState) return;
+
+    try {
+      setChangingStatusId(id);
+
+      await postChangeUserState(id, statusId);
+
+      setUsers((current) =>
+        current.map((user) =>
+          user.id === id
+            ? {
+                ...user,
+                statusId,
+                status: selectedState.StateName,
+              }
+            : user,
+        ),
+      );
+
+      await loadUsers();
+    } catch (error) {
+      console.error("Error changing user status:", error);
+    } finally {
+      setChangingStatusId(null);
+    }
   };
 
   const statusBgColor = (status: string) => {
@@ -285,7 +311,7 @@ export default function ManageUsers() {
 
             <Box
               sx={{
-                maxHeight: "calc(100vh - 360px)",
+                maxHeight: "calc(100vh - 460px)",
                 overflowY: "auto",
                 overflowX: "hidden",
                 display: "flex",
@@ -350,6 +376,7 @@ export default function ManageUsers() {
                   >
                     <Select
                       value={user.statusId}
+                      disabled={changingStatusId === user.id}
                       onChange={(event) =>
                         handleStatusChange(user.id, Number(event.target.value))
                       }
@@ -380,7 +407,9 @@ export default function ManageUsers() {
                     }
                     onClick={() => handleRoleToggle(user.id)}
                     disabled={
-                      user.role === "master" || changingRoleId === user.id
+                      !canManageRoles ||
+                      user.role === "master" ||
+                      changingRoleId === user.id
                     }
                     sx={manageUsersStyles.adminButton(
                       theme,
@@ -388,13 +417,15 @@ export default function ManageUsers() {
                     )}
                     startIcon={<AdminPanelSettingsOutlinedIcon />}
                   >
-                    {changingRoleId === user.id
-                      ? "Updating..."
-                      : user.role === "master"
-                        ? "Master admin"
-                        : user.role === "admin"
-                          ? "Revoke admin"
-                          : "Make admin"}
+                    {!canManageRoles
+                      ? "Only super admin"
+                      : changingRoleId === user.id
+                        ? "Updating..."
+                        : user.role === "master"
+                          ? "Master admin"
+                          : user.role === "admin"
+                            ? "Revoke admin"
+                            : "Make admin"}
                   </Button>
                 </Box>
               ))}

@@ -110,6 +110,17 @@ export const postConvertAdminToUser = async (id: number): Promise<ProfileRespons
     return response.data;
 }
 
+export const postChangeUserState = async (idUser: number, idStatus: number): Promise<ProfileResponse> =>{
+  const response = await authApi.post<ProfileResponse>("/api/users/changeStatus", 
+    {
+
+        UserID: idUser,
+        AccountStateID: idStatus,
+      
+    });
+
+    return response.data;
+}
 
 export const getUserProfilePicture = async (id: number): Promise<ProfileResponse> => {
   const response = await authApi.get<ProfileResponse>(`/api/files/appUser/${id}/picture`)

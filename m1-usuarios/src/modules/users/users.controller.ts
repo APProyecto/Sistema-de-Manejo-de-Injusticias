@@ -151,6 +151,52 @@ export async function checkRol(req: Request, res: Response) {
     });
   }
 }
+
+export async function changeUserStatus(req: Request, res: Response) {
+  try {
+    const {UserID, AccountStateID} = req.body;
+
+
+    if (!Number.isInteger(UserID) || UserID <= 0) {
+      return res.status(400).json({
+        error: "Invalid UserID",
+      });
+    }
+
+    if (!Number.isInteger(AccountStateID) || AccountStateID <= 0) {
+      return res.status(400).json({
+        error: "Invalid UserID",
+      });
+    }
+
+    const changedUser = await prisma.appUser.update({
+      where : {
+        UserID : UserID,
+      },
+      data : {
+        AccountStateID : AccountStateID,
+      }
+    });
+
+    if (!changedUser) {
+      return res.status(404).json({
+        error: "User not found",
+      });
+    }
+
+    return res.json({
+      success : true,
+    });
+
+  } catch (error) {
+    console.error("changeUserStatus error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
 export async function convertAdminToUser(req: Request, res: Response) {
   try {
     const { ID } = req.body;
@@ -747,6 +793,20 @@ export async function loginUser(req: Request, res: Response) {
       });
     }
 
+    let isSuperAdmin = false;
+    if(appUser.IsAdmin) {
+      const admin = await prisma.admin.findUnique({
+        where : {
+          AdminID : appUser.UserID
+        },
+        select : {
+          IsSuperAdmin : true,
+        }
+      });
+
+      isSuperAdmin = admin?.IsSuperAdmin || false;
+    }
+
     return res.status(200).json({
       message: "Login successful",
       user: {
@@ -755,6 +815,7 @@ export async function loginUser(req: Request, res: Response) {
         lastName: safeDecryptText(appUser.LastName),
         username: appUser.UserName,
         email: safeDecryptText(appUser.Email),
+        isSuperAdmin : isSuperAdmin,
         isAdmin: appUser.IsAdmin,
         mongoDocumentId: appUser.MongoDocumentID,
       },
