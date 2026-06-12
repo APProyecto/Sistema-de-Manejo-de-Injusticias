@@ -146,7 +146,7 @@ export default function MostFollowedCases() {
           >
           <Box sx={{width:'25%',display:'flex',my:1}}>
             <Avatar
-            src={StarbucksLogo}
+            src={Query.entityPicture}
                 alt="Logo" 
                 style={{ width: 30, height: 30}}
                 sx={{ m:1, my: 'Auto'}}

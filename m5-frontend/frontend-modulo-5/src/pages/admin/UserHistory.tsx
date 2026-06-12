@@ -59,7 +59,6 @@ export default function UserHistory() {
     try{
       const response = await fetch(`http://localhost:3004/api/tracking/getUserHistory?${parameters.toString()}`);
       const data = await response.json();
-
       if (Array.isArray(data)) {
         setUserS(data);
       } else {
@@ -86,6 +85,7 @@ export default function UserHistory() {
     }
     return theme.palette.background.default;
     }
+
 
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default,overflowY: 'auto'}}>

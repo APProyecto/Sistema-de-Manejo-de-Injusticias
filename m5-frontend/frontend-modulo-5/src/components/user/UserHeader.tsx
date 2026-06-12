@@ -9,7 +9,7 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
   getUserProfilePictureUrl,
-} from "../../services/uesrService";
+} from "../../services/userService";
 export default function UserHeader() {
   const theme = useTheme();
   const navigate = useNavigate();

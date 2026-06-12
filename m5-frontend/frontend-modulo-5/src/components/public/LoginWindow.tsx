@@ -17,7 +17,7 @@ import AuthLogo from "../../assets/auth0.svg";
 import { GoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
 import { useAuth } from "../../context/authContext";
-import { login as loginService } from "../../services/uesrService";
+import { login as loginService } from "../../services/userService";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth0 } from "@auth0/auth0-react";
