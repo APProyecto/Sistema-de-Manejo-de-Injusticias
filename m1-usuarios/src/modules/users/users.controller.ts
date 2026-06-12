@@ -325,6 +325,19 @@ export async function listAdminUsers(_req: Request, res: Response) {
   }
 }
 
+export async function listAccountStates(_req: Request, res: Response) {
+  try {
+    const accounts = await prisma.accountState.findMany();
+    return res.json(accounts);
+  } catch (error) {
+    console.error("listUsers error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
 /**
  * Function: getUserIdByEmail
  * Inputs:
