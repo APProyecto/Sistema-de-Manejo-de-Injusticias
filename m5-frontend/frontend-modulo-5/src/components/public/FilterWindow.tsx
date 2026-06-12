@@ -62,7 +62,7 @@ export default function FilterWindow({ open, onClose }: FilterWindowProps) {
 
   const handleApply = () => {
     setFilters(localFilters);
-    performSearch();
+    performSearch(localFilters); // ← pasa los valores frescos directamente
     onClose();
   };
 

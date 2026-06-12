@@ -1,8 +1,7 @@
-import { Button, InputAdornment, TextField, Badge } from "@mui/material";
+import { Button, InputAdornment, TextField, Badge, Box } from "@mui/material";
 import { useTheme } from "@mui/material";
 import TuneIcon from "@mui/icons-material/Tune";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box } from "@mui/system";
 import { searchBarStyles } from "../styles/SearchBarStyles";
 import FilterWindow from "../public/FilterWindow";
 import { useState } from "react";
@@ -44,7 +43,7 @@ export default function Searchbar() {
                             <InputAdornment position="start">
                                 <SearchIcon 
                                     sx={searchBarStyles.searchIcon(theme)} 
-                                    onClick={performSearch}
+                                    onClick={()=> performSearch()}
                                     style={{ cursor: 'pointer' }}
                                 />
                             </InputAdornment>
