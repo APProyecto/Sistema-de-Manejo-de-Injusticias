@@ -58,7 +58,7 @@ export default function Statistics() {
   ];
 
   {/* e */}
-  let FavoritesByCategory =[
+  let FavoritesByCategoryMale =[
     {label:'support for wars',value:30},
     {label:'animal abuse',value:70},
     {label:'environmental damage',value:70},
@@ -66,6 +66,22 @@ export default function Statistics() {
   ];
 
   {/* f */}
+  let FavoritesByCategoryFemale =[
+    {label:'support for wars',value:30},
+    {label:'animal abuse',value:70},
+    {label:'environmental damage',value:70},
+    {label:'discrimination',value:70},
+  ];
+
+  {/* g */}
+  let FavoritesByCategoryOther =[
+    {label:'support for wars',value:30},
+    {label:'animal abuse',value:70},
+    {label:'environmental damage',value:70},
+    {label:'discrimination',value:70},
+  ];
+
+  {/* h */}
   let IndustiesWithMoreBoycotts =[
     {top:1,Industry:'Starbucks',value:256},
     {top:2,Industry:'Amazon',value:128},
@@ -74,13 +90,13 @@ export default function Statistics() {
     {top:5,Industry:'Cocacola',value:16},
   ];
 
-  {/* g */}
+  {/* i */}
   const [approved, setApproved] = useState(0);
   const [rejected, setRejected] = useState(0);
   const [Pending, setPending] = useState(0);
   const [averageResolutionTime, setAverageResolutionTime] = useState(0);
 
-  {/* h */}
+  {/* j */}
   let TopReasonsReportRejection =[
     {reason:'False information',value:20},
     {reason:'duplicate content',value:10},
@@ -89,7 +105,7 @@ export default function Statistics() {
     {reason:'out of context',value:6}
   ];
 
-  {/* i */}
+  {/* k */}
   let BoycottsByInjusticeCategory =[
     {label:'support for wars',value:342, percentage:18.5},
     {label:'animal abuse',value:298, percentage:16.1},
@@ -99,7 +115,7 @@ export default function Statistics() {
     {label:'Others',value:98, percentage:5.3}
   ];
 
-  {/* j */}
+  {/* l */}
   let BoycottsDistributionPerCountry =[
     {country:'China',value:20},
     {country:'India',value:10},
@@ -107,7 +123,7 @@ export default function Statistics() {
     {country:'United Kingdom',value:5}
   ];
 
-  {/* k */}
+  {/* m */}
   let UsersWithMoreBoycottsPublished =[
     {top:1,user:'@activist_maria',value:87},
     {top:2,user:'@eco_warrior_23',value:76},
@@ -116,14 +132,14 @@ export default function Statistics() {
     {top:4,user:'@human_rights_defender',value:54},
   ];
 
-  {/* l */}
+  {/* n */}
   let TopBoycottsWithBestRating =[
     {boycott:'Starbucks and labor unions',indicted:'Starbucks',date:'2026-03-15',stars:4.8},
     {boycott:'Amazon practices in warehouses',indicted:'Amazon',date:'2026-02-28',stars:4.7},
     {boycott:'Nestlé and bottled water',indicted:'Nestlé',date:'2026-03-22',stars:4.6}
   ];
 
-  {/* m */}
+  {/* o */}
   let TopBoycottsWithWorstRating =[
     {boycott:'Rumors without evidence about TechCo',indicted:'TechCo',date:'2026-04-01',stars:1.2},
     {boycott:'Baseless accusation against LocalShop',indicted:'LocalShop',date:'2026-03-28',stars:1.5},
@@ -308,17 +324,17 @@ export default function Statistics() {
           </Card>
         </Grid>
 
-        {/* Graphic : e. Favorite Campaigns by Category/Genre */}
+        {/* Graphic : e. Favorite Campaigns by Category/Genre Male */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={StatisticsStyles.LabelBox(theme)}>
-                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>e. Favorite campaigns by category</Typography>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>e. Favorite campaigns by category Male</Typography>
               </Box>
               <PieChart
                 series={[
                   {
-                    data: FavoritesByCategory,
+                    data: FavoritesByCategoryMale,
                     outerRadius: 100,
                     arcLabel: (item) => `${item.label}`
                   },
@@ -334,12 +350,65 @@ export default function Statistics() {
           </Card>
         </Grid>
 
-        {/* Graphic : f. Top Companies with Most Boycotts */}
+        {/* Graphic : f. Favorite Campaigns by Category/Genre Female */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card sx={StatisticsStyles.CardGraphic(theme)}>
+            <Box sx={StatisticsStyles.BoxGraphic(theme)}>
+              <Box sx={StatisticsStyles.LabelBox(theme)}>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>f. Favorite campaigns by category Female</Typography>
+              </Box>
+              <PieChart
+                series={[
+                  {
+                    data: FavoritesByCategoryFemale,
+                    outerRadius: 100,
+                    arcLabel: (item) => `${item.label}`
+                  },
+                ]}
+                sx={{
+                  '& .MuiChartsTooltip-cell': {
+                    color:theme.palette.background.default
+                  },
+                }}
+                height={300}
+              />
+            </Box>
+          </Card>
+        </Grid>
+
+        {/* Graphic : g. Favorite Campaigns by Category/Genre Other */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card sx={StatisticsStyles.CardGraphic(theme)}>
+            <Box sx={StatisticsStyles.BoxGraphic(theme)}>
+              <Box sx={StatisticsStyles.LabelBox(theme)}>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>g. Favorite campaigns by category Other</Typography>
+              </Box>
+              <PieChart
+                series={[
+                  {
+                    data: FavoritesByCategoryOther,
+                    outerRadius: 100,
+                    arcLabel: (item) => `${item.label}`
+                  },
+                ]}
+                sx={{
+                  '& .MuiChartsTooltip-cell': {
+                    color:theme.palette.background.default
+                  },
+                }}
+                height={300}
+              />
+            </Box>
+          </Card>
+        </Grid>
+
+
+        {/* Graphic : h. Top Companies with Most Boycotts */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={{...StatisticsStyles.LabelBox(theme),pl:2,mb:2}}>
-                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>f. Top companies with most boycotts</Typography>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>h. Top companies with most boycotts</Typography>
               </Box>
               <Box sx={StatisticsStyles.ElementMapBox(theme)}>
                 {IndustiesWithMoreBoycotts.map((Industy) => (
@@ -363,12 +432,12 @@ export default function Statistics() {
           </Card>
         </Grid>
 
-        {/* Graphic : g. Moderation Statistics */}
+        {/* Graphic : i. Moderation Statistics */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={{...StatisticsStyles.LabelBox(theme),pl:2,mb:2}}>
-                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>g. Moderation statistics</Typography>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>i. Moderation statistics</Typography>
               </Box>
               <Box sx={StatisticsStyles.ElementMapBox(theme)}>
 
@@ -409,12 +478,12 @@ export default function Statistics() {
           </Card>
         </Grid>
 
-        {/* Graphic : h. Top Reasons for Report Rejection */}
+        {/* Graphic : j. Top Reasons for Report Rejection */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={StatisticsStyles.LabelBox(theme)}>
-                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>h. Top reasons for report rejection</Typography>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>j. Top reasons for report rejection</Typography>
               </Box>
               <BarChart
                 dataset={TopReasonsReportRejection}
@@ -430,12 +499,12 @@ export default function Statistics() {
           </Card>
         </Grid>
 
-        {/*  Graphic : i. Boycotts by Injustice Category */}
+        {/*  Graphic : k. Boycotts by Injustice Category */}
         <Grid size={{ xs: 12, md: 12 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={StatisticsStyles.LabelBox(theme)}>
-                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>i. Boycotts by injustice category</Typography>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>k. Boycotts by injustice category</Typography>
               </Box>
               <PieChart
                 series={[
@@ -456,12 +525,12 @@ export default function Statistics() {
           </Card>
         </Grid>
 
-        {/*  Graphic : j. Geographic Distribution of Boycotts by Country */}
+        {/*  Graphic : l. Geographic Distribution of Boycotts by Country */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={{...StatisticsStyles.LabelBox(theme),pb:1.1}}>
-                <Typography variant='body1' sx={StatisticsStyles.LabelGraphic(theme)}>j. Geographic distribution of boycotts by country</Typography>
+                <Typography variant='body1' sx={StatisticsStyles.LabelGraphic(theme)}>l. Geographic distribution of boycotts by country</Typography>
               </Box>
               <BarChart
                 dataset={BoycottsDistributionPerCountry}
@@ -475,12 +544,12 @@ export default function Statistics() {
           </Card>
         </Grid>
 
-        {/* Graphic : k. Top Users with Most Boycotts Published */}
+        {/* Graphic : m. Top Users with Most Boycotts Published */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={{...StatisticsStyles.LabelBox(theme),pl:2,mb:2}}>
-                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>k. Top users with most boycotts published</Typography>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>m. Top users with most boycotts published</Typography>
               </Box>
               <Box sx={StatisticsStyles.ElementMapBox(theme)}>
                 {UsersWithMoreBoycottsPublished.map((User) => (
@@ -504,12 +573,12 @@ export default function Statistics() {
           </Card>
         </Grid>
 
-        {/* Graphic : l. Top Boycotts with Best Rating */}
+        {/* Graphic : n. Top Boycotts with Best Rating */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={{...StatisticsStyles.LabelBox(theme),pl:2,mb:2}}>
-                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>l. Top boycotts with best rating</Typography>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>n. Top boycotts with best rating</Typography>
               </Box>
               <Box sx={StatisticsStyles.ElementMapBox(theme)}>
                 {TopBoycottsWithBestRating.map((Boycott) => (
@@ -540,12 +609,12 @@ export default function Statistics() {
           </Card>
         </Grid>
 
-        {/* Graphic : m. Top Boycotts with worst Rating */}
+        {/* Graphic : o. Top Boycotts with worst Rating */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={StatisticsStyles.CardGraphic(theme)}>
             <Box sx={StatisticsStyles.BoxGraphic(theme)}>
               <Box sx={{...StatisticsStyles.LabelBox(theme),pl:2,mb:2}}>
-                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>m. Top boycotts with worst rating</Typography>
+                <Typography variant='h6' sx={StatisticsStyles.LabelGraphic(theme)}>o. Top boycotts with worst rating</Typography>
               </Box>
               <Box sx={StatisticsStyles.ElementMapBox(theme)}>
                 {TopBoycottsWithWorstRating.map((Boycott) => (
