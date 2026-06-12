@@ -72,7 +72,7 @@ export const darkTheme = createTheme({
     grey: {"100": '#3e3e3a', "200": '#848787'},
     success: {main: '#eeca3c'},
     error: {main: '#640d0d'},
-    divider: '#d5dcdc',
+    divider: '#d5dcdc'
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
