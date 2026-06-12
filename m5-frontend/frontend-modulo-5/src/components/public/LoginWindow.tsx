@@ -8,6 +8,7 @@ import {
   TextField,
   Button,
   Box,
+  Alert,
 } from "@mui/material";
 import { loginWindowStyles } from "../styles/LoginWindowStyles";
 import CloseIcon from "@mui/icons-material/Close";
@@ -18,6 +19,8 @@ import { useState } from "react";
 import { useAuth } from "../../context/authContext";
 import { login as loginService } from "../../services/uesrService";
 import { useNavigate } from "react-router-dom";
+
+import { useAuth0 } from "@auth0/auth0-react";
 
 interface LoginWindowProps {
   open: boolean;
@@ -34,31 +37,41 @@ export default function LoginWindow({
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const { loginWithRedirect } = useAuth0();
 
+  const handleAuth0Login = () => {
+    setError("");
+
+    sessionStorage.removeItem("auth0LoggingOut");
+
+    loginWithRedirect({
+      appState: {
+        returnTo: "/profile",
+      },
+    });
+  };
   const handleLogin = async () => {
     setError("");
     try {
       const response = await loginService(email, password);
-
-      console.log("response:", response);
 
       const loggedUser = login(response.user);
 
       onLoginSuccess(loggedUser);
 
       (document.activeElement as HTMLElement)?.blur();
-
+      setSuccess("User registered successfully!");
       onClose();
 
-      if (loggedUser.role === "admin") {
+      if (loggedUser.isAdmin) {
         navigate("/admin/dashboard");
       } else {
         navigate("/profile");
       }
     } catch (err: any) {
-      console.log("error:", err);
-      setError(err.message);
+      setError("Incorrect credentials");
     }
 
     /*
@@ -108,7 +121,7 @@ export default function LoginWindow({
 
         onClose();
 
-        if (loggedUser.role === "admin") {
+        if (loggedUser.isAdmin) {
           navigate("/admin/dashboard");
         } else {
           navigate("/profile");
@@ -141,7 +154,10 @@ export default function LoginWindow({
           </Typography>{" "}
           and acknowledge that you understand the Privacy Policy
         </Typography>
-        <Button sx={loginWindowStyles.auth0Button(theme)} onClick={handleLogin}>
+        <Button
+          sx={loginWindowStyles.auth0Button(theme)}
+          onClick={handleAuth0Login}
+        >
           <img src={AuthLogo} width={30} height={30} />
           <Typography sx={loginWindowStyles.textButton(theme)}>
             Continue with Auth0
@@ -180,7 +196,7 @@ export default function LoginWindow({
           sx={loginWindowStyles.textField(theme)}
           onChange={(e) => setEmail(e.target.value)}
           required
-          label="Email or username"
+          label="Email"
           variant="filled"
           size="small"
         />
@@ -198,6 +214,34 @@ export default function LoginWindow({
         <Typography sx={loginWindowStyles.typography(theme)} variant="body1">
           Don't have an account? Sign Up
         </Typography>
+        {success && (
+          <Alert
+            severity="success"
+            onClose={() => setSuccess("")}
+            sx={{
+              position: "fixed",
+              bottom: 20,
+              right: 20,
+              zIndex: 9999,
+            }}
+          >
+            {success}
+          </Alert>
+        )}
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => setError("")}
+            sx={{
+              position: "fixed",
+              bottom: 20,
+              right: 20,
+              zIndex: 9999,
+            }}
+          >
+            {error}
+          </Alert>
+        )}
         <Button
           sx={loginWindowStyles.secundaryButton(theme)}
           onClick={handleLogin}

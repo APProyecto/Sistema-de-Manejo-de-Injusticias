@@ -14,8 +14,8 @@ import { obtenerBoycottPorId } from "./boycott.service";
  
 /** Obtiene los parámetros de paginación desde la query de la solicitud. */
 function obtenerPaginacion(query: Request["query"]) {
-  const pagina = Math.max(1, parseInt(query.page as string) || 1);
-  const tamano = Math.min(100, Math.max(1, parseInt(query.pageSize as string) || 10));
+  const pagina = Math.max(1, Number.parseInt(query.page as string, 10) || 1);
+  const tamano = Math.min(100, Math.max(1, Number.parseInt(query.pageSize as string, 10) || 10));
   return { pagina, tamano, saltar: (pagina - 1) * tamano };
 }
 
@@ -67,7 +67,8 @@ function resolveMongoFileId(
   fileMetadata: { mongoFileId?: unknown; gridFsId?: unknown } | undefined
 ): string {
   if (!fileMetadata) return "";
-  return String(fileMetadata.mongoFileId ?? fileMetadata.gridFsId ?? "");
+  const fileId = fileMetadata.mongoFileId ?? fileMetadata.gridFsId;
+  return typeof fileId === "string" || typeof fileId === "number" ? String(fileId) : "";
 }
 
 async function mapBoycottToFrontend(
@@ -95,16 +96,12 @@ async function mapBoycottToFrontend(
     description: boycottDoc?.description ?? "",
     creation_date: b.PublicationDate.toISOString(),
     votes: String(b.VotesInFavor - b.VotesAgainst),
-    voted_by_user: userId !== null
-      ? (b.UserVotesBoycott?.[0]?.IsInFavor ?? null)
-      : undefined,
+    voted_by_user: userId === null ? undefined : (b.UserVotesBoycott?.[0]?.IsInFavor ?? null),
     coments: String(b.NumberComments),
     evidences: String(boycottDoc?.evidence?.length ?? 0),
     state: b.BoycottState?.StateName ?? "",
     caseNumber: b.CaseNumber ?? undefined,
-    is_favorite: userId !== null
-      ? b.UserFavoriteBoycott?.length > 0
-      : undefined,
+    is_favorite: userId === null ? undefined : b.UserFavoriteBoycott?.length > 0,
   };
 }
 
@@ -121,7 +118,8 @@ export async function listarBoycotts(req: Request, res: Response): Promise<void>
   try {
     const { pagina, tamano, saltar } = obtenerPaginacion(req.query);
     const orderBy = (req.query.orderBy as string) ?? "createdAt";
-    const userId: number | null = (req as any).user?.id ?? null;
+    const userIdFromQuery = req.query.userId ? parseInt(req.query.userId as string, 10) : null;
+    const userId: number | null = (req as any).user?.id ?? userIdFromQuery ?? null;
 
     const orderClause =
       orderBy === "votes"
@@ -168,25 +166,26 @@ export async function listarBoycotts(req: Request, res: Response): Promise<void>
 export async function buscarBoycotts(req: Request, res: Response): Promise<void> {
   try {
     const { pagina, tamano, saltar } = obtenerPaginacion(req.query);
-    const userId: number | null = (req as any).user?.id ?? null;
+    const userIdFromQuery = req.query.userId ? parseInt(req.query.userId as string, 10) : null;
+    const userId: number | null = (req as any).user?.id ?? userIdFromQuery ?? null;
     const {
       q, categoryId, injusticeTypeId, countryId,
       continentId, industryTypeId, sectorId, orderBy,
     } = req.query as Record<string, string | undefined>;
 
     const entityFilter: Record<string, unknown> = {};
-    if (categoryId)     entityFilter.CategoryEntityID = parseInt(categoryId);
-    if (industryTypeId) entityFilter.IndustryTypeID   = parseInt(industryTypeId);
-    if (sectorId)       entityFilter.SectorID         = parseInt(sectorId);
+    if (categoryId)     entityFilter.CategoryEntityID = Number.parseInt(categoryId, 10);
+    if (industryTypeId) entityFilter.IndustryTypeID   = Number.parseInt(industryTypeId, 10);
+    if (sectorId)       entityFilter.SectorID         = Number.parseInt(sectorId, 10);
 
     const where: Record<string, unknown> = {
       BoycottState: { StateName: "Active" },
       DeletedByUser: false,
     };
 
-    if (injusticeTypeId) where.InjusticeTypeID = parseInt(injusticeTypeId);
-    if (countryId)       where.CountryID       = parseInt(countryId);
-    if (continentId)     where.Country         = { ContinentID: parseInt(continentId) };
+    if (injusticeTypeId) where.InjusticeTypeID = Number.parseInt(injusticeTypeId, 10);
+    if (countryId)       where.CountryID       = Number.parseInt(countryId, 10);
+    if (continentId)     where.Country         = { ContinentID: Number.parseInt(continentId, 10) };
 
     const tieneEntityFilter = Object.keys(entityFilter).length > 0;
 
@@ -271,10 +270,10 @@ export async function obtenerFiltros(_req: Request, res: Response): Promise<void
 
 export async function getBoycottByIdController(req: Request, res: Response): Promise<void> {
   try {
-    const id = parseInt(req.params.id as string);
+    const id = Number.parseInt(req.params.id as string, 10);
     const userId: number | null = (req as any).user?.id ?? null;
 
-    if (isNaN(id)) {
+    if (Number.isNaN(id)) {
       res.status(400).json({ ok: false, mensaje: "Invalid ID" });
       return;
     }
@@ -290,5 +289,36 @@ export async function getBoycottByIdController(req: Request, res: Response): Pro
   } catch (error) {
     console.error("[getBoycottByIdController]", error);
     res.status(500).json({ ok: false, mensaje: "Internal server error" });
+  }
+}
+
+export async function listarFavoritosBoycotts(req: Request, res: Response): Promise<void> {
+  try {
+    const userId: number | null =
+      (req as any).user?.id ??
+      (req.query.userId ? Number(req.query.userId) : null);
+
+    if (!userId || Number.isNaN(userId)) {
+      res.status(400).json({ ok: false, mensaje: "Falta userId para obtener favoritos" });
+      return;
+    }
+
+    const favoritos = await prisma.boycott.findMany({
+      where: {
+        DeletedByUser: false,
+        UserFavoriteBoycott: {
+          some: { UserID: userId },
+        },
+      },
+      select: buildSelect(userId),
+      orderBy: { PublicationDate: "desc" },
+    });
+
+    const data = await Promise.all(favoritos.map((b) => mapBoycottToFrontend(b, userId)));
+
+    res.json({ ok: true, total: data.length, data });
+  } catch (error) {
+    console.error("[listarFavoritosBoycotts]", error);
+    res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
   }
 }

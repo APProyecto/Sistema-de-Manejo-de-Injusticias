@@ -59,10 +59,9 @@ export const login = async (identifier: string, password: string): Promise<Login
 };
 
 export const logout = async (): Promise<void> => {
-  await authApi.post('/api/logout')
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-}
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
 
 export const getUserProfile = async (id: number): Promise<ProfileResponse> => {
   const response = await authApi.get<ProfileResponse>(`/api/users/${id}`)
@@ -105,4 +104,60 @@ export const getUserProfilePictureUrl = (
   const query = version ? `?v=${encodeURIComponent(version)}` : "";
 
   return `${authApi.defaults.baseURL}/api/files/appUser/${id}/picture`;
+};
+
+export const getEntityPictureUrlByBoycottId = (
+  id: number,
+  version?: string
+): string => {
+  const query = version ? `?v=${encodeURIComponent(version)}` : "";
+
+  return `${authApi.defaults.baseURL}/api/files/entityBoycott/${id}/picture`;
+};
+
+export const getInjusticePictureUrlByBoycottId = (
+  id: number,
+  version?: string
+): string => {
+  const query = version ? `?v=${encodeURIComponent(version)}` : "";
+
+  return `${authApi.defaults.baseURL}/api/files/injustice-typesBoycott/${id}/picture`;
+};
+
+export const syncAuth0User = async (
+  token: string,
+  email: string,
+  name: string
+): Promise<User> => {
+  const response = await authApi.get("/api/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "x-user-email": email,
+      "x-user-name": name,
+    },
+  });
+
+  const backendUser = response.data;
+
+  const user: User = {
+    appUserId: backendUser.UserID,
+    appUserName: backendUser.UserName,
+    firstName: backendUser.FirstName,
+    lastName: backendUser.LastName,
+    email: backendUser.Email,
+    country: String(backendUser.CountryID),
+    gender: backendUser.GenderID ? String(backendUser.GenderID) : null,
+    accountStatus: backendUser.AccountStateID,
+    picture: backendUser.MongoDocumentID
+      ? getUserProfilePictureUrl(backendUser.UserID)
+      : null,
+    isSuperAdmin: false,
+    isAdmin: backendUser.IsAdmin ?? false,
+    isNormal: !(backendUser.IsAdmin ?? false),
+  };
+
+  localStorage.setItem("token", token);
+  localStorage.setItem("user", JSON.stringify(user));
+
+  return user;
 };

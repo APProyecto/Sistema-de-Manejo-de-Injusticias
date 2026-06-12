@@ -1,7 +1,6 @@
 import {
   AppBar,
   Toolbar,
-  Typography,
   Button,
   Box,
   useTheme,
@@ -17,8 +16,8 @@ import { useState } from "react";
 import LoginWindow from "./LoginWindow";
 import { useAuth } from "../../context/authContext";
 import { useNavigate } from "react-router-dom";
-import DefaultAvatar from "../../assets/pfpDefaultImage.png";
 import { getUserProfilePictureUrl } from "../../services/uesrService";
+import Searchbar from "../common/SearchBar";
 
 interface PublicHeaderProps {
   onLoginSuccess: (userData: any) => void;
@@ -33,20 +32,6 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
   const handleAvatarClick = () => {
     navigate("/my-votes");
   };
-
-  if (!user) return;
-
-  const currentUser = user as any;
-  console.log(user);
-
-  const userId = currentUser.appUserId ?? currentUser.userId;
-  const usernameValue = currentUser.appUserName ?? currentUser.username ?? "";
-
-  const pictureUrl = currentUser.picture
-    ? currentUser.picture
-    : userId
-      ? getUserProfilePictureUrl(userId)
-      : "";
 
   return (
     <AppBar sx={headerStyles.appBar(theme)}>
@@ -74,26 +59,7 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
         </Box>
 
         {/* Barra de Búsqueda */}
-        <TextField
-          placeholder="Search..."
-          variant="outlined"
-          size="medium"
-          sx={headerStyles.searchField(theme)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={headerStyles.searchIcon(theme)} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <Button>
-                  <TuneIcon sx={headerStyles.filterButton(theme)} />
-                </Button>
-              ),
-            },
-          }}
-        />
+        <Searchbar></Searchbar>
 
         <Box>
           {user ? (
@@ -102,11 +68,6 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
               sx={headerStyles.profilePictureButton(theme)}
               onClick={handleAvatarClick}
             >
-              <Avatar
-                src={pictureUrl}
-                alt={usernameValue}
-                sx={headerStyles.profilePicture(theme)}
-              />
             </Button>
           ) : (
             <Button

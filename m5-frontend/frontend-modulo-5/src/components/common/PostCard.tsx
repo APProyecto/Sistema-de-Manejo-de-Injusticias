@@ -2,37 +2,44 @@ import {
   Avatar,
   Button,
   Container,
-  Menu,
-  ToggleButton,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { PostCardStyles } from "../styles/PostCardStyles";
-import { useTheme } from "@mui/material";
-import type { PostCardData, User } from "../../types";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import { useState } from "react";
+import type { PostCardData } from "../../types";
 import Entity from "./Entity";
 import VotesBox from "../public/VotesBox";
 import PostInteracionButton from "./PostInteractionButton";
 import DocumentScannerIcon from "@mui/icons-material/DocumentScanner";
 import InsertCommentIcon from "@mui/icons-material/InsertComment";
-import CircleIcon from "@mui/icons-material/Circle";
 import { Circle } from "@mui/icons-material";
-import OptionMenu from "../user/OptionMenuFeed";
 import OptionMenuFeed from "../user/OptionMenuFeed";
 import OptionMenuMyPosts from "../user/OptionMenuMyPosts";
 import { useNavigate } from "react-router-dom";
 import { formatDate, formatNumber } from "../../utils/utils";
+import { useAuth } from "../../context/authContext";
+import { voteBoycott } from "../../services/boycottService";
+import { getEntityPictureUrlByBoycottId, getInjusticePictureUrlByBoycottId } from "../../services/uesrService";
+import { useEffect, useState } from "react";
+
 
 interface PostCardProps {
   data: PostCardData;
   inFeed: boolean;
-  voteSelection?: "positive" | "negative";
 }
 
-export default function PostCard({ data, inFeed }: PostCardProps) {
+export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
   const theme = useTheme();
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+  const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
+  
+  // Local state for vote counter that updates independently of props
+  const [voteCount, setVoteCount] = useState<string>(data.votes);
+  
+  useEffect(() => {
+    setVoteCount(data.votes);
+  }, [data.id, data.votes]);
 
   const onPostClick = () => {
     navigate(`/detailed-post/${data.id}`);
@@ -64,6 +71,34 @@ export default function PostCard({ data, inFeed }: PostCardProps) {
     }
   };
 
+  const handleVoteChange = async (
+    newVote: boolean | null,
+    previousVote: boolean | null,
+  ) => {
+    if (!isAuthenticated) {
+      globalThis.alert("Debes iniciar sesión para votar.");
+      throw new Error("Not authenticated");
+    }
+
+    if (!resolvedUserId) {
+      globalThis.alert("No se pudo identificar tu usuario para registrar el voto.");
+      throw new Error("Missing userId");
+    }
+
+    const voteToSend = newVote ?? previousVote;
+    if (voteToSend === null) {
+      return;
+    }
+
+    const result = await voteBoycott(data.id, voteToSend, resolvedUserId);
+    
+    // Update vote count with the values returned by backend
+    if (result.votesInFavor !== undefined && result.votesAgainst !== undefined) {
+      const newVotes = result.votesInFavor - result.votesAgainst;
+      setVoteCount(String(newVotes));
+    }
+  };
+
   return (
     <Button sx={PostCardStyles.container(theme)} onClick={onPostClick}>
       <Container sx={PostCardStyles.topContainer(theme)}>
@@ -92,7 +127,8 @@ export default function PostCard({ data, inFeed }: PostCardProps) {
         {/* Options */}
         {inFeed ? (
           <OptionMenuFeed
-            favorite={data.is_favorite ? true : false}
+            favorite={!data.is_favorite}
+            boycottId={data.id}
           ></OptionMenuFeed>
         ) : (
           <OptionMenuMyPosts></OptionMenuMyPosts>
@@ -102,14 +138,14 @@ export default function PostCard({ data, inFeed }: PostCardProps) {
         <Container sx={PostCardStyles.entitiesContainer(theme)}>
           {/*Indicted*/}
           <Entity
-            src={data.indicted_picture}
+            src={getEntityPictureUrlByBoycottId(data.id)}
             name={data.indicted}
             onPressClick={onIndictedClick}
           ></Entity>
 
           {/*Case*/}
           <Entity
-            src={data.case_picture}
+            src={getInjusticePictureUrlByBoycottId(data.id)}
             name={data.case}
             onPressClick={onCaseClick}
           ></Entity>
@@ -137,8 +173,9 @@ export default function PostCard({ data, inFeed }: PostCardProps) {
         >
           {/* Votes */}
           <VotesBox
-            votes={formatNumber(data.votes)}
+            votes={formatNumber(voteCount)}
             initialVote={data.voted_by_user}
+            onVoteChange={handleVoteChange}
           ></VotesBox>
 
           {/* Comments */}

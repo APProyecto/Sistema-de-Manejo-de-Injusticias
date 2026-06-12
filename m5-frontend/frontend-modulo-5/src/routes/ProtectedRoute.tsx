@@ -1,5 +1,7 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth, type UserRole } from '../context/authContext';
+import { useAuth } from '../context/authContext';
+import LoadingScreen from '../components/common/LoadingScreen';
+import type { UserRole } from '../types';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,7 +18,7 @@ export default function ProtectedRoute({
 
   // Mostrar loading mientras se verifica la autenticación
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen></LoadingScreen>;
   }
 
   // redirigir a login

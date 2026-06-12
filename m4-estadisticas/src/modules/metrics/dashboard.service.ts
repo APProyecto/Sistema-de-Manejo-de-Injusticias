@@ -76,7 +76,12 @@ export async function getDashboardSummary() {
   return getOrSetCache("dashboard-summary", async () => {
     const { startOfToday, startOfTomorrow } = getTodayRange();
 
-    const [activeBoycotts, totalUsers, reportsToday] = await prisma.$transaction([
+    const [
+      activeBoycotts,
+      totalUsers,
+      boycottReportsToday,
+      commentReportsToday,
+    ] = await prisma.$transaction([
       prisma.boycott.count({
         where: {
           DeletedByUser: false,
@@ -86,20 +91,37 @@ export async function getDashboardSummary() {
 
       prisma.appUser.count(),
 
-      prisma.report.count({
+      prisma.reportBoycott.count({
         where: {
-          ReportedAt: {
-            gte: startOfToday,
-            lt: startOfTomorrow,
+          Report: {
+            ReportedAt: {
+              gte: startOfToday,
+              lt: startOfTomorrow,
+            },
+          },
+        },
+      }),
+
+      prisma.reportComment.count({
+        where: {
+          Report: {
+            ReportedAt: {
+              gte: startOfToday,
+              lt: startOfTomorrow,
+            },
           },
         },
       }),
     ]);
 
+    const reportsToday = boycottReportsToday + commentReportsToday;
+
     return {
       activeBoycotts,
       totalUsers,
       reportsToday,
+      boycottReportsToday,
+      commentReportsToday,
     };
   });
 }
@@ -110,27 +132,54 @@ export async function getDashboardSummary() {
 */
 export async function getImmediateActionAlerts() {
   return getOrSetCache("immediate-action-alerts", async () => {
-  const entities = await prisma.entity.findMany({
-    select: {
-      EntityID: true,
-      EntityName: true,
-      Boycott: {
-        where: {
-          DeletedByUser: false,
-          DeletedAt: null,
-        },
-        select: {
-          BoycottID: true,
-          Title: true,
-          ReportBoycott: {
-            select: {
-              Report: {
-                select: {
-                  ReportID: true,
-                  ReportedAt: true,
-                  ReportState: {
-                    select: {
-                      StateName: true,
+    const entities = await prisma.entity.findMany({
+      select: {
+        EntityID: true,
+        EntityName: true,
+        Boycott: {
+          where: {
+            DeletedByUser: false,
+            DeletedAt: null,
+          },
+          select: {
+            BoycottID: true,
+            Title: true,
+
+            ReportBoycott: {
+              select: {
+                Report: {
+                  select: {
+                    ReportID: true,
+                    ReportedAt: true,
+                    ReportState: {
+                      select: {
+                        StateName: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+
+            CommentBoycott: {
+              where: {
+                DeletedByUser: false,
+                DeletedAt: null,
+              },
+              select: {
+                CommentBoycottID: true,
+                ReportComment: {
+                  select: {
+                    Report: {
+                      select: {
+                        ReportID: true,
+                        ReportedAt: true,
+                        ReportState: {
+                          select: {
+                            StateName: true,
+                          },
+                        },
+                      },
                     },
                   },
                 },
@@ -139,60 +188,90 @@ export async function getImmediateActionAlerts() {
           },
         },
       },
-    },
-  });
+    });
 
-  const alerts = entities
-    .map((entity) => {
-      let pendingReports = 0;
-      let checkedReports = 0;
+    const alerts = entities
+      .map((entity) => {
+        let pendingReports = 0;
+        let checkedReports = 0;
+        let boycottReports = 0;
+        let commentReports = 0;
 
-      const boycotts = entity.Boycott.map((boycott) => {
-        let boycottPendingReports = 0;
-        let boycottCheckedReports = 0;
+        const boycotts = entity.Boycott.map((boycott) => {
+          let boycottPendingReports = 0;
+          let boycottCheckedReports = 0;
+          let directBoycottReports = 0;
+          let directCommentReports = 0;
 
-        boycott.ReportBoycott.forEach((reportBoycott) => {
-          const stateName = reportBoycott.Report.ReportState.StateName;
+          boycott.ReportBoycott.forEach((reportBoycott) => {
+            const stateName = reportBoycott.Report.ReportState.StateName;
 
-          if (isPendingState(stateName)) {
-            pendingReports += 1;
-            boycottPendingReports += 1;
-          }
+            directBoycottReports += 1;
+            boycottReports += 1;
 
-          if (isCheckedState(stateName)) {
-            checkedReports += 1;
-            boycottCheckedReports += 1;
-          }
-        });
+            if (isPendingState(stateName)) {
+              pendingReports += 1;
+              boycottPendingReports += 1;
+            }
+
+            if (isCheckedState(stateName)) {
+              checkedReports += 1;
+              boycottCheckedReports += 1;
+            }
+          });
+
+          boycott.CommentBoycott.forEach((comment) => {
+            comment.ReportComment.forEach((reportComment) => {
+              const stateName = reportComment.Report.ReportState.StateName;
+
+              directCommentReports += 1;
+              commentReports += 1;
+
+              if (isPendingState(stateName)) {
+                pendingReports += 1;
+                boycottPendingReports += 1;
+              }
+
+              if (isCheckedState(stateName)) {
+                checkedReports += 1;
+                boycottCheckedReports += 1;
+              }
+            });
+          });
+
+          return {
+            boycottId: boycott.BoycottID,
+            title: boycott.Title,
+            pendingReports: boycottPendingReports,
+            checkedReports: boycottCheckedReports,
+            boycottReports: directBoycottReports,
+            commentReports: directCommentReports,
+            totalReports:
+              boycottPendingReports + boycottCheckedReports,
+          };
+        }).filter((boycott) => boycott.totalReports > 0);
 
         return {
-          boycottId: boycott.BoycottID,
-          title: boycott.Title,
-          pendingReports: boycottPendingReports,
-          checkedReports: boycottCheckedReports,
-          totalReports: boycottPendingReports + boycottCheckedReports,
+          entityId: entity.EntityID,
+          entityName: entity.EntityName,
+          totalReports: pendingReports + checkedReports,
+          pendingReports,
+          checkedReports,
+          boycottReports,
+          commentReports,
+          boycotts,
         };
-      }).filter((boycott) => boycott.totalReports > 0);
+      })
+      .filter((alert) => alert.totalReports > 0)
+      .sort((a, b) => b.totalReports - a.totalReports)
+      .slice(0, 10);
 
-      return {
-        entityId: entity.EntityID,
-        entityName: entity.EntityName,
-        totalReports: pendingReports + checkedReports,
-        pendingReports,
-        checkedReports,
-        boycotts,
-      };
-    })
-    .filter((alert) => alert.totalReports > 0)
-    .sort((a, b) => b.totalReports - a.totalReports)
-    .slice(0, 10);
-
-  return {
-    alerts,
-    totalAlerts: alerts.length,
-    consideredStates: ALERT_REPORT_STATES,
-  };
-});
+    return {
+      alerts,
+      totalAlerts: alerts.length,
+      consideredStates: ALERT_REPORT_STATES,
+    };
+  });
 }
 
 /*
@@ -201,29 +280,53 @@ export async function getImmediateActionAlerts() {
 */
 export async function getPlatformKpis() {
   return getOrSetCache("platform-kpis", async () => {
-    const [totalUsers, historicalBoycotts, globalPendingReports, totalFavorites] =
-      await prisma.$transaction([
-        prisma.appUser.count(),
+    const [
+      totalUsers,
+      historicalBoycotts,
+      pendingBoycottReports,
+      pendingCommentReports,
+      totalFavorites,
+    ] = await prisma.$transaction([
+      prisma.appUser.count(),
 
-        prisma.boycott.count(),
+      prisma.boycott.count(),
 
-        prisma.report.count({
-          where: {
+      prisma.reportBoycott.count({
+        where: {
+          Report: {
             ReportState: {
               StateName: {
                 in: PENDING_REPORT_STATES,
               },
             },
           },
-        }),
+        },
+      }),
 
-        prisma.userFavoriteBoycott.count(),
-      ]);
+      prisma.reportComment.count({
+        where: {
+          Report: {
+            ReportState: {
+              StateName: {
+                in: PENDING_REPORT_STATES,
+              },
+            },
+          },
+        },
+      }),
+
+      prisma.userFavoriteBoycott.count(),
+    ]);
+
+    const globalPendingReports =
+      pendingBoycottReports + pendingCommentReports;
 
     return {
       totalUsers,
       historicalBoycotts,
       globalPendingReports,
+      pendingBoycottReports,
+      pendingCommentReports,
       totalFavorites,
     };
   });
