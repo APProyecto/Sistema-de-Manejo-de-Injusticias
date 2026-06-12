@@ -293,18 +293,18 @@ export const getBoycottById = async (id: number, userId?: number): Promise<Detai
  * Outputs: Boycott creado
  */
 // src/services/boycottService.ts
-
 export const createBoycott = async (data: {
   title: string;
   description: string;
-  creatorId: number; // ← Cambiar de createdBy a creatorId
+  creatorId: number; 
   entityId: number;
   countryId: number;
   injusticeTypeId: number;
   boycottStateId?: number;
   creatorUsername?: string;
-  caseNumber?: number;
+  caseNumber?: string;
 }): Promise<PostCardData> => {
+  console.log('Datos recibidos para crearboycott',data);
   const payload = {
     ...data,
     boycottStateId: data.boycottStateId || 1, // Valor por defecto
