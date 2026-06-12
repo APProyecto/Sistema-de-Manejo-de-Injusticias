@@ -1,9 +1,41 @@
-import { Box, Button, Container, Divider, TextField, Typography, useTheme } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, Divider, Snackbar, TextField, Typography, useTheme } from '@mui/material';
+import { useState } from 'react';
 import { suggestionsStyles } from '../styles/SuggestionsStyles';
-
+import { createSuggestion } from '../../services/suggestionService';
+import { useAuth } from '../../context/authContext';
 
 export default function Suggestions() {
   const theme = useTheme();
+  const { user } = useAuth();
+  const resolvedUserId = user?.appUserId ?? (user as any)?.userId ?? (user as any)?.id;
+
+  const [subject, setSubject] = useState('');
+  const [description, setDescription] = useState('');
+
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (!subject || !description) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await createSuggestion({ subject, description, suggestedBy: resolvedUserId });
+      setSuccess(true);
+      setSubject('');
+      setDescription('');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unexpected error.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Container sx={suggestionsStyles.mainContainer(theme)}>
@@ -17,6 +49,8 @@ export default function Suggestions() {
           <TextField
             fullWidth
             required
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
             sx={suggestionsStyles.textField(theme)}
           />
         </Box>
@@ -28,46 +62,46 @@ export default function Suggestions() {
             required
             multiline
             minRows={4}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
             sx={suggestionsStyles.descriptionField(theme)}
           />
         </Box>
 
         <Divider sx={suggestionsStyles.divider(theme)} />
 
-        <Typography sx={suggestionsStyles.sectionTitle(theme)}>
-          Contact Information
-        </Typography>
-
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: '12px',
-          }}
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={loading}
+          sx={suggestionsStyles.submitButton(theme)}
+          startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
         >
-          <Box>
-            <Typography sx={suggestionsStyles.label(theme)}>Name*</Typography>
-            <TextField
-              fullWidth
-              required
-              sx={suggestionsStyles.textField(theme)}
-            />
-          </Box>
-
-          <Box>
-            <Typography sx={suggestionsStyles.label(theme)}>Email*</Typography>
-            <TextField
-              fullWidth
-              required
-              sx={suggestionsStyles.textField(theme)}
-            />
-          </Box>
-        </Box>
-
-        <Button variant="contained" sx={suggestionsStyles.submitButton(theme)}>
-          Submit Suggestion
+          {loading ? 'Sending...' : 'Submit Suggestion'}
         </Button>
       </Container>
+
+      <Snackbar
+        open={success}
+        autoHideDuration={4000}
+        onClose={() => setSuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setSuccess(false)}>
+          Suggestion submitted successfully!
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!error}
+        autoHideDuration={4000}
+        onClose={() => setError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

@@ -28,6 +28,7 @@ import CasesOfInjustice from '../pages/admin/CasesOfInjustice';
 import Catalogues from '../pages/admin/Catalogues';
 import Logs from '../pages/admin/Logs';
 import ManageComments from '../pages/admin/ManageComments';
+import ManageSuggestions from '../pages/admin/ManageSuggestions';
 import DynamicLayout from '../layouts/DynamicLayout';
 import Register from '../pages/public/Register';
 
@@ -105,6 +106,11 @@ export default function AppRoutes() {
         <Route path="/admin/manage-comments" element={
           <ProtectedRoute allowedRoles={['admin', 'master']}>
             <ManageComments />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/manage-suggestions" element={
+          <ProtectedRoute allowedRoles={['admin', 'master']}>
+            <ManageSuggestions />
           </ProtectedRoute>
         } />
         <Route path="/admin/statistics" element={
