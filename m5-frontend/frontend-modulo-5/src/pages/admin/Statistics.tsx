@@ -165,7 +165,7 @@ const [favoritesByCategoryOther, setFavoritesByCategoryOther] = useState<
   const [usersByRegions, setUsersByRegions] = useState<{ region: string; value: number }[]>([]);
   const [industriesMoreBoycotts, setIndustriesMoreBoycotts] = useState<{ industry: string; value: number }[]>([]);
   const [favoritesByCountry, setFavoritesByCountry] = useState<{ country: string; value: number }[]>([]);
-const [favoritesByCategory, setFavoritesByCategory] = useState<{ id: number; label: string; value: number; percentage: number }[]>([]);
+const [favoritesByCategory, setFavoritesByCategory] = useState<{ id: number; label: string; value: number; percentage: number; categoryName: string }[]>([]);
   const [topReasonsReportRejection, setTopReasonsReportRejection] = useState<{ reason: string; value: number }[]>([]);
   const [boycottsByInjusticeCategory, setBoycottsByInjusticeCategory] = useState<{ id: number; label: string; value: number }[]>([]);
   const [boycottsDistributionPerRegion, setBoycottsDistributionPerRegion] = useState<{ region: string; value: number }[]>([]);
@@ -176,6 +176,7 @@ const [favoritesByCategory, setFavoritesByCategory] = useState<{ id: number; lab
   const [topUsersByBoycotts, setTopUsersByBoycotts] = useState<TopUserItem[]>([]);
   const [topBoycottRankings, setTopBoycottRankings] = useState<BoycottRankingItem[]>([]);
 
+  
   const [approvedReports, setApprovedReports] = useState<number>(0);
   const [rejectedReports, setRejectedReports] = useState<number>(0);
   const [pendingModerationReports, setPendingModerationReports] = useState<number>(0);
@@ -298,30 +299,39 @@ const [
         );
 
 setFavoritesByCategory(
-  boycottsByInjusticeCategoryResult.data.map((item, index) => ({
-    id: index + 1,
-    label: item.category,
-    value: item.total,
-    percentage: item.percentage ?? 0,
-  }))
+  boycottsByInjusticeCategoryResult.data.map((item, index) => {
+    const pct = item.percentage ?? 0;
+    return {
+      id: index + 1,
+      label: `${item.category} (${pct.toFixed(2)}%)`, 
+      value: item.total,
+      percentage: pct,
+      categoryName: item.category, 
+    };
+  })
 );
 
 setFavoritesByCategoryMale(
-  maleFavoritesByCategoryResult.data.map((item, index) => ({
-    id: index + 1,
-    label: item.category,
-    value: item.total,
-    percentage: item.percentage ?? 0,
-  }))
+  maleFavoritesByCategoryResult.data.map((item, index) => {
+    const pct = item.percentage ?? 0;
+    return {
+      id: index + 1,
+      label: `${item.category} (${pct.toFixed(2)}%)`, // Con porcentaje para la leyenda
+      value: item.total,
+      percentage: pct,
+    };
+  })
 );
-
 setFavoritesByCategoryFemale(
-  femaleFavoritesByCategoryResult.data.map((item, index) => ({
-    id: index + 1,
-    label: item.category,
-    value: item.total,
-    percentage: item.percentage ?? 0,
-  }))
+  femaleFavoritesByCategoryResult.data.map((item, index) => {
+    const pct = item.percentage ?? 0;
+    return {
+      id: index + 1,
+      label: `${item.category} (${pct.toFixed(2)}%)`, // Con porcentaje para la leyenda
+      value: item.total,
+      percentage: pct,
+    };
+  })
 );
 
         setFavoritesByCategoryOther(
@@ -340,12 +350,15 @@ setFavoritesByCategoryFemale(
         );
 
 setBoycottsByInjusticeCategory(
-  boycottsSummaryByInjusticeCategoryResult.data.map((item, index) => ({
-    id: index + 1,
-    label: item.category,
-    value: item.total,
-    percentage: item.percentage ?? 0,
-  }))
+  boycottsSummaryByInjusticeCategoryResult.data.map((item, index) => {
+    const pct = item.percentage ?? 0;
+    return {
+      id: index + 1,
+      label: `${item.category} (${pct.toFixed(2)}%)`, // Con porcentaje para la leyenda
+      value: item.total,
+      percentage: pct,
+    };
+  })
 );
 
         setBoycottsDistributionPerRegion(
@@ -616,7 +629,7 @@ setBoycottsByInjusticeCategory(
                     {
                       data: favoritesByCategory,
                       outerRadius: 100,
-                      arcLabel: (item) => formatPieLabel(item),
+                      arcLabel: (item) => item.label ? item.label.replace(/\s*\(\d+(?:\.\d+)?%\)$/, '') : '', 
                       arcLabelMinAngle: 15,
                     },
                   ]}
@@ -777,7 +790,8 @@ setBoycottsByInjusticeCategory(
                     {
                       data: boycottsByInjusticeCategory,
                       outerRadius: 100,
-                      arcLabel: 'label',
+                      // Limpia el texto para el interior del gráfico
+                      arcLabel: (item) => item.label ? item.label.split(' (')[0] : '',
                     },
                   ]}
                   sx={{
@@ -942,7 +956,8 @@ setBoycottsByInjusticeCategory(
             {
               data: favoritesByCategoryMale,
               outerRadius: 100,
-              arcLabel: (item) => `${item.label}`,
+              // Limpia el texto para el interior del gráfico
+              arcLabel: (item) => item.label ? item.label.split(' (')[0] : '',
             },
           ]}
           sx={{
@@ -973,7 +988,8 @@ setBoycottsByInjusticeCategory(
             {
               data: favoritesByCategoryFemale,
               outerRadius: 100,
-              arcLabel: (item) => `${item.label}`,
+              // Limpia el texto para el interior del gráfico
+              arcLabel: (item) => item.label ? item.label.split(' (')[0] : '',
             },
           ]}
           sx={{
