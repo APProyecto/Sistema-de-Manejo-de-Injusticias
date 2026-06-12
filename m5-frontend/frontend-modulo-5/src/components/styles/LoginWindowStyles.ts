@@ -7,7 +7,7 @@ export const loginWindowStyles = {
         flexDirection: 'column',
         gap: 2,
         alignItems: 'center',
-        paddingX: '50px',
+        padding: '50px',
     }),
 
     divider: (theme: Theme): SxProps<Theme> => ({
