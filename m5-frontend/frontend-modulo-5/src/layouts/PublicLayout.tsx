@@ -28,8 +28,14 @@ export default function PublicLayout() {
             <Container sx={
             {display:'flex', 
             flexDirection:'row', 
-            height: 'calc(100vh - 90px)',
-            overflow: 'hidden'
+            height: {
+            xs: "auto",
+            md: "calc(100vh - 90px)",
+            },
+            overflow: {
+            xs: "visible",
+            md: "hidden",
+            },
             }}>
                 <SideMenuUnsigned onLoginSuccess={onLoginSuccess} open={sideMenuOpen}
           onClose={() => setSideMenuOpen(false)}  />
