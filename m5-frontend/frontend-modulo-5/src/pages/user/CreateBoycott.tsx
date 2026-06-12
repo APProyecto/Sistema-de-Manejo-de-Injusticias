@@ -5,6 +5,7 @@ import { attachEvidenceToBoycott, createBoycott, getFilterCategories, uploadEvid
 import type { FilterCategories, simpleEntity } from '../../types';
 import EntitySearchBar from '../../components/user/EntitySearchBar';
 import { useAuth } from '../../context/authContext';
+import { useNavigate } from 'react-router-dom';
 type Step = 1 | 2;
 
 export default function CreateBoycott() {
@@ -15,6 +16,7 @@ export default function CreateBoycott() {
   const [industryId, setIndustryId] = useState<number | null>(null);
   const [countryId, setCountryId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
+  const [caseNumber, setCaseNumber] = useState('');
   const [description, setDescription] = useState('');
   const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const [isDraggingEvidence, setIsDraggingEvidence] = useState(false);
@@ -38,6 +40,8 @@ export default function CreateBoycott() {
   const injustices = filterCategories?.injustices ?? [];
 
   const isFirstStep = step === 1;
+
+  const navigate = useNavigate();
 
   // Validar que todos los campos requeridos estén llenos
   const isStep2Valid = () => {
@@ -75,6 +79,7 @@ export default function CreateBoycott() {
         countryId: countryId!,
         injusticeTypeId: categoryId!,
         boycottStateId: 1, // Activo
+        caseNumber: caseNumber,
       };
 
       const result = await createBoycott(boycottData);
@@ -88,16 +93,9 @@ export default function CreateBoycott() {
         await attachEvidenceToBoycott(boycottId, uploadedEvidence);
       }
       
-      console.log('Boycott creado:', result);
-      
-      // Mostrar mensaje de éxito
-      alert('¡Boycott creado exitosamente!');
-      
       // Redirigir o limpiar el formulario
-      // router.push(`/boycotts/${result.id}`);
+      navigate(`/`);
       
-      // O limpiar el formulario
-      // resetForm();
       
     } catch (error) {
       console.error('Error al crear boycott:', error);
@@ -399,6 +397,18 @@ export default function CreateBoycott() {
                     )}
                   </Box>
                 </Box>
+              </Box>
+
+              <Box>
+                <Typography sx={createBoycottStyles.fieldLabel()}>Case Number (Optional)</Typography>
+                <TextField
+                  fullWidth
+                  required
+                  placeholder='Case Number'
+                  value={caseNumber}
+                  onChange={(event) => setCaseNumber(event.target.value)}
+                  sx={createBoycottStyles.textarea(theme)}
+                />
               </Box>
 
               <Box sx={createBoycottStyles.footerActions}>

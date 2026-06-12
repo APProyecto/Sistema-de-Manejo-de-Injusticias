@@ -1,43 +1,46 @@
 import {
-  AppBar,
-  Toolbar,
-  Typography,
   Button,
-  Box,
   Container,
+  Typography,
   useTheme,
-  TextField,
-  InputAdornment,
+  Drawer,
+  Box,
 } from "@mui/material";
+
 import { sideMenuStyles } from "../styles/SideMenuStyles";
 import LoginWindow from "./LoginWindow";
 import { useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
 import { useState } from "react";
 
 interface SideMenuUnsignedProps {
   onLoginSuccess: (userData: any) => void;
+  open: boolean;
+  onClose: () => void;
 }
 
 export default function SideMenuUnsigned({
   onLoginSuccess,
+  open,
+  onClose,
 }: SideMenuUnsignedProps) {
   const theme = useTheme();
   const navigate = useNavigate();
   const [loginOpen, setLoginOpen] = useState(false);
 
-  const { loginWithRedirect } = useAuth0();
-
   const handleNavigation = (path: string) => {
     navigate(path);
+    onClose();
   };
 
-  return (
-    <Container sx={sideMenuStyles.unsignedContainer(theme)}>
+  const menuContent = (
+    <>
       <LoginWindow
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
-        onLoginSuccess={(userData) => onLoginSuccess(userData)}
+        onLoginSuccess={(userData) => {
+          onLoginSuccess(userData);
+          onClose();
+        }}
       />
 
       <Container sx={sideMenuStyles.messageContainer(theme)}>
@@ -45,7 +48,6 @@ export default function SideMenuUnsigned({
       </Container>
 
       <Container sx={sideMenuStyles.buttonsContainer(theme)}>
-        {/* Register */}
         <Button
           sx={sideMenuStyles.primaryButton(theme)}
           onClick={() => handleNavigation("/register")}
@@ -56,14 +58,13 @@ export default function SideMenuUnsigned({
         </Button>
 
         <Container sx={sideMenuStyles.divider(theme)}>
-          <Container sx={sideMenuStyles.line(theme)}></Container>
+          <Container sx={sideMenuStyles.line(theme)} />
           <Typography variant="caption" sx={sideMenuStyles.or(theme)}>
             or
           </Typography>
-          <Container sx={sideMenuStyles.line(theme)}></Container>
+          <Container sx={sideMenuStyles.line(theme)} />
         </Container>
 
-        {/* Login */}
         <Button
           sx={sideMenuStyles.secondaryButton(theme)}
           onClick={() => setLoginOpen(true)}
@@ -73,6 +74,34 @@ export default function SideMenuUnsigned({
           </Typography>
         </Button>
       </Container>
-    </Container>
+    </>
+  );
+
+  return (
+    <>
+      {/* Menú normal en desktop */}
+      <Container
+        sx={{
+          ...sideMenuStyles.unsignedContainer(theme),
+          display: { xs: "none", sm: "flex" },
+        }}
+      >
+        {menuContent}
+      </Container>
+
+      
+      <Drawer anchor="left" open={open} onClose={onClose}>
+        <Box
+          sx={{
+            ...sideMenuStyles.unsignedContainer(theme),
+            width: "280px",
+            height: "100%",
+            display: "flex",
+          }}
+        >
+          {menuContent}
+        </Box>
+      </Drawer>
+    </>
   );
 }

@@ -15,7 +15,8 @@ import {
   pruebaToken,
   updateAppUserProfile,
   listAdminUsers,
-  listNormalUsers
+  listNormalUsers,
+  listAccountStates
 } from "./users.controller";
 
 const router = Router();
@@ -35,6 +36,7 @@ router.post("/login", loginUser);
 router.get("/history", userHistory);
 router.post("/google", googleLogin);
 router.get("/pruebatoken", pruebaToken);
-router.post("/AllAdmins", listAdminUsers);
+router.get("/AllAdmins", listAdminUsers);
 router.get("/AllNormalUsers", listNormalUsers);
+router.get("/AccountStates", listAccountStates);
 export default router;
