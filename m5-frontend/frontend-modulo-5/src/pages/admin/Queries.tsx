@@ -424,7 +424,7 @@ export default function Quereis() {
         flexItem
         sx={{ ...QueriesStyles.Divider(theme), m: 0 }}
       />
-      <Box sx={{overflowY:'auto',maxHeight:'90vh'}}>
+      <Box sx={{overflowY:'auto',maxHeight:'56vh'}}>
       {rows.map((row) => (
         <Box
           key={row.boycottId}

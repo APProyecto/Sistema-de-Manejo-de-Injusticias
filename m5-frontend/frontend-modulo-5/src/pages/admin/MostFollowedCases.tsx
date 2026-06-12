@@ -119,7 +119,7 @@ export default function MostFollowedCases() {
             value={Category}
             onChange={(c) => {
               setCategory(c.target.value)
-              getFollows(EntityTypeSelected, c.target.value);
+              getFollows(EntityTypeSelected, Number(c.target.value));
             }}
             disableUnderline
             variant="filled"
