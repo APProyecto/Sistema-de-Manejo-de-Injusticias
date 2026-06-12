@@ -10,6 +10,7 @@ import {
   reportarBoycott,
   votarBoycott,
 } from "./boycott.service";
+import { getBoycottDocumentByMysqlId } from "../../../../m0-base-datos/src/services/mongoDocuments.service";
 
 /*
   Controlador: boycott.crud.controller.ts
@@ -248,7 +249,22 @@ export async function misBoycottsHandler(req: Request, res: Response): Promise<v
 
     const data = await listarMisBoycotts(creatorId, incluirEliminados);
 
-    res.json({ ok: true, total: data.length, data });
+const dataWithDescription = await Promise.all(
+  data.map(async (boycott) => {
+    const mongoDoc = await getBoycottDocumentByMysqlId(boycott.BoycottID);
+
+    return {
+      ...boycott,
+      Description: mongoDoc?.description ?? "",
+    };
+  })
+);
+
+res.json({
+  ok: true,
+  total: dataWithDescription.length,
+  data: dataWithDescription,
+});
   } catch (error) {
     console.error("[misBoycotts]", error);
     res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
