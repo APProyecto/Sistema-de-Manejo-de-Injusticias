@@ -21,43 +21,47 @@ export async function getMostFollowedCases(req: Request, res: Response) {
     const injusticeFilter = req.query.injusticeFilter?.toString();
 
     const followersCount = await prisma.userFavoriteBoycott.groupBy({
-      by: ['BoycottID'],
+      by: ["BoycottID"],
       _count: {
-        _all: true
-      }
+        _all: true,
+      },
     });
 
     const FindCases = await prisma.boycott.findMany({
-      distinct: ['BoycottID'],
+      distinct: ["BoycottID"],
       where: {
         InjusticeType: {
-          ...(injusticeFilter !== "Category" ? { InjusticeName: injusticeFilter } : {}),
+          ...(injusticeFilter !== "Category"
+            ? { InjusticeName: injusticeFilter }
+            : {}),
         },
         Entity: {
           CategoryEntity: {
-            ...(indictedFilter !== "Category" ? { CategoryName: indictedFilter }: {}),
+            ...(indictedFilter !== "Category"
+              ? { CategoryName: indictedFilter }
+              : {}),
           },
-        }
+        },
       },
       select: {
         BoycottID: true,
         InjusticeType: {
           select: {
             InjusticeName: true,
-          }
+          },
         },
         Entity: {
           select: {
             EntityID: true,
             EntityName: true,
-            CategoryEntity:{
-                select:{
-                    CategoryName:true,
-                }
-            }
+            CategoryEntity: {
+              select: {
+                CategoryName: true,
+              },
+            },
           },
         },
-      }
+      },
     });
 
     const summary = [];
@@ -70,7 +74,7 @@ export async function getMostFollowedCases(req: Request, res: Response) {
             entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
             injusticeType: FindCases[j].InjusticeType.InjusticeName,
             followers: followersCount[i]._count._all,
-          }
+          };
           summary.push(element);
         }
       }
@@ -151,11 +155,10 @@ async function getBoycottDesc(boycottId: number) {
     title and the user name creator of the boycott; and a list of entities or an error message.
 */
 
-export async function getUserPostAndComments(req:Request, res:Response){
-    try {
+export async function getUserPostAndComments(req: Request, res: Response) {
+  try {
     const userName = req.query.userName?.toString();
-    const CategoryFilter =req.query.CategoryFilter?.toString();
-
+    const CategoryFilter = req.query.CategoryFilter?.toString();
 
     const userId = await prisma.appUser.findFirst({
       where: {
@@ -256,7 +259,10 @@ export async function getUserPostAndComments(req:Request, res:Response){
       },
     });
 
-    interface entityInter {EntityName: string; EntityPicture:Buffer<ArrayBufferLike> | null}
+    interface entityInter {
+      EntityName: string;
+      EntityPicture: Buffer<ArrayBufferLike> | null;
+    }
     let enrichEntities: entityInter[] = [];
 
     for (let i = 0; i < entityFollowing.length; i++) {
@@ -266,8 +272,12 @@ export async function getUserPostAndComments(req:Request, res:Response){
           entityFollowing[i].Boycott.Entity.EntityID,
         ),
       };
-      if(!enrichEntities.some(InEntity => InEntity.EntityName === entity.EntityName)){
-        enrichEntities.push(entity)
+      if (
+        !enrichEntities.some(
+          (InEntity) => InEntity.EntityName === entity.EntityName,
+        )
+      ) {
+        enrichEntities.push(entity);
       }
     }
 
@@ -299,11 +309,19 @@ export async function getUserPostAndComments(req:Request, res:Response){
 */
 export async function getByEntity(req: Request, res: Response) {
   try {
-    const { indicted, dateFrom, dateTo, status } = req.query;
+    const { indicted, entityId, dateFrom, dateTo, status } = req.query;
 
     const where: any = {};
 
     if (indicted) {
+      where.Entity = {
+        EntityName: { contains: indicted as string },
+      };
+    }
+
+    if (entityId) {
+      where.EntityID = Number(entityId);
+    } else if (indicted) {
       where.Entity = {
         EntityName: { contains: indicted as string },
       };

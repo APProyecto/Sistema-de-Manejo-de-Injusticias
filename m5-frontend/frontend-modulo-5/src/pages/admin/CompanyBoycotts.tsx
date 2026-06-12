@@ -1,106 +1,194 @@
-import { Container, Typography, Card, Grid, CardContent, Box, useTheme, Avatar, TextField, Divider, Select, MenuItem } from '@mui/material';
-import StarbucksLogo from '../../assets/StarbucksLogo.jpg'
-import UserPFP from '../../assets/pfpDefaultImage.png';
-import { useState } from 'react';
-import QueryNavegation from './QueryNavigation';
-import { QueriesStyles } from '../styles/QueriesStyles';
-import PostInteracionButton from '../../components/common/PostInteractionButton';
-import { Circle } from '@mui/icons-material';
+import {
+  Container,
+  Button,
+  Typography,
+  Card,
+  Grid,
+  CardContent,
+  Box,
+  useTheme,
+  Avatar,
+  TextField,
+  Divider,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import StarbucksLogo from "../../assets/StarbucksLogo.jpg";
+import UserPFP from "../../assets/pfpDefaultImage.png";
+import { useState, useEffect } from "react";
+import QueryNavegation from "./QueryNavigation";
+import { QueriesStyles } from "../styles/QueriesStyles";
+import PostInteracionButton from "../../components/common/PostInteractionButton";
+import { Circle } from "@mui/icons-material";
+import { statsApi } from "../../services/api";
 
 export default function CompanyBoycotts() {
-  const [indictedInput, setIndictedInput] = useState('');
-  const [indicted, setIndicted] = useState('Starbucks');
-  const [indictedPFP, setIndictedPFP] = useState(StarbucksLogo);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [indictedInput, setIndictedInput] = useState("");
+
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [stateFilterId, setStateFilterId] = useState(0);
+  const [entities, setEntities] = useState<
+    { EntityID: number; EntityName: string }[]
+  >([]);
+  const [entityId, setEntityId] = useState(0);
+  const [boycottStates, setBoycottStates] = useState<
+    { BoycottStateID: number; StateName: string }[]
+  >([]);
 
   const handleStateColor = (state: string) => {
-    if(state === 'Open'){
+    if (state === "Open") {
       return theme.palette.success.main;
-    }else{
+    } else {
       return theme.palette.background.default;
     }
-  }
+  };
 
-  let Boycotts = [
-    {
-        authorPFP: UserPFP,
-        authorName:'user123',
-        date:'04-19-2026',
-        name:'Starbucks Controversy',
-        description:'There has been controversy surrounding Starbucks due to boycott calls linked to the Israel and Gaza conflict. Many consumers and activists have accused the company...',
-        state:'Open'
-    },
-    {
-        authorPFP: UserPFP,
-        authorName:'user123',
-        date:'04-19-2026',
-        name:'Starbucks Controversy',
-        description:'There has been controversy surrounding Starbucks due to boycott calls linked to the Israel and Gaza conflict. Many consumers and activists have accused the company...',
-        state:'Open'
-    },
-    {
-        authorPFP: UserPFP,
-        authorName:'user123',
-        date:'04-19-2026',
-        name:'Starbucks Controversy',
-        description:'There has been controversy surrounding Starbucks due to boycott calls linked to the Israel and Gaza conflict. Many consumers and activists have accused the company...',
-        state:'Open'
-    },
-    {
-        authorPFP: UserPFP,
-        authorName:'user123',
-        date:'04-19-2026',
-        name:'Starbucks Controversy',
-        description:'There has been controversy surrounding Starbucks due to boycott calls linked to the Israel and Gaza conflict. Many consumers and activists have accused the company...',
-        state:'Open'
-    },
-    {
-        authorPFP: UserPFP,
-        authorName:'user123',
-        date:'04-19-2026',
-        name:'Starbucks supports Israel',
-        description:'Im deeply troubled by reports suggesting Starbucks backing of Israel, especially given the ongoing genocide in Gaza. As patrons, our choices reflect our values, and its disheartening to see a company...',
-        state:'Closed'
+  const fetchByEntity = async (
+    entityId?: number,
+    dateFrom?: string,
+    dateTo?: string,
+    status?: string | number,
+  ) => {
+    try {
+      const params: Record<string, string> = {};
+      if (entityId && entityId !== 0) params.entityId = String(entityId);
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+      if (status && status !== 0) params.status = String(status);
+
+      const response = await statsApi.get("/api/tracking/getByEntity", {
+        params,
+      });
+      const data = response.data.data;
+      setGroupedData(data);
+
+      // Si hay entityId seleccionado, mostrar esa entidad automáticamente
+      // Si no, mostrar la primera por defecto
+      if (entityId && entityId !== 0) {
+        setSelectedEntity(
+          data.find((e: any) => e.entityId === entityId) ?? null,
+        );
+      } else {
+        setSelectedEntity(null); // primera entidad por defecto
+      }
+    } catch (error) {
+      console.error("Error fetching by entity:", error);
     }
-  ]
+  };
+
+  const [groupedData, setGroupedData] = useState<
+    {
+      entityId: number;
+      entityName: string;
+      boycotts: {
+        boycottId: number;
+        title: string;
+        author: string;
+        date: string;
+        status: string;
+      }[];
+    }[]
+  >([]);
+
+  const [selectedEntity, setSelectedEntity] = useState<{
+    entityId: number;
+    entityName: string;
+    boycotts: {
+      boycottId: number;
+      title: string;
+      author: string;
+      date: string;
+      status: string;
+    }[];
+  } | null>(null);
 
   const theme = useTheme();
 
+  const clearFilters = () => {
+    setEntityId(0);
+    setDateFrom("");
+    setDateTo("");
+    setStateFilterId(0);
+    setSelectedEntity(null);
+    fetchByEntity();
+  };
+
+  useEffect(() => {
+    fetchByEntity();
+    statsApi.get("/api/audits/filter-options").then((res) => {
+      setEntities(res.data.data.entities);
+      setBoycottStates(res.data.data.boycottStates);
+    });
+  }, []);
+
   return (
-    <Container sx={(theme=>({backgroundColor: theme.palette.background.default,overflowY: 'auto'}))}>
-      <Box sx={{margin:5}}>
+    <Container
+      sx={(theme) => ({
+        backgroundColor: theme.palette.background.default,
+        overflowY: "auto",
+      })}
+    >
+      <Box sx={{ margin: 5 }}>
         <QueryNavegation />
-        <Box sx={{display: "flex", alignItems: "center", mt: 5, mb: 0 }}>
-          <Box sx={{ width: "25%" }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+          <Button variant="outlined" onClick={clearFilters}>
+            Clear Filters
+          </Button>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", mt: 5, mb: 0 }}>
+          <Box
+            sx={{
+              width: "25%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             <Typography
               variant="body2"
               sx={{ color: theme.palette.secondary.main }}
             >
               Indicted
             </Typography>
-            <TextField
+            <Select
               size="small"
-              placeholder="Search by indicted..."
-              value={indictedInput}
-              onChange={(e) => setIndictedInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter"){
-                  // WIP : Search Indicted
-                }
+              hiddenLabel
+              value={entityId}
+              onChange={(e) => {
+                const newValue = Number(e.target.value);
+                setEntityId(newValue);
+                if (newValue === 0) setSelectedEntity(null);
+                fetchByEntity(newValue, dateFrom, dateTo, stateFilterId);
               }}
-            />
+              disableUnderline
+              variant="filled"
+              MenuProps={{
+                sx: {
+                  "& .MuiMenuItem-root": {
+                    color: "black !important",
+                  },
+                },
+              }}
+              sx={QueriesStyles.Select(theme)}
+            >
+              <MenuItem value={0}>All</MenuItem>
+              {entities.map((e) => (
+                <MenuItem key={e.EntityID} value={e.EntityID}>
+                  {e.EntityName}
+                </MenuItem>
+              ))}
+            </Select>
           </Box>
           <Divider
             orientation="vertical"
             flexItem
             sx={QueriesStyles.Divider(theme)}
           />
-          <Box sx={{ width: "50%",display:'flex',alignItems:'center'}}>
+          <Box sx={{ width: "50%", display: "flex", alignItems: "center" }}>
             <Typography
               variant="body2"
-              sx={{ color: theme.palette.secondary.main,ml:'Auto',mr:1 }}
+              sx={{ color: theme.palette.secondary.main, ml: "Auto", mr: 1 }}
             >
               Date
             </Typography>
@@ -110,9 +198,12 @@ export default function CompanyBoycotts() {
               label="From"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
+              onBlur={() =>
+                fetchByEntity(entityId, dateFrom, dateTo, stateFilterId)
+              }
               slotProps={{ inputLabel: { shrink: true } }}
             />
-                {/* WIP : Onblur */}
+            {/* WIP : Onblur */}
 
             <TextField
               size="small"
@@ -120,10 +211,13 @@ export default function CompanyBoycotts() {
               label="To"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
+              onBlur={() =>
+                fetchByEntity(entityId, dateFrom, dateTo, stateFilterId)
+              }
               slotProps={{ inputLabel: { shrink: true } }}
-              sx={{mr:'Auto'}}
+              sx={{ mr: "Auto" }}
             />
-                {/* WIP : Onblur */}
+            {/* WIP : Onblur */}
           </Box>
           <Divider
             orientation="vertical"
@@ -132,84 +226,147 @@ export default function CompanyBoycotts() {
           />
           <Box sx={{ width: "25%" }}>
             <Typography
-                variant="body2"
-                sx={{ color: theme.palette.secondary.main }}
+              variant="body2"
+              sx={{ color: theme.palette.secondary.main }}
             >
-                State
+              State
             </Typography>
             <Select
-                size="small"
-                hiddenLabel
-                value={stateFilterId}
-                onChange={(c) => {
-                setStateFilterId(Number(c.target.value));
-                }}
-                disableUnderline
-                variant="filled"
-                MenuProps={{
+              size="small"
+              hiddenLabel
+              value={stateFilterId}
+              onChange={(c) => {
+                const newValue = c.target.value;
+                setStateFilterId(newValue as any);
+                fetchByEntity(entityId, dateFrom, dateTo, newValue);
+              }}
+              disableUnderline
+              variant="filled"
+              MenuProps={{
                 sx: {
-                    "& .MuiMenuItem-root": {
+                  "& .MuiMenuItem-root": {
                     color: "black !important",
-                    },
+                  },
                 },
-                }}
-                sx={QueriesStyles.Select(theme)}
-                >
-                    <MenuItem value={0}>All</MenuItem>
-                    <MenuItem value={1}>Open</MenuItem>
-                    <MenuItem value={2}>Closed</MenuItem>
+              }}
+              sx={QueriesStyles.Select(theme)}
+            >
+              <MenuItem value={0}>All</MenuItem>
+              {boycottStates.map((s) => (
+                <MenuItem key={s.BoycottStateID} value={s.StateName}>
+                  {s.StateName}
+                </MenuItem>
+              ))}
             </Select>
           </Box>
         </Box>
-            
-        <Divider orientation="horizontal" flexItem sx={QueriesStyles.Divider(theme)}/>
 
-        <Box sx={{display:'flex'}}>
-            <Box sx={{width:'25%',my:0,display:'flex'}}>
+        <Divider
+          orientation="horizontal"
+          flexItem
+          sx={QueriesStyles.Divider(theme)}
+        />
+
+        <Box sx={{ display: "flex" }}>
+          {/* Panel izquierdo - empresas */}
+          <Box sx={{ width: "25%", my: 0 }}>
+            {(selectedEntity ? [selectedEntity] : groupedData).map((entity) => (
+              <Box
+                key={entity.entityId}
+                onClick={() => {
+                  setSelectedEntity(entity);
+                  setEntityId(entity.entityId);
+                }}
+                sx={{
+                  display: "flex",
+                  cursor: "pointer",
+                  "&:hover": { background: theme.palette.grey[100] },
+                  p: 1,
+                }}
+              >
                 <Avatar
-                    src={indictedPFP}
-                    alt="Logo"
-                    style={{ width: 50, height: 50}}
-                    sx={{ mx:1, my: 3}}
+                  style={{ width: 50, height: 50 }}
+                  sx={{ mx: 1, my: "Auto" }}
                 />
-                <Typography variant="h6" sx={{ color: theme.palette.secondary.main,my:4 }}>{indicted}</Typography>
-            </Box>    
-            <Divider orientation="vertical" flexItem sx={QueriesStyles.Divider(theme)}/>
-
-            <Box sx={{ml:'Auto',mr:2, width:'75%',p:4}}>
-            {Boycotts.map((Boycott)=>(
-              <Box sx={{background:theme.palette.grey[100],my:2,p:2,borderRadius:5}}>
-                <Box sx={{display:'flex'}}>
-                  <Avatar
-                    src={Boycott.authorPFP}
-                    alt="Logo"
-                    style={{ width: 50, height: 50}}
-                    sx={{ mx:1, my: 'Auto'}}
-                  />
-                  <Typography variant='h6' sx={{my:'Auto'}}>{Boycott.authorName}</Typography>
-                  <Typography variant='h5' sx={{fontWeight:'bold',mx:'Auto',my:'Auto'}}>{Boycott.name}</Typography>
-                </Box>
-                <Box sx={{display:'flex'}}>
-                  <Box sx={{display:'flex',width:'25%'}}>
-                    <Typography variant='body2' sx={{color:theme.palette.grey[200],fontWeight:'bold',mx:'Auto',textAlign:'left'}}>{Boycott.date}</Typography>
-                  </Box>
-                  <Box sx={{display:'flex',width:'75%',textAlign:'left'}}>
-                    <Typography variant='body1' sx={{fontWeight:'bold',mx:'Auto'}}>{Boycott.description}</Typography>
-                  </Box>
-                </Box>
-                <Box sx={{mr:'0',ml:'Auto',alignContent:'right',width:'20%'}}>
-                  <PostInteracionButton
-                    text={Boycott.state}
-                    icon={Circle}
-                    iconColor={handleStateColor(Boycott.state)}
-                  />
-                </Box>
+                <Typography
+                  variant="h6"
+                  sx={{ color: theme.palette.secondary.main, my: "Auto" }}
+                >
+                  {entity.entityName}
+                </Typography>
               </Box>
             ))}
-            </Box>
+          </Box>
+
+          <Divider
+            orientation="vertical"
+            flexItem
+            sx={QueriesStyles.Divider(theme)}
+          />
+
+          {/* Panel derecho - boycotts de la empresa seleccionada */}
+          <Box sx={{ ml: "Auto", mr: 2, width: "75%", p: 4 }}>
+            {(selectedEntity ? [selectedEntity] : groupedData).flatMap(
+              (entity) =>
+                entity.boycotts.map((boycott) => (
+                  <Box
+                    key={boycott.boycottId}
+                    sx={{
+                      background: theme.palette.grey[100],
+                      my: 2,
+                      p: 2,
+                      borderRadius: 5,
+                    }}
+                  >
+                    <Box sx={{ display: "flex" }}>
+                      <Avatar
+                        style={{ width: 50, height: 50 }}
+                        sx={{ mx: 1, my: "Auto" }}
+                      />
+                      <Typography variant="h6" sx={{ my: "Auto" }}>
+                        {boycott.author}
+                      </Typography>
+                      <Typography
+                        variant="h5"
+                        sx={{ fontWeight: "bold", mx: "Auto", my: "Auto" }}
+                      >
+                        {boycott.title}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex" }}>
+                      <Box sx={{ display: "flex", width: "25%" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: theme.palette.grey[200],
+                            fontWeight: "bold",
+                            mx: "Auto",
+                          }}
+                        >
+                          {new Date(boycott.date).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box
+                      sx={{
+                        mr: "0",
+                        ml: "Auto",
+                        alignContent: "right",
+                        width: "20%",
+                      }}
+                    >
+                      <PostInteracionButton
+                        text={boycott.status}
+                        icon={Circle}
+                        iconColor={handleStateColor(boycott.status)}
+                      />
+                    </Box>
+                  </Box>
+                )),
+            )}
+          </Box>
         </Box>
       </Box>
-
     </Container>
   );
 }
