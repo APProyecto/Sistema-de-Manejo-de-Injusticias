@@ -53,15 +53,25 @@ export default function DetailedPost() {
   const [activeFilter, setActiveFilter] = useState<CommentFilter>("New");
 
   useEffect(() => {
-    getBoycottById(Number(id), resolvedUserId).then(setData);
+    if (!id) return;
+
+    getBoycottById(Number(id), resolvedUserId).then((boycottData) => {
+      setData(boycottData);
+      setComments(boycottData.comments ?? []);
+    });
   }, [id, resolvedUserId]);
 
-  //actualiza los comentarios cada vez que cambia el id o el número de filtro
+  // Si el detalle no trae comentarios, intentamos cargarlos desde M3 como respaldo.
   useEffect(() => {
-    if (id) {
-      getComments(Number(id), filterNumber, resolvedUserId).then(setComments);
+    if (!id) return;
+    if (!data) return;
+    if (data.comments?.length) {
+      setComments(data.comments);
+      return;
     }
-  }, [id, filterNumber, resolvedUserId]);
+
+    getComments(Number(id), filterNumber, resolvedUserId).then(setComments);
+  }, [id, filterNumber, resolvedUserId, data]);
 
   if (!data) return <LoadingScreen></LoadingScreen>;
 
@@ -114,9 +124,11 @@ export default function DetailedPost() {
 
     try {
       await createComment(description, Number(id), resolvedUserId);
+      const refreshedData = await getBoycottById(Number(id), resolvedUserId);
+      setData(refreshedData);
+      setComments(refreshedData.comments ?? []);
       setActiveFilter("New");
       setFilterNumber(0);
-      await getComments(Number(id), 0, resolvedUserId).then(setComments);
     } catch (error) {
       console.error("Error creating comment:", error);
     }
