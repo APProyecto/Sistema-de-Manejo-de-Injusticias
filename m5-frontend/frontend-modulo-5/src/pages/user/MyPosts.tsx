@@ -47,6 +47,9 @@ export default function MyPosts() {
         <Typography variant='h2'>My Posts</Typography>
       </Container>
       <Container sx={myPostsStyles.container(theme)}>
+        {posts.length === 0 && (
+          <Typography>You have not created any boycotts yet.</Typography>
+        )}
         {posts.map((data) => (
           <PostCard 
           key={data.id}

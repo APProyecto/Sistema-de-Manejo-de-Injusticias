@@ -146,7 +146,7 @@ export default function ManageComments() {
         setError('No hay usuario autenticado.');
         return;
       }
-      await updateReportStatus(id, 1, user.id);
+      await updateReportStatus(id, 2, user.id);
       setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Approved' } : c)));
     } catch {
       setError('No se pudo actualizar el estado del reporte.');
@@ -159,7 +159,7 @@ export default function ManageComments() {
         setError('No hay usuario autenticado.');
         return;
       }
-      await updateReportStatus(id, 2, user.id);
+      await updateReportStatus(id, 3, user.id);
       setComments((cur) => cur.map((c) => (c.id === id ? { ...c, status: 'Rejected' } : c)));
     } catch {
       setError('No se pudo actualizar el estado del reporte.');

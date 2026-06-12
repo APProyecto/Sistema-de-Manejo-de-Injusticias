@@ -304,7 +304,7 @@ export async function obtenerBoycottPorId(id: number, userId: number | null = nu
     votes: String(boycott.VotesInFavor - boycott.VotesAgainst),
     voted_by_user: userId === null ? undefined : ((boycott as any).UserVotesBoycott?.[0]?.IsInFavor ?? null),
     is_favorite: userId === null ? undefined : (boycott as any).UserFavoriteBoycott?.length > 0,
-    comment_amount: String(boycott.NumberComments),
+    comment_amount: String(boycott.CommentBoycott.length),
     comments: boycott.CommentBoycott.map((c) => ({
       id: c.CommentBoycottID,
       user: {

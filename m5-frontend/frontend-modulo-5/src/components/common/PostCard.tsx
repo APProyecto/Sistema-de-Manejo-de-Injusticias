@@ -20,8 +20,9 @@ import { useNavigate } from "react-router-dom";
 import { formatDate, formatNumber } from "../../utils/utils";
 import { useAuth } from "../../context/authContext";
 import { voteBoycott } from "../../services/boycottService";
+import { getEntityPictureUrlByBoycottId, getInjusticePictureUrlByBoycottId } from "../../services/uesrService";
 import { useEffect, useState } from "react";
-import { getEntityPictureUrl } from "../../services/uesrService";
+
 
 interface PostCardProps {
   data: PostCardData;
@@ -140,7 +141,7 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
         {/* Options */}
         {inFeed ? (
           <OptionMenuFeed
-            favorite={!data.is_favorite}
+            favorite={!!data.is_favorite}
             boycottId={data.id}
           ></OptionMenuFeed>
         ) : (
@@ -151,14 +152,14 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
         <Container sx={PostCardStyles.entitiesContainer(theme)}>
           {/*Indicted*/}
           <Entity
-            src={getEntityPictureUrl(data.id)}
+            src={getEntityPictureUrlByBoycottId(data.id)}
             name={data.indicted}
             onPressClick={onIndictedClick}
           ></Entity>
 
           {/*Case*/}
           <Entity
-            src={data.case_picture}
+            src={getInjusticePictureUrlByBoycottId(data.id)}
             name={data.case}
             onPressClick={onCaseClick}
           ></Entity>

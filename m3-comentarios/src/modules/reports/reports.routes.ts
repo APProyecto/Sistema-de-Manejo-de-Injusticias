@@ -1,13 +1,23 @@
 import {Router} from "express";
 import {
     getCommentReports,
+    getBoycottReports,
     createCommentReport,
-    updateReportStatus
+    createReportBoycott,
+    closeReportBoycott,
+    updateReportStatus,
+    getCommentReportCount,
+    getBoycottReportCount
 } from "./reports.controller";
 const router = Router();
 
 router.get("/getAll", getCommentReports);
-router.post("/createCommentReport", createCommentReport);
+router.get("/getBoycottReports", getBoycottReports);
+router.get("/getCommentReportCount", getCommentReportCount);
+router.get("/getBoycottReportCount", getBoycottReportCount);
+router.post("/createComment", createCommentReport);
+router.post("/createBoycottReport", createReportBoycott);
+router.post("/closeReport", closeReportBoycott);
 router.put("/updateStatus", updateReportStatus);
 
 

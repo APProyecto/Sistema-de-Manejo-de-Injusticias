@@ -161,7 +161,8 @@ export async function listarBoycotts(req: Request, res: Response): Promise<void>
  *   industryTypeId  - ID de IndustryType
  *   sectorId        - ID de Sector
  *   page, pageSize  - paginación
- *   orderBy         - "createdAt" | "votes"
+ *   orderBy         - "createdAt" | "votes" | "title" | "entityName" | "relevance"
+ *   orderDirection  - "asc" | "desc" (por defecto "desc")
  */
 export async function buscarBoycotts(req: Request, res: Response): Promise<void> {
   try {
@@ -170,7 +171,7 @@ export async function buscarBoycotts(req: Request, res: Response): Promise<void>
     const userId: number | null = (req as any).user?.id ?? userIdFromQuery ?? null;
     const {
       q, categoryId, injusticeTypeId, countryId,
-      continentId, industryTypeId, sectorId, orderBy,
+      continentId, industryTypeId, sectorId, orderBy = "createdAt", orderDirection = "desc",
     } = req.query as Record<string, string | undefined>;
 
     const entityFilter: Record<string, unknown> = {};
@@ -200,43 +201,107 @@ export async function buscarBoycotts(req: Request, res: Response): Promise<void>
       where.Entity = entityFilter;
     }
 
-    const ordenClause =
-      orderBy === "votes"
-        ? { VotesInFavor: "desc" as const }
-        : { PublicationDate: "desc" as const };
-
-    const [boycotts, total] = await Promise.all([
-      prisma.boycott.findMany({
-        where,
-        select: {
-          ...buildSelect(userId),
-          Entity: {
-            select: {
-              EntityID: true,
-              EntityName: true,
-              MongoDocumentID: true,
-              CategoryEntity: { select: { CategoryName: true } },
-              IndustryType: { select: { IndustryName: true } },
-              Sector: { select: { SectorName: true } }, // extra field only in search
+    // Construir la cláusula de ordenamiento
+    let ordenClause: any;
+    const direction = orderDirection === "asc" ? "asc" : "desc";
+    
+    switch (orderBy) {
+      case "votes":
+        ordenClause = { VotesInFavor: direction };
+        break;
+      case "title":
+        ordenClause = { Title: direction };
+        break;
+      case "entityName":
+        ordenClause = { Entity: { EntityName: direction } };
+        break;
+      case "relevance":
+        // Para relevancia, necesitas ordenar por coincidencia de búsqueda
+        // Esto requiere un ordenamiento más complejo con Prisma
+        if (q) {
+          // Usar ordenamiento por relevancia (score) cuando hay búsqueda
+          ordenClause = [
+            {
+              _relevance: {
+                fields: ['Title', 'Entity.EntityName'],
+                search: q,
+                sort: direction === "asc" ? "asc" : "desc",
+              },
             },
+            { PublicationDate: 'desc' } // fallback
+          ];
+        } else {
+          ordenClause = { PublicationDate: direction };
+        }
+        break;
+      case "createdAt":
+      default:
+        ordenClause = { PublicationDate: direction };
+        break;
+    }
+
+    // Si hay búsqueda por texto y quieres ordenar por relevancia manual
+    let boycottsQuery: any = {
+      where,
+      select: {
+        ...buildSelect(userId),
+        Entity: {
+          select: {
+            EntityID: true,
+            EntityName: true,
+            MongoDocumentID: true,
+            CategoryEntity: { select: { CategoryName: true } },
+            IndustryType: { select: { IndustryName: true } },
+            Sector: { select: { SectorName: true } },
           },
         },
-        orderBy: ordenClause,
-        skip: saltar,
-        take: tamano,
-      }),
+      },
+      orderBy: ordenClause,
+      skip: saltar,
+      take: tamano,
+    };
+
+    // Si necesitas ordenamiento personalizado con joins
+    if (orderBy === "entityName") {
+      boycottsQuery = {
+        ...boycottsQuery,
+        include: {
+          Entity: true,
+        },
+        orderBy: {
+          Entity: {
+            EntityName: direction,
+          },
+        },
+      };
+    }
+
+    const [boycotts, total] = await Promise.all([
+      prisma.boycott.findMany(boycottsQuery),
       prisma.boycott.count({ where }),
     ]);
 
     const data = await Promise.all(boycotts.map((b) => mapBoycottToFrontend(b, userId)));
 
-    res.json({ ok: true, total, pagina, tamano, totalPaginas: Math.ceil(total / tamano), data });
+    // Agregar información del ordenamiento en la respuesta
+    res.json({ 
+      ok: true, 
+      total, 
+      pagina, 
+      tamano, 
+      totalPaginas: Math.ceil(total / tamano),
+      ordenamiento: {
+        campo: orderBy,
+        direccion: orderDirection,
+      },
+      data 
+    });
   } catch (error) {
     console.error("[buscarBoycotts]", error);
     res.status(500).json({ ok: false, mensaje: "Error interno del servidor" });
   }
 }
- 
+
 // ─── Obtener opciones de filtro (para los dropdowns del frontend) ─────────────
  
 /**
