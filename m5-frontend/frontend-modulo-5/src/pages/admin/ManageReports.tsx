@@ -39,7 +39,7 @@ const initialReports: ReportItem[] = [
     reportTitle: 'LOADING REPORTS',
     reporter: 'JoeMama',
     reportDetails:
-      ':33 < hi, repawts are still loading',
+      'Reports are still loading',
     reportTime: '2026-06-09 14:32',
     reportCount: 666,
     status: 'Pending',
@@ -369,7 +369,7 @@ export default function ManageReports() {
                     variant="contained"
                     color="error"
                     startIcon={<CancelOutlinedIcon />}
-                    onClick={() => handleReject(activeReport.id)}
+                    onClick={() => handleReject(activeReport.id, 2,'Default')}
                     sx={{ ...manageReportsStyles.actionButton(theme), whiteSpace: 'nowrap' , color: '#fff', backgroundColor: '#b02525', '&:hover': { backgroundColor: '#9b1c1c' }}}>
                     Reject
                   </Button>
