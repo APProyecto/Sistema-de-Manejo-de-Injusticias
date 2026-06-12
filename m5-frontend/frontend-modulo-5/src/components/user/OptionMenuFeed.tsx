@@ -136,8 +136,8 @@ export default function OptionMenuFeed({ favorite, boycottId, onFavoriteChanged 
           disabled={isFavoriteLoading}
           >
           {isFavorite? 
-            <StarBorderIcon sx={OptionMenuStyles.listIcon(theme)}></StarBorderIcon>:
-            <StarOutlinedIcon sx={OptionMenuStyles.listIcon(theme)}></StarOutlinedIcon>
+            <StarOutlinedIcon sx={OptionMenuStyles.listIcon(theme)}></StarOutlinedIcon>:
+            <StarBorderIcon sx={OptionMenuStyles.listIcon(theme)}></StarBorderIcon>
           }
           Favorite
         </MenuItem>
