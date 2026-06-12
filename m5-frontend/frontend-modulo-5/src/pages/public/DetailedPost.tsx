@@ -27,7 +27,12 @@ import PublicComment from "../../components/public/PublicComment";
 import { useAuth } from "../../context/authContext";
 import UserComment from "../../components/user/UserComment";
 import PostCommentBox from "../../components/user/PostCommentBox";
-import { getBoycottById, voteBoycott } from "../../services/boycottService";
+import {
+  downloadEvidenceFile,
+  getBoycottAttachments,
+  getBoycottById,
+  voteBoycott,
+} from "../../services/boycottService";
 import { formatDate, formatNumber } from "../../utils/utils";
 import LoadingScreen from "../../components/common/LoadingScreen";
 
@@ -150,6 +155,46 @@ export default function DetailedPost() {
     }
   };
 
+  const handleOpenEvidences = () => {
+    if (!id) {
+      return;
+    }
+    navigate(`/detailed-post/${id}/evidences`);
+  };
+
+  const handleAttachmentDownload = async (
+    fileId: string | number,
+    fileName: string,
+    evidenceIndex: number,
+  ) => {
+    try {
+      let resolvedFileId = String(fileId);
+
+      if (id && /^\d+$/.test(resolvedFileId)) {
+        const attachments = await getBoycottAttachments(Number(id));
+        const byName = attachments.find((item) => item.nombre === fileName);
+        if (byName?.id) {
+          resolvedFileId = byName.id;
+        } else if (attachments[evidenceIndex]?.id) {
+          resolvedFileId = attachments[evidenceIndex].id;
+        }
+      }
+
+      const blob = await downloadEvidenceFile(resolvedFileId);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = fileName || "evidence-file";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      console.error("Error downloading attachment:", error);
+      globalThis.alert("No se pudo descargar la evidencia. Intenta de nuevo.");
+    }
+  };
+
   return (
     <Container sx={detailedPostStyles.mainContainer(theme)}>
       {/* ── Center ── */}
@@ -205,7 +250,7 @@ export default function DetailedPost() {
         )}
 
         <Box sx={detailedPostStyles.attachmentsRow(theme)}>
-          {visibleEvidences.map((ev) => (
+          {visibleEvidences.map((ev, index) => (
             <Box key={ev.id} sx={detailedPostStyles.attachmentCard(theme)}>
               {ev.type === "pdf" ? (
                 <PictureAsPdfIcon
@@ -232,13 +277,30 @@ export default function DetailedPost() {
               <IconButton
                 size="small"
                 sx={detailedPostStyles.downloadButton(theme)}
+                onClick={() => {
+                  void handleAttachmentDownload(ev.id, ev.name, index);
+                }}
               >
                 <DownloadIcon fontSize="small" />
               </IconButton>
             </Box>
           ))}
           {extraEvidences > 0 && (
-            <Box sx={detailedPostStyles.extraEvidences(theme)}>
+            <Box
+              sx={{
+                ...detailedPostStyles.extraEvidences(theme),
+                cursor: "pointer",
+              }}
+              role="button"
+              tabIndex={0}
+              onClick={handleOpenEvidences}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  handleOpenEvidences();
+                }
+              }}
+            >
               <Typography sx={detailedPostStyles.extraEvidencesText(theme)}>
                 +{extraEvidences}
               </Typography>
