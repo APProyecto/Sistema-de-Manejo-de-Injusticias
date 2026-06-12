@@ -18,9 +18,12 @@ import { headerStyles } from "../styles/HeaderStyles";
 
 interface PublicHeaderProps {
   onLoginSuccess: (userData: any) => void;
+  onOpenSideMenu: () => void;
 }
 
-export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
+
+
+export default function PublicHeader({ onLoginSuccess, onOpenSideMenu }: PublicHeaderProps) {
   const theme = useTheme();
   const [loginOpen, setLoginOpen] = useState(false);
   const { user } = useAuth();
@@ -30,10 +33,6 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
     navigate("/my-votes");
   };
 
-  const handleMobileMenuClick = () => {
-    console.log("open mobile menu");
-    
-  };
 
   return (
     <AppBar sx={headerStyles.appBar(theme)}>
@@ -44,9 +43,12 @@ export default function PublicHeader({ onLoginSuccess }: PublicHeaderProps) {
       />
 
   <Toolbar sx={headerStyles.toolbar(theme)}>
-  <IconButton sx={headerStyles.mobileMenuButton(theme)}>
+  <IconButton
+    sx={headerStyles.mobileMenuButton(theme)}
+    onClick={onOpenSideMenu}
+  >
     <MenuIcon />
-  </IconButton>
+</IconButton>
 
   <Box sx={headerStyles.logoContainer(theme)}>
     <img
