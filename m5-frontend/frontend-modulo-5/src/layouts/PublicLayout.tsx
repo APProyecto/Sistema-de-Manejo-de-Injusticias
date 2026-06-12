@@ -30,11 +30,11 @@ export default function PublicLayout() {
             flexDirection:'row', 
             height: {
             xs: "auto",
-            md: "calc(100vh - 90px)",
+            sm: "calc(100vh - 90px)",
             },
             overflow: {
             xs: "visible",
-            md: "hidden",
+            sm: "hidden",
             },
             }}>
                 <SideMenuUnsigned onLoginSuccess={onLoginSuccess} open={sideMenuOpen}

@@ -5,14 +5,14 @@ export const detailedPostStyles = {
   display: 'flex',
   flexDirection: {
     xs: 'column',
-    md: 'row',
+    sm: 'row',
   },
   boxSizing: 'border-box',
   height: '100%',
   minHeight: 0,
   overflow: {
     xs: 'auto',
-    md: 'hidden',
+    sm: 'hidden',
   },
   width: '100%',
   maxWidth: '100% !important',
@@ -32,16 +32,16 @@ export const detailedPostStyles = {
   minHeight: 0,
   overflowY: {
     xs: 'visible',
-    md: 'auto',
+    sm: 'auto',
   },
   overflowX: 'hidden',
   height: {
     xs: 'auto',
-    md: '100%',
+    sm: '100%',
   },
   padding: {
     xs: '24px 20px !important',
-    md: '35px !important',
+    sm: '35px !important',
   },
   maxWidth: 'none !important',
 }),
@@ -49,37 +49,37 @@ export const detailedPostStyles = {
 rightContainer: (theme: Theme): SxProps<Theme> => ({
   width: {
     xs: '100%',
-    md: '25vw',
+    sm: '25vw',
   },
   minWidth: {
     xs: 0,
-    md: '220px',
+    sm: '220px',
   },
   maxWidth: {
     xs: '100%',
-    md: '300px',
+    sm: '300px',
   },
   flexShrink: 0,
   minHeight: {
     xs: 'auto',
-    md: '100%',
+    sm: '100%',
   },
   overflowY: {
     xs: 'visible',
-    md: 'auto',
+    sm: 'auto',
   },
   overflowX: 'hidden',
   padding: {
     xs: '20px !important',
-    md: '20px !important',
+    sm: '20px !important',
   },
   borderLeft: {
     xs: 'none',
-    md: `1px solid ${theme.palette.divider}`,
+    sm: `1px solid ${theme.palette.divider}`,
   },
   borderTop: {
     xs: `1px solid ${theme.palette.divider}`,
-    md: 'none',
+    sm: 'none',
   },
   backgroundColor: 'transparent',
 }),

@@ -32,15 +32,15 @@ export default function AdminLayout() {
           flexDirection: "row",
           height: {
             xs: "auto",
-            md: "calc(100vh - 90px)",
+            sm: "calc(100vh - 90px)",
           },
           minHeight: {
             xs: "calc(100vh - 90px)",
-            md: "calc(100vh - 90px)",
+            sm: "calc(100vh - 90px)",
           },
           overflow: {
             xs: "visible",
-            md: "hidden",
+            sm: "hidden",
           },
         }}
       >
