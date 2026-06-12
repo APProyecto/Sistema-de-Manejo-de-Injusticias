@@ -1,5 +1,6 @@
 import {Request, Response} from "express";
 import { prisma } from "../../config/prisma";
+import { join } from "node:path";
 
 
 /*
@@ -38,11 +39,13 @@ export async function getCommentReports(req: Request, res: Response){
 		const reports = await prisma.report.findMany({
 			where: filter,
 			select: {
+				ReportID: true,
 				UserDescription: true,
 				ReportedAt: true,
 				ReportState: {select:{StateName: true}},
 				MotiveReport: {select:{MotiveName:true}},
 				ReportComment: {select: {CommentBoycott: {select: {Description: true}}}},
+				AppUser_Report_ReportedByToAppUser: {select: {UserName: true}}
 			},
 			orderBy: { ReportedAt: 'desc' },
 		});
@@ -59,31 +62,38 @@ export async function getCommentReports(req: Request, res: Response){
     Function: getBoycottReports. Filters reports based on optional search and state parameters.
     Inputs: Request object containing optional search and state.
     Description: Retrieves all the existing reports for boycotts.
-    Outputs: JSON response with the list of reports or an error message.
+    Outputs: JSON response with the list of reports or an error message.	
 */
 export async function getBoycottReports(req: Request, res: Response){
 	try {
 		const { search, state } = req.query;
 		const filter: any = {ReportBoycott: {isNot: null}};
 
-		if (search && String(search).trim() !== ""){
-			const searchText = String(search).trim();
-			filter.AND = filter.AND || [];
-			filter.AND.push({
-				OR: [
-					{MotiveReport: {
+		if (search && String(search).trim() !== "") {
+		const searchText = String(search).trim();
+
+		filter.AND = filter.AND || [];
+		filter.AND.push({
+			OR: [
+				{
+					MotiveReport: {
 						MotiveName: {
-							contains: searchText, mode: 'insensitive'}
-						}
-					},
-					{ReportBoycott: {
+							contains: searchText,
+							mode: 'insensitive',
+						},
+					}
+				},
+				{
+					ReportBoycott: {
 						Boycott: {
 							Title: {
-								contains: searchText, mode: 'insensitive'
-							}
-						}
-					}},
-				],
+								contains: searchText,
+								mode: 'insensitive',
+							},
+						},
+					},
+				},
+			],
 			});
 		}
 
@@ -101,6 +111,7 @@ export async function getBoycottReports(req: Request, res: Response){
 		const reports = await prisma.report.findMany({
 			where: filter,
 			select: {
+				ReportID: true,
 				UserDescription: true,
 				Subject: true,
 				ReportedAt: true,
@@ -110,6 +121,7 @@ export async function getBoycottReports(req: Request, res: Response){
 				ReportState: {select:{StateName: true}},
 				MotiveReport: {select:{MotiveName:true}},
 				ReportBoycott: {select: {Boycott: {select: {Title: true, BoycottID:true}}}},
+				AppUser_Report_ReportedByToAppUser: {select: {UserName: true}}
 			},
 			orderBy: { ReportedAt: 'desc' },
 		});
@@ -130,7 +142,7 @@ export async function getBoycottReports(req: Request, res: Response){
 */
 export async function createCommentReport(req: Request, res: Response) {
 	try {
-		const { UserDescription, MotiveReportID, ReportedBy, commentId, Subject } = req.body;
+		const { UserDescription, MotiveReportID, ReportedBy, CommentId, Subject } = req.body;
 		const newReport = await prisma.report.create({
 			data: {
 				Subject,
@@ -142,7 +154,7 @@ export async function createCommentReport(req: Request, res: Response) {
 			},
 		});
 
-		await prisma.reportComment.create({ data: { ReportCommentID: newReport.ReportID, CommentID: parseInt(commentId as string) } });
+		await prisma.reportComment.create({ data: { ReportCommentID: newReport.ReportID, CommentID: parseInt(CommentId as string) } });
 
 		res.status(201).json({ ok: true, report: newReport });
 	} catch (error) {
