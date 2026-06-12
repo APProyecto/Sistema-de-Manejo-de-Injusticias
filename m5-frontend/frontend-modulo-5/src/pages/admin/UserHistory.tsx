@@ -73,12 +73,12 @@ export default function UserHistory() {
     };
 
   const handleStateColor = (state: string) => {
-        if(state === 'Open'){
-            return theme.palette.success.main;
-        }else{
-            return theme.palette.background.default;
-        }
+    if(state === 'Open'){
+      return theme.palette.success.main;
+    }else{
+      return theme.palette.background.default;
     }
+  }
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default,overflowY: 'auto'}}>
       <QueryNavegation/>
@@ -102,13 +102,8 @@ export default function UserHistory() {
                 <InputAdornment position="start">
                   <SearchIcon sx={UserHistoryStyles.searchIcon(theme)} />
                 </InputAdornment>
-              ),
-              endAdornment: (
-                <Button>
-                  <TuneIcon sx={UserHistoryStyles.filterButton(theme)} />
-                </Button>
-              ),
-            },
+              )
+            }
           }}
         />
       </Box>
