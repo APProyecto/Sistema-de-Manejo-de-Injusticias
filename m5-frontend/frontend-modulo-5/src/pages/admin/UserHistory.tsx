@@ -11,6 +11,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import { Circle} from '@mui/icons-material';
 import PostInteracionButton from '../../components/common/PostInteractionButton';
 import QueryNavegation from './QueryNavigation';
+import { Edited, UnderReview } from '../styles/ButtonStyles';
 
 
 interface userQuery {ok:boolean;
@@ -73,12 +74,18 @@ export default function UserHistory() {
     };
 
   const handleStateColor = (state: string) => {
-    if(state === 'Open'){
+    if(state === 'Active'){
       return theme.palette.success.main;
-    }else{
-      return theme.palette.background.default;
     }
-  }
+    if(state === 'Under Review'){
+      return UnderReview;
+    }
+    if(state === 'Edited'){
+      return Edited;
+    }
+    return theme.palette.background.default;
+    }
+
   return (
     <Container sx={{p:5,backgroundColor:theme.palette.background.default,overflowY: 'auto'}}>
       <QueryNavegation/>
