@@ -65,16 +65,17 @@ export async function getMostFollowedCases(req: Request, res: Response) {
     for (let i = 0; i < followersCount.length; i++) {
       for (let j = 0; j < FindCases.length; j++) {
         if (followersCount[i].BoycottID == FindCases[j].BoycottID) {
-          const element = {
-            entityname: FindCases[j].Entity.EntityName,
+        const element = {
+          EntityID: FindCases[j].Entity.EntityID,
+          entityname: FindCases[j].Entity.EntityName,
 
-            // Se deja null para evitar importar funciones del frontend en M4.
-            entityPicture: null,
+          // Se deja null para evitar importar funciones del frontend en M4.
+          entityPicture: null,
 
-            entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
-            injusticeType: FindCases[j].InjusticeType.InjusticeName,
-            followers: followersCount[i]._count._all,
-          };
+          entityType: FindCases[j].Entity.CategoryEntity.CategoryName,
+          injusticeType: FindCases[j].InjusticeType.InjusticeName,
+          followers: followersCount[i]._count._all,
+        };
 
           summary.push(element);
         }

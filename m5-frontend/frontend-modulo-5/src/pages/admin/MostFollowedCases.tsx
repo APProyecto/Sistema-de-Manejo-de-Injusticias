@@ -22,16 +22,14 @@ import { getEntityPictureUrl } from "../../services/catalogueService";
 
 interface followsQuery {
   ok: boolean;
-  mostFollowed: [
-    {
-      entityname: string;
-      EntityID: number;
-      entityPicture: string;
-      entityType: string;
-      injusticeType: string;
-      followers: number;
-    },
-  ];
+  mostFollowed: {
+    entityname: string;
+    EntityID: number;
+    entityPicture: string | null;
+    entityType: string;
+    injusticeType: string;
+    followers: number;
+  }[];
 }
 
 export default function MostFollowedCases() {
@@ -208,7 +206,11 @@ export default function MostFollowedCases() {
           >
             <Box sx={{ width: "25%", display: "flex", my: 1 }}>
               <Avatar
-                src={getEntityPictureUrl(Query.EntityID)}
+                src={
+                  Query.EntityID
+                    ? getEntityPictureUrl(Query.EntityID)
+                    : undefined
+                }
                 alt="Logo"
                 style={{ width: 30, height: 30 }}
                 sx={{ m: 1, my: "Auto" }}
