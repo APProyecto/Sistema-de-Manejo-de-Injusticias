@@ -4,7 +4,9 @@ export const searchBarStyles = {
 
   container: (theme: Theme): SxProps<Theme> => ({
     width: '100%',
-    display: 'flex',
+    display: {xs: 'none',
+      sm : 'flex',
+    },
     maxWidth: '50rem',
 
   }),
