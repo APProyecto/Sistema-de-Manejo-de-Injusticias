@@ -84,8 +84,7 @@ export default function PostCard({ data, inFeed }: Readonly<PostCardProps>) {
     previousVote: boolean | null,
   ) => {
     if (!isAuthenticated) {
-      globalThis.alert("Debes iniciar sesión para votar.");
-      throw new Error("Not authenticated");
+      return;
     }
 
     if (!resolvedUserId) {

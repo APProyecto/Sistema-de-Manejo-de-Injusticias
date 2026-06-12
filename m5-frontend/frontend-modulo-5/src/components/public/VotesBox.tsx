@@ -3,6 +3,7 @@ import { VotesBoxStyles } from "../styles/VotesBoxStyles";
 import React, { useEffect, useRef, useState } from "react";
 import CancelIcon from "@mui/icons-material/Cancel";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useAuth } from "../../context/authContext";
 
 interface VotesBoxProps {
   votes: string;
@@ -22,6 +23,7 @@ export default function VotesBox({
   const [vote, setVote] = useState<boolean | null>(initialVote);
   const [isSendingVote, setIsSendingVote] = useState(false);
   const voteLockRef = useRef(false);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     setVote(initialVote);
@@ -29,6 +31,10 @@ export default function VotesBox({
 
   const handleVote = async (newVote: boolean, event: React.MouseEvent) => {
     event.stopPropagation();
+
+    if (!isAuthenticated) {
+      return;
+    }
 
     if (voteLockRef.current) {
       return;
