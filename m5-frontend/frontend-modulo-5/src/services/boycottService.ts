@@ -25,6 +25,7 @@ interface RawMyBoycott {
   MongoDocumentId: string | null;
   DeletedByUser: boolean;
   CreatorID: number;
+  evidences?: number;
 
   Entity: {
     EntityID: number;
@@ -154,7 +155,8 @@ export const getMyBoycotts = async (
     votes: String(item.VotesInFavor - item.VotesAgainst),
     voted_by_user: null,
     coments: String(item.NumberComments),
-    evidences: "0",
+    evidences: String(item.evidences ?? 0),
+
     state: item.BoycottState.StateName,
     caseNumber: item.CaseNumber ?? undefined,
   }));

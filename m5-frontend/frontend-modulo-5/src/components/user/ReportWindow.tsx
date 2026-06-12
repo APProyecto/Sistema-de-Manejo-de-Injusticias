@@ -2,6 +2,8 @@ import {useTheme, Dialog, DialogContent, IconButton, Typography, TextField, Butt
 import { commentDialogStyles } from '../styles/CommentDialogStyles';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState } from 'react';
+import { createCommentReport } from '../../services/commentsService';
+import { useAuth } from '../../context/authContext';
 
 interface ReportWindowProps {
   open: boolean;
@@ -14,6 +16,7 @@ export default function ReportWindow({ open, onClose, commentId }: ReportWindowP
     const theme = useTheme();
     const [description, setDescription] = useState('');
     const [reason, setReason] = useState('');
+    const { user } = useAuth();
 
     const reasons = [
         'Spam',
@@ -24,12 +27,26 @@ export default function ReportWindow({ open, onClose, commentId }: ReportWindowP
         'Others'
     ];
 
-    const handleSendReport = () => {
+    const handleSendReport = async () => {
         // Handle report submission logic here
+
+        try {
+            if (!user){
+                console.error("user.id not found: ", 666);
+                onClose();
+                return
+            } else {
+                console.log("user:", user);
+                await createCommentReport(description, reasons.indexOf(reason) +1, user.appUserId , parseInt(commentId.toString()), "Comment Report");
+                console.log("user:", user);
+                onClose();
+            }
+        } catch (error) {
+            console.error("Comment report not sent: ", error);
+        };
+
         console.log('Report sent:', {
-            commentId,
-            description,
-            reason,
+            description: description, reason: reason, userId: user?.appUserId , commentId: commentId,
             timestamp: new Date().toISOString()
         });
         onClose();
