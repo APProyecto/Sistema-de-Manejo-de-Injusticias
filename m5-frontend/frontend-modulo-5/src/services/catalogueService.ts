@@ -3,9 +3,26 @@ import type {
   Country,
   CategoryEntity,
   InjusticeType,
+  Entity,
+  Sector,
+  IndustryType,
 } from "../types";
 
 import { authApi } from "./api";
+
+interface UploadCataloguePictureResponse {
+  message: string;
+  mongoDocumentId: string;
+  mongoFileId: string;
+  fileMetadataId: string;
+  picture: {
+    fileName: string;
+    fileSize: number;
+    contentType: string;
+    mongoFileId: string;
+    gridFsId: string;
+  };
+}
 
 /* Gender */
 
@@ -108,6 +125,58 @@ export const createCategoryEntity = async (
   return response.data;
 };
 
+/* Entity Pictures */
+
+export const getEntityPictureUrl = (
+  entityId: number,
+  version?: string | number
+): string => {
+  const query = version ? `?v=${encodeURIComponent(String(version))}` : "";
+
+  return `${authApi.defaults.baseURL}/api/files/entities/${entityId}/picture${query}`;
+};
+
+export const uploadEntityPicture = async (
+  entityId: number,
+  file: File
+): Promise<UploadCataloguePictureResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await authApi.put<UploadCataloguePictureResponse>(
+    `/api/files/entities/${entityId}/picture`,
+    formData
+  );
+
+  return response.data;
+};
+
+/* InjusticeType Pictures */
+
+export const getInjusticeTypePictureUrl = (
+  injusticeTypeId: number,
+  version?: string | number
+): string => {
+  const query = version ? `?v=${encodeURIComponent(String(version))}` : "";
+
+  return `${authApi.defaults.baseURL}/api/files/injustice-types/${injusticeTypeId}/picture${query}`;
+};
+
+export const uploadInjusticeTypePicture = async (
+  injusticeTypeId: number,
+  file: File
+): Promise<UploadCataloguePictureResponse> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await authApi.put<UploadCataloguePictureResponse>(
+    `/api/files/injustice-types/${injusticeTypeId}/picture`,
+    formData
+  );
+
+  return response.data;
+};
+
 export const updateCategoryEntity = async (
   categoryEntityId: number,
   categoryEntity: Partial<CategoryEntity>
@@ -172,4 +241,90 @@ export const deleteInjusticeType = async (
   await authApi.delete(
     `/api/catalogues/injustice-types/${injusticeTypeId}`
   );
+};
+
+/* Entity */
+
+export const getEntities = async (): Promise<Entity[]> => {
+  const response = await authApi.get<Entity[]>("/api/catalogues/entities");
+  return response.data;
+};
+
+export const getEntityById = async (entityId: number): Promise<Entity> => {
+  const response = await authApi.get<Entity>(
+    `/api/catalogues/entities/${entityId}`
+  );
+
+  return response.data;
+};
+
+export const createEntity = async (
+  entity: Partial<Entity>
+): Promise<Entity> => {
+  const response = await authApi.post<Entity>(
+    "/api/catalogues/entities",
+    entity
+  );
+
+  return response.data;
+};
+
+export const updateEntity = async (
+  entityId: number,
+  entity: Partial<Entity>
+): Promise<Entity> => {
+  const response = await authApi.put<Entity>(
+    `/api/catalogues/entities/${entityId}`,
+    entity
+  );
+
+  return response.data;
+};
+
+export const deleteEntity = async (entityId: number): Promise<void> => {
+  await authApi.delete(`/api/catalogues/entities/${entityId}`);
+};
+
+/* Sector */
+
+export const getSectors = async (): Promise<Sector[]> => {
+  const response = await authApi.get<Sector[]>("/api/catalogues/sectors");
+  return response.data;
+};
+
+export const createSector = async (
+  sector: Partial<Sector>
+): Promise<Sector> => {
+  const response = await authApi.post<Sector>(
+    "/api/catalogues/sectors",
+    sector
+  );
+
+  return response.data;
+};
+
+export const updateSector = async (
+  sectorId: number,
+  sector: Partial<Sector>
+): Promise<Sector> => {
+  const response = await authApi.put<Sector>(
+    `/api/catalogues/sectors/${sectorId}`,
+    sector
+  );
+
+  return response.data;
+};
+
+export const deleteSector = async (sectorId: number): Promise<void> => {
+  await authApi.delete(`/api/catalogues/sectors/${sectorId}`);
+};
+
+/* IndustryType */
+
+export const getIndustryTypes = async (): Promise<IndustryType[]> => {
+  const response = await authApi.get<IndustryType[]>(
+    "/api/catalogues/industry-types"
+  );
+
+  return response.data;
 };

@@ -1,22 +1,36 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  Avatar,
   Box,
-  Container,
-  Typography,
-  TextField,
   Button,
+  Card,
+  Container,
   IconButton,
-  Input,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
   useTheme,
+  CircularProgress,
+  MenuItem,
 } from "@mui/material";
 
+import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import CheckIcon from "@mui/icons-material/Check";
+import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 
-import { CataloguesStyles } from "../styles/CataloguesStyles";
+import type {
+  Gender,
+  Country,
+  CategoryEntity,
+  InjusticeType,
+  Entity,
+  Sector,
+  IndustryType,
+} from "../../types";
 
 import {
   getGenders,
@@ -31,17 +45,33 @@ import {
   createCategoryEntity,
   updateCategoryEntity,
   deleteCategoryEntity,
+  getEntities,
+  createEntity,
+  updateEntity,
+  deleteEntity,
+  getEntityPictureUrl,
+  uploadEntityPicture,
   getInjusticeTypes,
   createInjusticeType,
   updateInjusticeType,
   deleteInjusticeType,
+  getInjusticeTypePictureUrl,
+  uploadInjusticeTypePicture,
+  getIndustryTypes,
+  getSectors,
 } from "../../services/catalogueService";
 
-type TabKey = "genders" | "countries" | "categories" | "injustices";
+type TabKey =
+  | "genders"
+  | "countries"
+  | "categories"
+  | "entities"
+  | "injustices";
 
-interface Row {
+interface CatalogueRow {
   id: number;
   name: string;
+  raw: any;
 }
 
 interface CatalogueConfig {
@@ -49,20 +79,30 @@ interface CatalogueConfig {
   idField: string;
   nameField: string;
   bodyField: string;
+
   getAll: () => Promise<any[]>;
   create: (body: any) => Promise<any>;
   update: (id: number, body: any) => Promise<any>;
   remove: (id: number) => Promise<void>;
+
+  hasPicture?: boolean;
+  getPictureUrl?: (id: number, version?: string | number) => string;
+  uploadPicture?: (id: number, file: File) => Promise<any>;
+
+  buildCreateBody?: (name: string) => any;
+  buildUpdateBody?: (name: string, row: CatalogueRow) => any;
 }
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "genders", label: "Genders" },
   { key: "countries", label: "Countries" },
   { key: "categories", label: "Entity Categories" },
+  { key: "entities", label: "Entities" },
   { key: "injustices", label: "Injustice Types" },
 ];
 
 const CONFIG: Record<TabKey, CatalogueConfig> = {
+  /* Gender */
   genders: {
     label: "Genders",
     idField: "GenderID",
@@ -74,6 +114,7 @@ const CONFIG: Record<TabKey, CatalogueConfig> = {
     remove: deleteGender,
   },
 
+  /* Country */
   countries: {
     label: "Countries",
     idField: "CountryID",
@@ -83,19 +124,60 @@ const CONFIG: Record<TabKey, CatalogueConfig> = {
     create: createCountry,
     update: updateCountry,
     remove: deleteCountry,
+
+    buildCreateBody: (name: string) => ({
+      countryName: name,
+      continentId: 1,
+    }),
+
+    buildUpdateBody: (name: string, row: CatalogueRow) => ({
+      countryName: name,
+      continentId: row.raw?.ContinentID ?? row.raw?.Continent?.ContinentID ?? 1,
+    }),
   },
 
+  /* CategoryEntity */
   categories: {
-  label: "Entity Categories",
-  idField: "CategoryEntityID",
-  nameField: "CategoryName",
-  bodyField: "categoryName",
-  getAll: getCategoryEntities,
-  create: createCategoryEntity,
-  update: updateCategoryEntity,
-  remove: deleteCategoryEntity,
-},
-    injustices: {
+    label: "Entity Categories",
+    idField: "CategoryEntityID",
+    nameField: "CategoryName",
+    bodyField: "categoryName",
+    getAll: getCategoryEntities,
+    create: createCategoryEntity,
+    update: updateCategoryEntity,
+    remove: deleteCategoryEntity,
+  },
+
+  /* Entity */
+  entities: {
+    label: "Entities",
+    idField: "EntityID",
+    nameField: "EntityName",
+    bodyField: "entityName",
+    getAll: getEntities,
+    create: createEntity,
+    update: updateEntity,
+    remove: deleteEntity,
+    hasPicture: true,
+    getPictureUrl: getEntityPictureUrl,
+    uploadPicture: uploadEntityPicture,
+
+    // Al editar, intenta conservar categoría, industria y sector actuales.
+    buildUpdateBody: (name: string, row: CatalogueRow) => ({
+      entityName: name,
+      description: row.raw?.Description ?? null,
+      categoryEntityId:
+        row.raw?.CategoryEntityID ??
+        row.raw?.CategoryEntity?.CategoryEntityID ??
+        1,
+      industryTypeId:
+        row.raw?.IndustryTypeID ?? row.raw?.IndustryType?.IndustryTypeID ?? 1,
+      sectorId: row.raw?.SectorID ?? row.raw?.Sector?.SectorID ?? 1,
+    }),
+  },
+
+  /* InjusticeType */
+  injustices: {
     label: "Injustice Types",
     idField: "InjusticeTypeID",
     nameField: "InjusticeName",
@@ -104,287 +186,681 @@ const CONFIG: Record<TabKey, CatalogueConfig> = {
     create: createInjusticeType,
     update: updateInjusticeType,
     remove: deleteInjusticeType,
-    },
+    hasPicture: true,
+    getPictureUrl: getInjusticeTypePictureUrl,
+    uploadPicture: uploadInjusticeTypePicture,
+  },
 };
-
-function toRows(tab: TabKey, data: any[]): Row[] {
-  const config = CONFIG[tab];
-
-  return data.map((item) => ({
-    id: Number(item[config.idField]),
-    name: String(item[config.nameField] ?? ""),
-  }));
-}
 
 export default function Catalogues() {
   const theme = useTheme();
-  const s = CataloguesStyles;
 
   const [activeTab, setActiveTab] = useState<TabKey>("genders");
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [rows, setRows] = useState<CatalogueRow[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [newName, setNewName] = useState("");
-  const [addError, setAddError] = useState("");
-  const [adding, setAdding] = useState(false);
-
+  const [newValue, setNewValue] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editError, setEditError] = useState("");
+  const [editingValue, setEditingValue] = useState("");
 
-  const fetchRows = useCallback(async () => {
-    setLoading(true);
-    setError("");
+  const [savingId, setSavingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [uploadingPictureId, setUploadingPictureId] = useState<number | null>(
+    null,
+  );
 
-    try {
-      const data = await CONFIG[activeTab].getAll();
-      setRows(toRows(activeTab, data));
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.error || "Error";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
+  const [entityDescription, setEntityDescription] = useState("");
+  const [entityCategoryId, setEntityCategoryId] = useState<number | "">("");
+  const [entityIndustryTypeId, setEntityIndustryTypeId] = useState<number | "">(
+    "",
+  );
+  const [entitySectorId, setEntitySectorId] = useState<number | "">("");
+
+  const [categoryOptions, setCategoryOptions] = useState<CategoryEntity[]>([]);
+  const [industryOptions, setIndustryOptions] = useState<IndustryType[]>([]);
+  const [sectorOptions, setSectorOptions] = useState<Sector[]>([]);
+
+  const [pictureVersionById, setPictureVersionById] = useState<
+    Record<number, string | number>
+  >({});
+
+  const config = CONFIG[activeTab];
+
+  const inputSx = {
+    "& .MuiInputBase-root": {
+      backgroundColor: "#fff",
+      borderRadius: 2,
+      color: "#000",
+    },
+    "& .MuiInputBase-input": {
+      color: "#000",
+    },
+    "& .MuiInputBase-input::placeholder": {
+      color: "rgba(0,0,0,0.55)",
+      opacity: 1,
+    },
+    "& .MuiInputLabel-root": {
+      color: "rgba(0,0,0,0.65)",
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: "rgba(0,0,0,0.85)",
+    },
+    "& .MuiSvgIcon-root": {
+      color: "rgba(0,0,0,0.65)",
+    },
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "rgba(0,0,0,0.25)",
+    },
+  };
+
+  const selectedTabIndex = useMemo(() => {
+    return TABS.findIndex((tab) => tab.key === activeTab);
   }, [activeTab]);
 
-  useEffect(() => {
-    fetchRows();
-  }, [fetchRows]);
-
-  const handleAdd = async () => {
-    const trimmed = newName.trim();
-
-    if (!trimmed) {
-      setAddError("The name can't be empty");
-      return;
-    }
-
-    setAddError("");
-    setAdding(true);
-
+  /* Load catalogue rows */
+  const loadRows = async () => {
     try {
-      const body = {
-        [CONFIG[activeTab].bodyField]: trimmed,
-      };
+      setIsLoading(true);
 
-      await CONFIG[activeTab].create(body);
+      const data = await config.getAll();
 
-      setNewName("");
-      await fetchRows();
-    } catch (err: any) {
-      const msg = err.response?.data?.error || "Error creating the record";
-      setAddError(msg);
+      const mappedRows = data.map((item) => ({
+        id: Number(item[config.idField]),
+        name: String(item[config.nameField] ?? ""),
+        raw: item,
+      }));
+
+      setRows(mappedRows);
+    } catch (error) {
+      console.error("Error loading catalogue:", error);
     } finally {
-      setAdding(false);
+      setIsLoading(false);
     }
   };
 
-  const startEdit = (row: Row) => {
-    setEditingId(row.id);
-    setEditName(row.name);
-    setEditError("");
-  };
+  useEffect(() => {
+    loadRows();
+  }, [activeTab]);
 
-  const cancelEdit = () => {
+  /* Load Entity options */
+  useEffect(() => {
+    const loadEntityOptions = async () => {
+      if (activeTab !== "entities") return;
+
+      try {
+        const [categories, industries, sectors] = await Promise.all([
+          getCategoryEntities(),
+          getIndustryTypes(),
+          getSectors(),
+        ]);
+
+        setCategoryOptions(categories);
+        setIndustryOptions(industries);
+        setSectorOptions(sectors);
+      } catch (error) {
+        console.error("Error loading entity options:", error);
+      }
+    };
+
+    loadEntityOptions();
+  }, [activeTab]);
+
+  /* Reset create form when changing tab */
+  useEffect(() => {
+    setNewValue("");
+    setEntityDescription("");
+    setEntityCategoryId("");
+    setEntityIndustryTypeId("");
+    setEntitySectorId("");
     setEditingId(null);
-    setEditName("");
-    setEditError("");
-  };
+    setEditingValue("");
+  }, [activeTab]);
 
-  const handleSaveEdit = async (id: number) => {
-    const trimmed = editName.trim();
+  /* Create catalogue item */
+  const handleCreate = async () => {
+    const cleanValue = newValue.trim();
 
-    if (!trimmed) {
-      setEditError("The name can't be empty");
-      return;
-    }
-
-    setEditError("");
+    if (!cleanValue) return;
 
     try {
-      const body = {
-        [CONFIG[activeTab].bodyField]: trimmed,
-      };
+      let body: any;
 
-      await CONFIG[activeTab].update(id, body);
+      if (activeTab === "entities") {
+        if (!entityCategoryId || !entityIndustryTypeId || !entitySectorId) {
+          console.warn("Entity category, industry and sector are required.");
+          return;
+        }
+
+        body = {
+          entityName: cleanValue,
+          description: entityDescription.trim() || null,
+          categoryEntityId: Number(entityCategoryId),
+          industryTypeId: Number(entityIndustryTypeId),
+          sectorId: Number(entitySectorId),
+        };
+      } else {
+        body = config.buildCreateBody
+          ? config.buildCreateBody(cleanValue)
+          : {
+              [config.bodyField]: cleanValue,
+            };
+      }
+
+      await config.create(body);
+
+      setNewValue("");
+      setEntityDescription("");
+      setEntityCategoryId("");
+      setEntityIndustryTypeId("");
+      setEntitySectorId("");
+
+      await loadRows();
+    } catch (error) {
+      console.error("Error creating catalogue item:", error);
+    }
+  };
+
+  /* Start editing */
+  const handleStartEdit = (row: CatalogueRow) => {
+    setEditingId(row.id);
+    setEditingValue(row.name);
+  };
+
+  /* Cancel editing */
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditingValue("");
+  };
+
+  /* Save edited catalogue item */
+  const handleSaveEdit = async (row: CatalogueRow) => {
+    const cleanValue = editingValue.trim();
+
+    if (!cleanValue) return;
+
+    try {
+      setSavingId(row.id);
+
+      const body = config.buildUpdateBody
+        ? config.buildUpdateBody(cleanValue, row)
+        : {
+            [config.bodyField]: cleanValue,
+          };
+
+      await config.update(row.id, body);
 
       setEditingId(null);
-      setEditName("");
-      await fetchRows();
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.error || "Error updating the record.";
-      setEditError(msg);
+      setEditingValue("");
+
+      await loadRows();
+    } catch (error) {
+      console.error("Error updating catalogue item:", error);
+    } finally {
+      setSavingId(null);
     }
   };
 
-  const handleDelete = async (id: number) => {
+  /* Delete catalogue item */
+  const handleDelete = async (rowId: number) => {
     try {
-      await CONFIG[activeTab].remove(id);
-      await fetchRows();
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.error || "Error deleting the record";
-      setError(msg);
+      setDeletingId(rowId);
+
+      await config.remove(rowId);
+
+      await loadRows();
+    } catch (error) {
+      console.error("Error deleting catalogue item:", error);
+    } finally {
+      setDeletingId(null);
     }
   };
 
-  const handleChangeTab = (tab: TabKey) => {
-    setActiveTab(tab);
-    setEditingId(null);
-    setEditName("");
-    setEditError("");
-    setAddError("");
-    setError("");
+  /* Upload picture for Entity or InjusticeType */
+  const handlePictureChange = async (rowId: number, file?: File | null) => {
+    if (!file) return;
+
+    if (!config.uploadPicture) return;
+
+    try {
+      setUploadingPictureId(rowId);
+
+      const response = await config.uploadPicture(rowId, file);
+
+      const version =
+        response?.picture?.mongoFileId ?? response?.mongoFileId ?? Date.now();
+
+      setPictureVersionById((current) => ({
+        ...current,
+        [rowId]: version,
+      }));
+    } catch (error) {
+      console.error("Error uploading picture:", error);
+    } finally {
+      setUploadingPictureId(null);
+    }
+  };
+
+  /* Get picture URL for Entity or InjusticeType */
+  const getRowPictureUrl = (row: CatalogueRow): string | undefined => {
+    if (!config.getPictureUrl) return undefined;
+
+    return config.getPictureUrl(row.id, pictureVersionById[row.id]);
   };
 
   return (
-    <Container sx={s.mainContainer(theme)}>
-      <Typography variant="h2" sx={s.pageTitle(theme)}>
-        Catálogos
-      </Typography>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 4,
+        color: theme.palette.text.primary,
+      }}
+    >
+      <Card
+        sx={{
+          p: { xs: 2, md: 3 },
+          borderRadius: 4,
+          backgroundColor: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            mb: 3,
+          }}
+        >
+          Catalogue Management
+        </Typography>
 
-      <Box sx={s.tabsContainer(theme)}>
-        {TABS.map((tab) => (
-          <Button
-            key={tab.key}
-            sx={s.tabButton(theme, activeTab === tab.key)}
-            onClick={() => handleChangeTab(tab.key)}
-          >
-            {tab.label}
-          </Button>
-        ))}
-      </Box>
+        {/* Catalogue Tabs */}
+        <Tabs
+          value={selectedTabIndex}
+          onChange={(_, value) => setActiveTab(TABS[value].key)}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{
+            mb: 3,
+            "& .MuiTabs-indicator": {
+              backgroundColor: "#f6c44b",
+            },
+            "& .MuiTab-root": {
+              color: "#ffffff",
+              textTransform: "none",
+              fontWeight: 600,
+            },
+            "& .MuiTab-root.Mui-selected": {
+              color: "#f6c44b",
+            },
+          }}
+        >
+          {TABS.map((tab) => (
+            <Tab key={tab.key} label={tab.label} />
+          ))}
+        </Tabs>
 
-      <Box sx={s.panel(theme)}>
-        <Box sx={s.addRow(theme)}>
+        {/* Create new item */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+            mb: activeTab === "entities" ? 2 : 3,
+          }}
+        >
           <TextField
-            placeholder={`New ${CONFIG[activeTab].label.toLowerCase()}`}
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleAdd();
-            }}
-            sx={s.addField(theme)}
-            variant="outlined"
+            fullWidth
+            value={newValue}
+            onChange={(event) => setNewValue(event.target.value)}
+            placeholder={`New ${config.label}`}
             size="small"
+            sx={inputSx}
           />
 
           <Button
-            sx={s.addButton(theme)}
-            onClick={handleAdd}
-            disabled={adding}
+            variant="contained"
+            onClick={handleCreate}
             startIcon={<AddIcon />}
+            sx={{
+              minWidth: { xs: "100%", sm: 150 },
+              backgroundColor: "#f6c44b",
+              color: "#000",
+              fontWeight: 700,
+              "&:hover": {
+                backgroundColor: "#d9a92f",
+              },
+            }}
           >
             Add
           </Button>
         </Box>
 
-        {addError && (
-          <Typography sx={s.errorText(theme)}>{addError}</Typography>
-        )}
-
-        <Box sx={s.tableHeader(theme)}>
-          <Typography
-            sx={{ ...s.headerText(theme), width: "48px", flexShrink: 0 }}
-          >
-            #
-          </Typography>
-
-          <Typography sx={{ ...s.headerText(theme), flex: 1 }}>
-            Name
-          </Typography>
-
-          <Typography
+        {/* Extra Entity fields */}
+        {activeTab === "entities" && (
+          <Box
             sx={{
-              ...s.headerText(theme),
-              width: "80px",
-              textAlign: "right",
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "1fr 1fr 1fr",
+              },
+              gap: 2,
+              mb: 3,
             }}
           >
-            Actions
-          </Typography>
-        </Box>
+            <TextField
+              fullWidth
+              multiline
+              minRows={2}
+              value={entityDescription}
+              onChange={(event) => setEntityDescription(event.target.value)}
+              placeholder="Entity description"
+              size="small"
+              sx={{
+                ...inputSx,
+                gridColumn: {
+                  xs: "auto",
+                  md: "1 / 4",
+                },
+              }}
+            />
 
-        {loading && (
-          <Typography sx={s.emptyText(theme)}>Loading...</Typography>
+            <TextField
+              select
+              fullWidth
+              value={entityCategoryId}
+              onChange={(event) =>
+                setEntityCategoryId(Number(event.target.value))
+              }
+              label="Category"
+              size="small"
+              sx={inputSx}
+            >
+              {categoryOptions.map((category) => (
+                <MenuItem
+                  key={category.CategoryEntityID}
+                  value={category.CategoryEntityID}
+                  sx={{ color: "#000" }}
+                >
+                  {category.CategoryName}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              fullWidth
+              value={entityIndustryTypeId}
+              onChange={(event) =>
+                setEntityIndustryTypeId(Number(event.target.value))
+              }
+              label="Industry"
+              size="small"
+              sx={inputSx}
+            >
+              {industryOptions.map((industry) => (
+                <MenuItem
+                  key={industry.IndustryTypeID}
+                  value={industry.IndustryTypeID}
+                  sx={{ color: "#000" }}
+                >
+                  {industry.IndustryName}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              fullWidth
+              value={entitySectorId}
+              onChange={(event) =>
+                setEntitySectorId(Number(event.target.value))
+              }
+              label="Sector"
+              size="small"
+              sx={inputSx}
+            >
+              {sectorOptions.map((sector) => (
+                <MenuItem
+                  key={sector.SectorID}
+                  value={sector.SectorID}
+                  sx={{ color: "#000" }}
+                >
+                  {sector.SectorName}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
         )}
 
-        {!loading && error && (
-          <Typography sx={s.errorText(theme)}>{error}</Typography>
-        )}
+        {/* Catalogue list */}
+        <Box
+          sx={{
+            maxHeight: {
+              xs: "calc(100vh - 420px)",
+              md:
+                activeTab === "entities"
+                  ? "calc(100vh - 500px)"
+                  : "calc(100vh - 330px)",
+            },
+            overflowY: "auto",
+            overflowX: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            gap: 1.5,
+            pr: 1,
+            pb: 3,
 
-        {!loading && !error && rows.length === 0 && (
-          <Typography sx={s.emptyText(theme)}>
-            There is not registers
-          </Typography>
-        )}
+            "&::-webkit-scrollbar": {
+              width: "8px",
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "rgba(255,255,255,0.08)",
+              borderRadius: "8px",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "#f6c44b",
+              borderRadius: "8px",
+            },
+          }}
+        >
+          {isLoading && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                py: 4,
+              }}
+            >
+              <CircularProgress size={28} />
+            </Box>
+          )}
 
-        {!loading &&
-          !error &&
-          rows.map((row) => (
-            <Box key={row.id} sx={s.tableRow(theme)}>
-              <Typography sx={s.rowId(theme)}>{row.id}</Typography>
-
-              {editingId === row.id ? (
-                <>
-                  <Input
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSaveEdit(row.id);
-                      if (e.key === "Escape") cancelEdit();
+          {!isLoading &&
+            rows.map((row) => (
+              <Box
+                key={row.id}
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    md: config.hasPicture ? "auto 1fr auto" : "1fr auto",
+                  },
+                  alignItems: "center",
+                  gap: 2,
+                  p: 2,
+                  borderRadius: 3,
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                {/* Picture section for Entity and InjusticeType */}
+                {config.hasPicture && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
                     }}
-                    autoFocus
-                    disableUnderline
-                    sx={s.editField(theme)}
-                  />
+                  >
+                    <Avatar
+                      src={getRowPictureUrl(row)}
+                      sx={{
+                        width: 46,
+                        height: 46,
+                        bgcolor: "#f6c44b",
+                        color: "#000",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {row.name.charAt(0)}
+                    </Avatar>
 
-                  {editError && (
-                    <Typography sx={s.errorText(theme)}>
-                      {editError}
+                    <IconButton
+                      component="label"
+                      disabled={uploadingPictureId === row.id}
+                      sx={{
+                        color: "#f6c44b",
+                      }}
+                    >
+                      {uploadingPictureId === row.id ? (
+                        <CircularProgress size={22} />
+                      ) : (
+                        <PhotoCameraIcon />
+                      )}
+
+                      <input
+                        hidden
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          handlePictureChange(row.id, file);
+                          event.target.value = "";
+                        }}
+                      />
+                    </IconButton>
+                  </Box>
+                )}
+
+                {/* Text section */}
+                <Box sx={{ minWidth: 0 }}>
+                  {editingId === row.id ? (
+                    <TextField
+                      fullWidth
+                      value={editingValue}
+                      onChange={(event) => setEditingValue(event.target.value)}
+                      size="small"
+                      sx={inputSx}
+                    />
+                  ) : (
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: { xs: "normal", md: "nowrap" },
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {row.name}
                     </Typography>
                   )}
 
-                  <IconButton
-                    sx={s.saveButton(theme)}
-                    onClick={() => handleSaveEdit(row.id)}
-                  >
-                    <CheckIcon fontSize="small" />
-                  </IconButton>
+                  {activeTab === "entities" && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        mt: 0.5,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: { xs: "normal", md: "nowrap" },
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {row.raw?.Description || "No description"}
+                    </Typography>
+                  )}
+                </Box>
 
-                  <IconButton sx={s.iconButton(theme)} onClick={cancelEdit}>
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </>
-              ) : (
-                <>
-                  <Typography sx={s.rowName(theme)}>{row.name}</Typography>
+                {/* Actions section */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 1,
+                    justifyContent: { xs: "flex-end", md: "center" },
+                  }}
+                >
+                  {editingId === row.id ? (
+                    <>
+                      <IconButton
+                        onClick={() => handleSaveEdit(row)}
+                        disabled={savingId === row.id}
+                        sx={{
+                          color: "#f6c44b",
+                        }}
+                      >
+                        {savingId === row.id ? (
+                          <CircularProgress size={22} />
+                        ) : (
+                          <SaveIcon />
+                        )}
+                      </IconButton>
 
-                  <IconButton
-                    sx={s.iconButton(theme)}
-                    onClick={() => startEdit(row)}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
+                      <IconButton
+                        onClick={handleCancelEdit}
+                        sx={{
+                          color: "#ffffff",
+                        }}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <>
+                      <IconButton
+                        onClick={() => handleStartEdit(row)}
+                        sx={{
+                          color: "#f6c44b",
+                        }}
+                      >
+                        <EditIcon />
+                      </IconButton>
 
-                  <IconButton
-                    sx={s.deleteButton(theme)}
-                    onClick={() => handleDelete(row.id)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </>
-              )}
+                      <IconButton
+                        onClick={() => handleDelete(row.id)}
+                        disabled={deletingId === row.id}
+                        sx={{
+                          color: "#ff6b6b",
+                        }}
+                      >
+                        {deletingId === row.id ? (
+                          <CircularProgress size={22} />
+                        ) : (
+                          <DeleteIcon />
+                        )}
+                      </IconButton>
+                    </>
+                  )}
+                </Box>
+              </Box>
+            ))}
+
+          {!isLoading && rows.length === 0 && (
+            <Box
+              sx={{
+                py: 4,
+                textAlign: "center",
+              }}
+            >
+              <Typography sx={{ color: theme.palette.text.secondary }}>
+                No catalogue items found.
+              </Typography>
             </Box>
-          ))}
-
-        {!loading && !error && rows.length > 0 && (
-          <Typography sx={s.totalText(theme)}>Total: {rows.length}</Typography>
-        )}
-      </Box>
+          )}
+        </Box>
+      </Card>
     </Container>
   );
 }

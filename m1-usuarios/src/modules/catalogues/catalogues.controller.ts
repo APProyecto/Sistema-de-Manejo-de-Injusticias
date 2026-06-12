@@ -939,6 +939,8 @@ export async function createEntity(req: Request, res: Response) {
     }
 
     const parsedCategoryEntityId = Number(categoryEntityId);
+    const parsedIndustryTypeId = Number(industryTypeId);
+    const parsedSectorId = Number(sectorId);
 
     if (!Number.isInteger(parsedCategoryEntityId) || parsedCategoryEntityId <= 0) {
       return res.status(400).json({
@@ -946,13 +948,29 @@ export async function createEntity(req: Request, res: Response) {
       });
     }
 
+    if (!Number.isInteger(parsedIndustryTypeId) || parsedIndustryTypeId <= 0) {
+      return res.status(400).json({
+        error: "valid industryTypeId is required",
+      });
+    }
+
+    if (!Number.isInteger(parsedSectorId) || parsedSectorId <= 0) {
+      return res.status(400).json({
+        error: "valid sectorId is required",
+      });
+    }
+
     const entity = await prisma.entity.create({
       data: {
         EntityName: entityName.trim(),
-        Description: description?.trim() || null,
+        Description:
+          typeof description === "string" && description.trim() !== ""
+            ? description.trim()
+            : null,
+        NumberBoycotts: 0,
         CategoryEntityID: parsedCategoryEntityId,
-        IndustryTypeID: industryTypeId ? Number(industryTypeId) : null,
-        SectorID: sectorId ? Number(sectorId) : null,
+        IndustryTypeID: parsedIndustryTypeId,
+        SectorID: parsedSectorId,
         CreatedBy: createdBy ? Number(createdBy) : null,
       },
     });
@@ -985,7 +1003,7 @@ export async function createEntity(req: Request, res: Response) {
 
     if (error.code === "P2002") {
       return res.status(409).json({
-        error: "Entity already exists for this category",
+        error: "Entity already exists",
       });
     }
 
@@ -1032,31 +1050,57 @@ export async function updateEntity(req: Request, res: Response) {
       modifiedBy,
     } = req.body;
 
+    const parsedCategoryEntityId =
+      categoryEntityId !== undefined
+        ? Number(categoryEntityId)
+        : currentEntity.CategoryEntityID;
+
+    const parsedIndustryTypeId =
+      industryTypeId !== undefined
+        ? Number(industryTypeId)
+        : currentEntity.IndustryTypeID;
+
+    const parsedSectorId =
+      sectorId !== undefined
+        ? Number(sectorId)
+        : currentEntity.SectorID;
+
+    if (!Number.isInteger(parsedCategoryEntityId) || parsedCategoryEntityId <= 0) {
+      return res.status(400).json({
+        error: "valid categoryEntityId is required",
+      });
+    }
+
+    if (!Number.isInteger(parsedIndustryTypeId) || parsedIndustryTypeId <= 0) {
+      return res.status(400).json({
+        error: "valid industryTypeId is required",
+      });
+    }
+
+    if (!Number.isInteger(parsedSectorId) || parsedSectorId <= 0) {
+      return res.status(400).json({
+        error: "valid sectorId is required",
+      });
+    }
+
     const updatedEntity = await prisma.entity.update({
       where: {
         EntityID: entityId,
       },
       data: {
-        EntityName: entityName?.trim() || currentEntity.EntityName,
+        EntityName:
+          typeof entityName === "string" && entityName.trim() !== ""
+            ? entityName.trim()
+            : currentEntity.EntityName,
         Description:
           description !== undefined
-            ? description?.trim() || null
+            ? typeof description === "string" && description.trim() !== ""
+              ? description.trim()
+              : null
             : currentEntity.Description,
-        CategoryEntityID: categoryEntityId
-          ? Number(categoryEntityId)
-          : currentEntity.CategoryEntityID,
-        IndustryTypeID:
-          industryTypeId !== undefined
-            ? industryTypeId
-              ? Number(industryTypeId)
-              : null
-            : currentEntity.IndustryTypeID,
-        SectorID:
-          sectorId !== undefined
-            ? sectorId
-              ? Number(sectorId)
-              : null
-            : currentEntity.SectorID,
+        CategoryEntityID: parsedCategoryEntityId,
+        IndustryTypeID: parsedIndustryTypeId,
+        SectorID: parsedSectorId,
         ModifiedAt: new Date(),
         ModifiedBy: modifiedBy ? Number(modifiedBy) : null,
       },
@@ -1069,7 +1113,10 @@ export async function updateEntity(req: Request, res: Response) {
 
     let finalEntity = updatedEntity;
 
-    if (mongoDocument?._id && updatedEntity.MongoDocumentID !== mongoDocument._id.toString()) {
+    if (
+      mongoDocument?._id &&
+      updatedEntity.MongoDocumentID !== mongoDocument._id.toString()
+    ) {
       finalEntity = await prisma.entity.update({
         where: {
           EntityID: updatedEntity.EntityID,
@@ -1083,7 +1130,8 @@ export async function updateEntity(req: Request, res: Response) {
     return res.status(200).json({
       message: "Entity updated successfully",
       entity: finalEntity,
-      mongoDocumentId: mongoDocument?._id?.toString() ?? finalEntity.MongoDocumentID,
+      mongoDocumentId:
+        mongoDocument?._id?.toString() ?? finalEntity.MongoDocumentID,
     });
   } catch (error: any) {
     console.error("updateEntity error:", error);
@@ -1096,7 +1144,7 @@ export async function updateEntity(req: Request, res: Response) {
 
     if (error.code === "P2002") {
       return res.status(409).json({
-        error: "Entity already exists for this category",
+        error: "Entity already exists",
       });
     }
 
@@ -1145,6 +1193,211 @@ export async function deleteEntity(req: Request, res: Response) {
         error: "Cannot delete this entity because it is being used",
       });
     }
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+/* =========================
+   SECTOR
+========================= */
+
+export async function getSectors(_req: Request, res: Response) {
+  try {
+    const sectors = await prisma.sector.findMany({
+      orderBy: {
+        SectorID: "asc",
+      },
+    });
+
+    return res.status(200).json(sectors);
+  } catch (error) {
+    console.error("getSectors error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function getSectorById(req: Request, res: Response) {
+  try {
+    const sectorId = Number(req.params.sectorId);
+
+    if (!Number.isInteger(sectorId) || sectorId <= 0) {
+      return res.status(400).json({
+        error: "Invalid sectorId",
+      });
+    }
+
+    const sector = await prisma.sector.findUnique({
+      where: {
+        SectorID: sectorId,
+      },
+    });
+
+    if (!sector) {
+      return res.status(404).json({
+        error: "Sector not found",
+      });
+    }
+
+    return res.status(200).json(sector);
+  } catch (error) {
+    console.error("getSectorById error:", error);
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function createSector(req: Request, res: Response) {
+  try {
+    const { sectorName, createdBy } = req.body;
+
+    if (!sectorName || typeof sectorName !== "string" || sectorName.trim() === "") {
+      return res.status(400).json({
+        error: "sectorName is required",
+      });
+    }
+
+    const sector = await prisma.sector.create({
+      data: {
+        SectorName: sectorName.trim(),
+        CreatedBy: createdBy ? Number(createdBy) : null,
+      },
+    });
+
+    return res.status(201).json({
+      message: "Sector created successfully",
+      sector,
+    });
+  } catch (error: any) {
+    console.error("createSector error:", error);
+
+    if (error.code === "P2002") {
+      return res.status(409).json({
+        error: "Sector already exists",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function updateSector(req: Request, res: Response) {
+  try {
+    const sectorId = Number(req.params.sectorId);
+    const { sectorName, modifiedBy } = req.body;
+
+    if (!Number.isInteger(sectorId) || sectorId <= 0) {
+      return res.status(400).json({
+        error: "Invalid sectorId",
+      });
+    }
+
+    if (!sectorName || typeof sectorName !== "string" || sectorName.trim() === "") {
+      return res.status(400).json({
+        error: "sectorName is required",
+      });
+    }
+
+    const sector = await prisma.sector.update({
+      where: {
+        SectorID: sectorId,
+      },
+      data: {
+        SectorName: sectorName.trim(),
+        ModifiedAt: new Date(),
+        ModifiedBy: modifiedBy ? Number(modifiedBy) : null,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Sector updated successfully",
+      sector,
+    });
+  } catch (error: any) {
+    console.error("updateSector error:", error);
+
+    if (error.code === "P2025") {
+      return res.status(404).json({
+        error: "Sector not found",
+      });
+    }
+
+    if (error.code === "P2002") {
+      return res.status(409).json({
+        error: "Sector already exists",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+export async function deleteSector(req: Request, res: Response) {
+  try {
+    const sectorId = Number(req.params.sectorId);
+
+    if (!Number.isInteger(sectorId) || sectorId <= 0) {
+      return res.status(400).json({
+        error: "Invalid sectorId",
+      });
+    }
+
+    await prisma.sector.delete({
+      where: {
+        SectorID: sectorId,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Sector deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("deleteSector error:", error);
+
+    if (error.code === "P2025") {
+      return res.status(404).json({
+        error: "Sector not found",
+      });
+    }
+
+    if (error.code === "P2003") {
+      return res.status(409).json({
+        error: "Cannot delete this sector because it is being used",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+}
+
+/* =========================
+   INDUSTRY TYPE
+========================= */
+
+export async function getIndustryTypes(_req: Request, res: Response) {
+  try {
+    const industryTypes = await prisma.industryType.findMany({
+      orderBy: {
+        IndustryTypeID: "asc",
+      },
+    });
+
+    return res.status(200).json(industryTypes);
+  } catch (error) {
+    console.error("getIndustryTypes error:", error);
 
     return res.status(500).json({
       error: "Internal server error",
