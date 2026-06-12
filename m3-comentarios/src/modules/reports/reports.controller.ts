@@ -141,12 +141,13 @@ export async function getBoycottReports(req: Request, res: Response){
     Outputs: JSON response with the created report or an error message.
 */
 export async function createCommentReport(req: Request, res: Response) {
+	console.log(req.body);
 	try {
 		const { UserDescription, MotiveReportID, ReportedBy, CommentId, Subject } = req.body;
 		const newReport = await prisma.report.create({
 			data: {
-				Subject,
-				UserDescription,
+				Subject: Subject,
+				UserDescription: UserDescription,
 				MotiveReportID: parseInt(MotiveReportID as string),
 				ReportedBy: parseInt(ReportedBy as string),
 				ReportStateID: 1,
